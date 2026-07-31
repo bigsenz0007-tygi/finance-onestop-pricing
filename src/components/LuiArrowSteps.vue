@@ -1,5 +1,5 @@
 <template>
-  <div class="lui-arrow-steps-card">
+  <div class="lui-arrow-steps-card" :style="maskVars">
     <div class="lui-arrow-steps" role="list">
       <div
         v-for="(step, index) in steps"
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-const ICON_BASE = '/d2c-assets/figma-stepper'
+const ICON_BASE = `${process.env.BASE_URL || '/'}d2c-assets/figma-stepper`
 
 export default {
   name: 'LuiArrowSteps',
@@ -48,6 +48,17 @@ export default {
     maxReachable: {
       type: Number,
       default: null
+    }
+  },
+  computed: {
+    maskVars() {
+      const base = ICON_BASE
+      return {
+        '--step-mask-end-left': `url("${base}/mask-end-left.svg")`,
+        '--step-mask-tip-right': `url("${base}/mask-tip-right.svg")`,
+        '--step-mask-start-left': `url("${base}/mask-start-left.svg")`,
+        '--step-mask-end-right': `url("${base}/mask-end-right.svg")`
+      }
     }
   },
   methods: {
@@ -200,38 +211,38 @@ export default {
 /* 默认中间段：左凹口 + 右尖头 */
 .lui-arrow-steps__cap--l {
   width: 20px;
-  -webkit-mask-image: url('/d2c-assets/figma-stepper/mask-end-left.svg');
-  mask-image: url('/d2c-assets/figma-stepper/mask-end-left.svg');
+  -webkit-mask-image: var(--step-mask-end-left);
+  mask-image: var(--step-mask-end-left);
 }
 
 .lui-arrow-steps__cap--r {
   width: 20px;
-  -webkit-mask-image: url('/d2c-assets/figma-stepper/mask-tip-right.svg');
-  mask-image: url('/d2c-assets/figma-stepper/mask-tip-right.svg');
+  -webkit-mask-image: var(--step-mask-tip-right);
+  mask-image: var(--step-mask-tip-right);
 }
 
 .lui-arrow-steps__item.is-start .lui-arrow-steps__cap--l {
   width: 8px;
-  -webkit-mask-image: url('/d2c-assets/figma-stepper/mask-start-left.svg');
-  mask-image: url('/d2c-assets/figma-stepper/mask-start-left.svg');
+  -webkit-mask-image: var(--step-mask-start-left);
+  mask-image: var(--step-mask-start-left);
 }
 
 .lui-arrow-steps__item.is-start .lui-arrow-steps__cap--r {
   width: 20px;
-  -webkit-mask-image: url('/d2c-assets/figma-stepper/mask-tip-right.svg');
-  mask-image: url('/d2c-assets/figma-stepper/mask-tip-right.svg');
+  -webkit-mask-image: var(--step-mask-tip-right);
+  mask-image: var(--step-mask-tip-right);
 }
 
 .lui-arrow-steps__item.is-end .lui-arrow-steps__cap--l {
   width: 20px;
-  -webkit-mask-image: url('/d2c-assets/figma-stepper/mask-end-left.svg');
-  mask-image: url('/d2c-assets/figma-stepper/mask-end-left.svg');
+  -webkit-mask-image: var(--step-mask-end-left);
+  mask-image: var(--step-mask-end-left);
 }
 
 .lui-arrow-steps__item.is-end .lui-arrow-steps__cap--r {
   width: 8px;
-  -webkit-mask-image: url('/d2c-assets/figma-stepper/mask-end-right.svg');
-  mask-image: url('/d2c-assets/figma-stepper/mask-end-right.svg');
+  -webkit-mask-image: var(--step-mask-end-right);
+  mask-image: var(--step-mask-end-right);
 }
 
 .lui-arrow-steps__num {

@@ -5,6 +5,13 @@ import lang from '@lui/lui-ui/lib/locale/lang/zh-CN'
 import '@lui/lui-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
 import './styles/global.css'
+import { publicAsset } from './utils/publicAsset'
+
+// 静态资源基路径：兼容 GitHub Pages 子目录部署
+document.documentElement.style.setProperty(
+  '--asset-table-empty',
+  `url("${publicAsset('d2c-assets/table-empty.png')}")`
+)
 
 // 覆盖表格空态文案：不再使用「暂时没有数据」
 if (lang && lang.el) {

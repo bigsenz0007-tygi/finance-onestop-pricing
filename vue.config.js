@@ -1,4 +1,5 @@
 module.exports = {
+  publicPath: process.env.PUBLIC_PATH || '/',
   transpileDependencies: ['@lui/lui-ui'],
   devServer: {
     port: 5189,

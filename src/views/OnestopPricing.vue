@@ -283,7 +283,7 @@
             <button type="button" class="field-tip-btn" aria-label="说明">
               <img
                 class="field-tip-img"
-                src="/d2c-assets/tips/icon-question.png"
+                :src="assetTipIcon"
                 alt=""
                 width="14"
                 height="14"
@@ -797,6 +797,7 @@ import {
   evaluateFormulaDemo,
   appendFormulaToken
 } from '../utils/quoteModeFormula'
+import { publicAsset } from '../utils/publicAsset'
 
 const SIM_MODE_CONFIG = {
   首续重计费: {
@@ -999,6 +1000,9 @@ export default {
     }
   },
   computed: {
+    assetTipIcon() {
+      return publicAsset('d2c-assets/tips/icon-question.png')
+    },
     isViewMode() {
       return this.detailMode === 'view'
     },

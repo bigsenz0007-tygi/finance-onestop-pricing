@@ -5,25 +5,25 @@
         <span class="wb-header__logo-wrap">
           <span class="wb-header__logo" aria-label="JDL 京东物流" role="img">
             <span class="wb-header__logo-slot" style="inset: 0% 87.85% 78.39% 8.06%">
-              <img src="/d2c-assets/nav/logo-fill1.svg" alt="">
+              <img :src="asset('d2c-assets/nav/logo-fill1.svg')" alt="">
             </span>
             <span class="wb-header__logo-slot" style="inset: 26.5% 87.85% 0 0">
-              <img src="/d2c-assets/nav/logo-mark.svg" alt="">
+              <img :src="asset('d2c-assets/nav/logo-mark.svg')" alt="">
             </span>
             <span class="wb-header__logo-slot" style="inset: 0 62.76% 3.45% 12.97%">
-              <img src="/d2c-assets/nav/logo-fill5.svg" alt="">
+              <img :src="asset('d2c-assets/nav/logo-fill5.svg')" alt="">
             </span>
             <span class="wb-header__logo-slot" style="inset: 27.67% 45.12% 3.45% 41.34%">
-              <img src="/d2c-assets/nav/logo-fill7.svg" alt="">
+              <img :src="asset('d2c-assets/nav/logo-fill7.svg')" alt="">
             </span>
             <span class="wb-header__logo-slot" style="inset: 27.67% 29.95% 3.45% 56.51%">
-              <img src="/d2c-assets/nav/logo-fill9.svg" alt="">
+              <img :src="asset('d2c-assets/nav/logo-fill9.svg')" alt="">
             </span>
             <span class="wb-header__logo-slot" style="inset: 27.67% 15.09% 3.45% 71.58%">
-              <img src="/d2c-assets/nav/logo-fill11.svg" alt="">
+              <img :src="asset('d2c-assets/nav/logo-fill11.svg')" alt="">
             </span>
             <span class="wb-header__logo-slot" style="inset: 27.67% 0 3.45% 86.46%">
-              <img src="/d2c-assets/nav/logo-fill13.svg" alt="">
+              <img :src="asset('d2c-assets/nav/logo-fill13.svg')" alt="">
             </span>
           </span>
         </span>
@@ -40,7 +40,7 @@
         <span
           class="wb-header__search-icon"
           aria-hidden="true"
-          :style="iconMaskStyle('/d2c-assets/nav/icon-search.svg')"
+          :style="iconMaskStyle('d2c-assets/nav/icon-search.svg')"
         />
       </div>
       <div class="wb-header__actions">
@@ -48,14 +48,14 @@
           <span
             class="wb-header__tool-icon"
             aria-hidden="true"
-            :style="iconMaskStyle('/d2c-assets/nav/icon-swap.svg')"
+            :style="iconMaskStyle('d2c-assets/nav/icon-swap.svg')"
           />
         </button>
         <button type="button" class="wb-header__user" aria-label="用户菜单">
           <span class="wb-avatar" aria-hidden="true">
             <img
               class="wb-avatar__img"
-              src="/d2c-assets/nav/avatar.svg"
+              :src="asset('d2c-assets/nav/avatar.svg')"
               width="40"
               height="40"
               alt=""
@@ -65,7 +65,7 @@
           <span class="wb-header__caret" aria-hidden="true">
             <span
               class="wb-header__caret-glyph"
-              :style="iconMaskStyle('/d2c-assets/nav/icon-arrow-down.svg')"
+              :style="iconMaskStyle('d2c-assets/nav/icon-arrow-down.svg')"
             />
           </span>
         </button>
@@ -196,6 +196,7 @@ import {
   getSubmenus,
   resolveSubmenuId
 } from './mock/workbenchNav'
+import { publicAsset } from './utils/publicAsset'
 
 export default {
   name: 'App',
@@ -249,8 +250,9 @@ export default {
     this.clearHideSubnavTimer()
   },
   methods: {
+    asset: publicAsset,
     iconMaskStyle(src) {
-      const url = `url("${src}")`
+      const url = `url("${publicAsset(src)}")`
       return {
         WebkitMaskImage: url,
         maskImage: url,

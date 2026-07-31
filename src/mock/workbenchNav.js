@@ -4,7 +4,10 @@
  * 图标为 Figma 导出资源（public/d2c-assets/nav）
  * 定价 / 报价保留二级浮层，接入现有业务页
  */
-const NAV_ICON = (name) => `/d2c-assets/nav/${name}`
+const NAV_ICON = (name) => {
+  const base = process.env.BASE_URL || '/'
+  return `${base}d2c-assets/nav/${name}`
+}
 
 export const SIDEBAR_MENUS = [
   { id: 'home', label: '首页', iconSrc: NAV_ICON('icon-home.svg') },

@@ -612,7 +612,7 @@ body,
   width: 96px !important;
   height: 66px !important;
   margin: 0 0 4px !important;
-  background-image: url('/d2c-assets/table-empty.png') !important;
+  background-image: var(--asset-table-empty) !important;
   background-position: center !important;
   background-size: contain !important;
   background-repeat: no-repeat !important;
@@ -632,7 +632,7 @@ body,
 .el-empty__image {
   width: 96px !important;
   height: 66px !important;
-  background: url('/d2c-assets/table-empty.png') center / contain no-repeat !important;
+  background: var(--asset-table-empty) center / contain no-repeat !important;
 }
 
 .el-empty__image img,

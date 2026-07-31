@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "critical": 0,
+  "errors": [],
+  "warnings": [
+    "接口与远端仓库尚未接入"
+  ],
+  "checked_at": "2026-07-27T05:25:00Z",
+  "schema": "feature-spec",
+  "semantic": "pass"
+}

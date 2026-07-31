@@ -1,0 +1,23 @@
+{
+  "summary": "一站报价按 PRD 查漏补缺：基础信息/分区/明细字段、地址弹窗、场景费用项强校验、多选 collapse-tags",
+  "changed_files": [
+    "src/views/OnestopQuoting.vue",
+    "src/components/quoting/AddressEditorModal.vue",
+    "src/utils/scenarioQuoteValidate.js",
+    "src/mock/scenarioPricing.js"
+  ],
+  "p0_done": [
+    "生效时间 daterange",
+    "计费策略默认统计考核，选项普通/统计考核/合单/统计+合单",
+    "复杂报价默认折叠",
+    "分区：申请单号/合同编码/始发目的地址弹窗/维度字段",
+    "明细：区间开闭/业务进位/轻抛系数/折扣模式/阶梯累进",
+    "场景费用项完整性校验（报价不完整禁提交）",
+    "多选 collapse-tags 固定高度"
+  ],
+  "deferred": [
+    "真实商家档案接口",
+    "分区虚拟列表万级性能",
+    "测算页完整手工因子"
+  ]
+}

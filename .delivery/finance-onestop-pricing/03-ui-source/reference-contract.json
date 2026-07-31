@@ -1,0 +1,41 @@
+{
+  "mode": "p2c",
+  "references": [
+    {
+      "id": "ref-billing-docs",
+      "path": "00-intake/billing-docs",
+      "type": "prototype-jsx",
+      "pages": ["IndexPage", "DetailDrawer", "LogModal"]
+    },
+    {
+      "id": "ref-pricing-capability",
+      "path": "00-intake/pricing-capability",
+      "type": "prototype-jsx",
+      "pages": ["ScenarioArchive"]
+    },
+    {
+      "id": "ref-onestop-pricing",
+      "path": "00-intake/onestop-pricing",
+      "type": "prototype-jsx",
+      "pages": ["Home", "ProductPricing", "ScenarioPricing"]
+    },
+    {
+      "id": "ref-onestop-quoting",
+      "path": "00-intake/onestop-quoting",
+      "type": "prototype-jsx",
+      "pages": ["QuotationHome", "BaseInfo", "PricePartition", "PriceDetail", "Simulation"]
+    },
+    {
+      "id": "ref-review",
+      "path": "00-intake/*.png",
+      "type": "prd-review-notes"
+    }
+  ],
+  "page_patterns": [
+    "list-query-table",
+    "drawer-form",
+    "modal-form",
+    "dual-entry-home",
+    "steps-wizard"
+  ]
+}

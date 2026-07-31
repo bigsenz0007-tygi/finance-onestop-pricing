@@ -1,0 +1,5 @@
+{
+  "source": "PRD screenshots 2026-07-30 一站报价",
+  "pages": ["OnestopQuoting"],
+  "patterns": ["wizard-5-steps","address-editor-modal","collapse-tags-multiselect","complex-quote-collapse"]
+}

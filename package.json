@@ -1,0 +1,31 @@
+{
+  "name": "finance-onestop-pricing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "serve:dev": "vue-cli-service serve --port 5189",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@lui/lui-ui": "^2.15.29",
+    "core-js": "^3.37.1",
+    "vue": "^2.7.16"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.19",
+    "@vue/cli-service": "~4.5.19",
+    "sass": "^1.32.13",
+    "sass-loader": "^10.1.1",
+    "vue-template-compiler": "^2.7.16"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "engines": {
+    "node": ">=14 <15"
+  }
+}

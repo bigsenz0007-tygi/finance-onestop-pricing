@@ -1,0 +1,33 @@
+{
+  "feature_id": "quoting-prd-gap",
+  "allowed_files": [
+    "src/views/OnestopQuoting.vue",
+    "src/components/quoting/AddressEditorModal.vue",
+    "src/utils/scenarioQuoteValidate.js",
+    "src/mock/scenarioPricing.js"
+  ],
+  "allowed_directories": [
+    "src/components/quoting"
+  ],
+  "protected_files": [
+    "src/styles/global.css",
+    "src/views/BillingDocs.vue",
+    "src/views/PricingCapability.vue",
+    "src/views/OnestopPricing.vue",
+    "src/App.vue"
+  ],
+  "expected_new_files": [
+    "src/components/quoting/AddressEditorModal.vue",
+    "src/utils/scenarioQuoteValidate.js",
+    "src/mock/scenarioPricing.js"
+  ],
+  "expected_deleted_files": [],
+  "related_regression_targets": ["onestop-quoting"],
+  "reason_by_file": {
+    "src/views/OnestopQuoting.vue": "PRD查漏补缺：基础信息/分区/明细字段与校验",
+    "src/components/quoting/AddressEditorModal.vue": "始发地目的地地址选择弹窗",
+    "src/utils/scenarioQuoteValidate.js": "场景费用项完整性强校验",
+    "src/mock/scenarioPricing.js": "场景维度与费用项 mock"
+  },
+  "notes": "样式沿用现有LUI；禁止改global.css与其他业务页"
+}

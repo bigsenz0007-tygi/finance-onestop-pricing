@@ -1,0 +1,7 @@
+{
+  "status": "preview_ready",
+  "preview_url": "http://localhost:5189/",
+  "stack": "vue2 + @lui/lui-ui@2.15.29 + vue-cli-service",
+  "start": "npm run serve:dev",
+  "modules": ["BillingDocs", "PricingCapability", "OnestopPricing", "OnestopQuoting"]
+}

@@ -1,0 +1,9 @@
+{
+  "summary": "OnestopQuoting 第3步：统计对象在产品/场景报价的统计策略下展示；移除统计累进方式；样式未改 global.css",
+  "changed_files": ["src/views/OnestopQuoting.vue"],
+  "checks": [
+    "showStatTarget = isStats",
+    "showStatColumns = isStats",
+    "statProgressiveMode UI/default removed"
+  ]
+}

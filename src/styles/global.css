@@ -1,0 +1,1845 @@
+/* LUI PC3.0 落地覆盖：圆角 / 选择器状态 / 下拉 / 按钮 / 表格 / 分页 / 弹窗 / 标签 */
+
+:root {
+  --lui-primary: #3c6ef0;
+  --lui-primary-hover: #2f5cd6;
+  --lui-primary-active: #294fc0;
+  --lui-primary-light-7: #c6d5fb;
+  --lui-primary-light-9: #ecf1fe;
+  --lui-text-main: #23252b;
+  --lui-text-regular: #525765;
+  --lui-text-secondary: #868d9f;
+  --lui-text-disabled: #babec7;
+  --lui-border: #e4e5e9;
+  --lui-border-light: #eaeaea;
+  --lui-table-divider: #f1f2f4;
+  --lui-bg-page: #f5f5f6;
+  --lui-bg-fill: #f5f5f6;
+  --lui-radius-base: 8px;
+  --lui-radius-tag: 4px;
+  --lui-radius-checkbox: 4px;
+  --lui-control-height: 32px;
+  /* Figma 典型页参考：表单项约 412 = label 120 + gap 12 + 控件 ≈280；查询区改为 1fr 铺满以右对齐 */
+  --lui-form-item-width: 412px;
+  --lui-form-label-width: 120px;
+  --lui-control-width: 280px;
+  --lui-control-width-range: 280px;
+  --lui-form-item-gap: 12px;
+  --lui-form-col-gap: 48px;
+  --lui-form-row-gap: 16px;
+  --lui-success: #12b35d;
+  --lui-danger: #fc3737;
+  --lui-shadow-dropdown: 0 2px 6px rgba(35, 37, 43, 0.1);
+  --lui-shadow-dialog: 0 4px 16px rgba(35, 37, 43, 0.1);
+  --lui-blue-01: rgba(60, 110, 240, 0.1); /* Lui-blue-01 / #3C6EF0 10% */
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+  background: var(--lui-bg-page);
+  color: var(--lui-text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ========== 输入 / 选择器：8px 圆角 + 状态 ========== */
+.el-input__inner,
+.el-textarea__inner,
+.el-range-editor.el-input__inner {
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+  border-radius: var(--lui-radius-base) !important;
+  border-color: var(--lui-border);
+  color: var(--lui-text-main);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.el-textarea__inner {
+  height: auto;
+  line-height: 1.5;
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: var(--lui-text-disabled); /* #BABEC7 未选择占位 */
+}
+
+.el-input__inner:hover,
+.el-textarea__inner:hover {
+  border-color: rgba(60, 110, 240, 0.1); /* 悬停描边：#3C6EF0 10% */
+}
+
+.el-input.is-active .el-input__inner,
+.el-input__inner:focus,
+.el-textarea__inner:focus,
+.el-select .el-input.is-focus .el-input__inner,
+.el-select .el-input__inner:focus {
+  border-color: var(--lui-primary) !important;
+  box-shadow: 0 0 0 2px rgba(60, 110, 240, 0.1);
+}
+
+.el-input.is-disabled .el-input__inner,
+.el-textarea.is-disabled .el-textarea__inner {
+  background: #f5f5f6;
+  border-color: var(--lui-border-light);
+  color: var(--lui-text-disabled);
+}
+
+.el-input--small .el-input__inner {
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+}
+
+.el-input--mini .el-input__inner {
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+}
+
+.el-select {
+  width: 100%;
+}
+
+.el-select .el-input__inner {
+  cursor: pointer;
+  text-align: left;
+  padding-right: 30px;
+}
+
+.el-select .el-input .el-select__caret {
+  color: var(--lui-text-secondary);
+}
+
+.el-select:hover .el-input:not(.is-disabled) .el-input__inner {
+  border-color: rgba(60, 110, 240, 0.1); /* 悬停描边：#3C6EF0 10% */
+}
+
+/* 仅箭头可高亮主色；清除图标无蓝色态 */
+.el-select:hover .el-input .el-select__caret.el-icon-arrow-up,
+.el-select .el-input.is-focus .el-select__caret.el-icon-arrow-up {
+  color: var(--lui-primary);
+}
+
+.el-select .el-input .el-select__caret.is-show-close,
+.el-select .el-input .el-icon-circle-close,
+.el-select:hover .el-input .el-select__caret.is-show-close,
+.el-select:hover .el-input .el-icon-circle-close,
+.el-select .el-input.is-focus .el-select__caret.is-show-close,
+.el-select .el-input.is-focus .el-icon-circle-close,
+.el-input .el-input__clear,
+.el-input .el-icon-circle-close {
+  color: var(--lui-text-disabled) !important; /* #BABEC7 */
+}
+
+.el-select .el-input .el-select__caret.is-show-close:hover,
+.el-select .el-input .el-icon-circle-close:hover,
+.el-input .el-input__clear:hover,
+.el-input .el-icon-circle-close:hover {
+  color: var(--lui-text-secondary) !important; /* #868D9F，仍非蓝色 */
+}
+
+/* 下拉面板 / 选项 — Figma 5:2748 各类下拉选项_All */
+.el-select-dropdown {
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: var(--lui-shadow-dropdown) !important;
+  margin-top: 4px !important;
+  padding: 4px !important;
+  background: #fff !important;
+  overflow: hidden;
+}
+
+.el-select-dropdown .el-scrollbar__view.el-select-dropdown__list,
+.el-select-dropdown__list {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.el-select-dropdown__item {
+  height: 32px;
+  line-height: 22px;
+  color: var(--lui-text-regular); /* #525765 Lui-grey-02 */
+  padding: 5px 8px 5px 12px;
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: 8px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.el-select-dropdown__item.hover,
+.el-select-dropdown__item:hover {
+  background: var(--lui-bg-fill) !important; /* #F5F5F6 Lui-grey-07 */
+  color: var(--lui-text-regular) !important;
+  font-weight: 500;
+}
+
+.el-select-dropdown__item.selected {
+  color: var(--lui-primary) !important; /* #3C6EF0 Lui-blue-06 */
+  font-weight: 500;
+  background: var(--lui-blue-01) !important; /* rgba(60,110,240,0.1) */
+}
+
+.el-select-dropdown__item.selected.hover,
+.el-select-dropdown__item.selected:hover {
+  background: var(--lui-blue-01) !important;
+  color: var(--lui-primary) !important;
+}
+
+.el-select-dropdown__item.is-disabled,
+.el-select-dropdown__item.is-disabled:hover {
+  color: var(--lui-text-disabled) !important; /* #BABEC7 Lui-grey-04 */
+  background: transparent !important;
+  font-weight: 400;
+  cursor: not-allowed;
+}
+
+.el-cascader__dropdown,
+.el-picker-panel,
+.el-date-picker,
+.el-popper[x-placement] {
+  border-radius: var(--lui-radius-base);
+}
+
+/* 选择器气泡由 main.js 拦截关闭 */
+
+/* ========== 按钮：LUI PC3.0（高 32 / 圆角 8 / padding 0 16） ========== */
+.el-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  min-height: var(--lui-control-height);
+  height: var(--lui-control-height);
+  padding: 0 16px;
+  border-radius: var(--lui-radius-base) !important;
+  border: 1px solid var(--lui-border);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: color 0.1s, background-color 0.1s, border-color 0.1s;
+}
+
+.el-button--small,
+.el-button--mini {
+  min-width: 64px;
+  min-height: var(--lui-control-height);
+  height: var(--lui-control-height);
+  padding: 0 16px;
+  border-radius: var(--lui-radius-base) !important;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Figma 典型页：重置等次按钮为灰底无描边 */
+.el-button--default {
+  background: var(--lui-bg-fill);
+  border-color: var(--lui-bg-fill);
+  color: var(--lui-text-main);
+}
+
+.el-button--default:focus {
+  background: var(--lui-bg-fill);
+  border-color: var(--lui-bg-fill);
+  color: var(--lui-text-main);
+}
+
+.el-button--default:hover {
+  color: var(--lui-primary);
+  border-color: var(--lui-primary-light-7);
+  background: var(--lui-primary-light-9);
+}
+
+.el-button--default:active {
+  color: var(--lui-primary-active);
+  border-color: var(--lui-primary-active);
+  background: var(--lui-bg-fill);
+}
+
+.el-button--primary {
+  background-color: var(--lui-primary) !important;
+  border-color: var(--lui-primary) !important;
+  color: #fff !important;
+}
+
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background-color: var(--lui-primary-hover) !important;
+  border-color: var(--lui-primary-hover) !important;
+  color: #fff !important;
+}
+
+.el-button--primary:active {
+  background-color: var(--lui-primary-active) !important;
+  border-color: var(--lui-primary-active) !important;
+  color: #fff !important;
+}
+
+.el-button--success {
+  background-color: var(--lui-success) !important;
+  border-color: var(--lui-success) !important;
+  color: #fff !important;
+}
+
+.el-button--text {
+  min-width: auto;
+  height: auto;
+  min-height: auto;
+  padding: 0 4px;
+  border: none !important;
+  background: transparent !important;
+  color: var(--lui-primary);
+  line-height: 1.4;
+}
+
+.el-button--text:hover,
+.el-button--text:focus {
+  color: var(--lui-primary-hover);
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Figma「导出明细」类：浅蓝底 + 主色字 */
+.el-button.is-plain.el-button--primary {
+  background: rgba(60, 110, 240, 0.1) !important;
+  color: var(--lui-primary) !important;
+  border-color: transparent !important;
+}
+
+.el-button.is-plain.el-button--primary:hover,
+.el-button.is-plain.el-button--primary:focus {
+  background: rgba(60, 110, 240, 0.16) !important;
+  color: var(--lui-primary) !important;
+  border-color: transparent !important;
+}
+
+.el-button.is-disabled,
+.el-button.is-disabled:hover,
+.el-button.is-disabled:focus {
+  color: var(--lui-text-disabled) !important;
+  background: var(--lui-bg-fill) !important;
+  border-color: var(--lui-border-light) !important;
+  cursor: not-allowed;
+}
+
+.el-button--text.is-disabled,
+.el-button--text.is-disabled:hover {
+  color: var(--lui-text-disabled) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* LUI 按钮自带相邻间距，不要再叠加 gap */
+.el-button + .el-button {
+  margin-left: 10px;
+}
+
+/* ========== 标签：LUI PC3.0 展示型（Figma 14:1022）==========
+ * 蓝=待完成/待审批 · 橙=进行中/审批中 · 红=异常/驳回 · 灰=失效 · 绿=已完成
+ */
+/* 多选 Select 标签 dark tooltip：彻底隐藏（popper 挂 body） */
+.el-tooltip__popper.is-dark.is-select-tag-tip,
+.el-select__tags .el-tooltip__popper {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.el-tooltip__popper.is-dark[x-placement] {
+  max-width: 320px;
+  word-break: break-all;
+}
+
+.el-tag {
+  --lui-tag-radius: 6px;
+  height: 22px;
+  line-height: 22px;
+  padding: 0 6px;
+  border: none !important;
+  border-radius: var(--lui-tag-radius) !important;
+  font-size: 14px !important;
+  font-weight: 400;
+  transition: none !important;
+}
+
+.el-tag.el-tag--small,
+.el-tag.el-tag--mini {
+  height: 22px;
+  line-height: 22px;
+  padding: 0 6px;
+  font-size: 14px !important;
+}
+
+/* 删除叉：禁止旋转/翻转，直接删除 */
+.el-tag .el-tag__close,
+.el-tag .el-icon-close,
+.el-select .el-tag__close,
+.el-select .el-tag__close.el-icon-close {
+  transition: none !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+}
+.el-tag .el-tag__close:hover,
+.el-tag .el-icon-close:hover,
+.el-select .el-tag__close:hover,
+.el-select .el-tag__close.el-icon-close:hover {
+  transform: none !important;
+  -webkit-transform: none !important;
+}
+
+/* 标签进出场动画关闭，避免删除时翻转入场/离场 */
+.el-tag.el-zoom-in-center-enter-active,
+.el-tag.el-zoom-in-center-leave-active,
+.el-zoom-in-center-enter-active,
+.el-zoom-in-center-leave-active {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* 蓝 · 待完成/待审批（Element 无 primary，用自定义类 + 默认态兜底） */
+.el-tag--primary,
+.el-tag:not(.el-tag--success):not(.el-tag--warning):not(.el-tag--danger):not(.el-tag--info) {
+  background: rgba(60, 110, 240, 0.1) !important;
+  color: var(--lui-primary) !important;
+}
+
+.el-tag--success {
+  background: rgba(18, 179, 93, 0.1) !important;
+  color: var(--lui-success) !important;
+}
+
+.el-tag--warning {
+  background: rgba(255, 119, 0, 0.1) !important;
+  color: #ff7700 !important;
+}
+
+.el-tag--danger {
+  background: rgba(252, 55, 55, 0.1) !important;
+  color: var(--lui-danger) !important;
+}
+
+.el-tag--info {
+  background: #f1f2f4 !important;
+  color: var(--lui-text-secondary) !important;
+}
+
+.el-tag--info .el-tag__close {
+  color: #868d9f !important;
+  background-color: transparent !important;
+}
+
+.el-tag--info .el-tag__close:hover {
+  color: #525765 !important;
+  background-color: rgba(82, 87, 101, 0.12) !important;
+}
+
+/* ========== 勾选框：圆角统一 4px ==========
+ * 含：表单/表格/弹窗 el-checkbox，以及多选下拉 ::before 伪勾选（LUI 默认 2px）
+ */
+.el-checkbox__inner,
+.el-checkbox .el-checkbox__inner,
+.el-table .el-checkbox__inner,
+.el-select-dropdown .el-checkbox__inner,
+.el-select-dropdown__item .el-checkbox__inner,
+.el-dialog .el-checkbox__inner,
+.el-checkbox-group .el-checkbox__inner,
+.el-transfer-panel .el-checkbox__inner,
+.el-tree .el-checkbox__inner,
+.el-select-dropdown.is-multiple .el-select-dropdown__item::before {
+  border-radius: 4px !important;
+  transition: none !important;
+}
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected::after {
+  transition: none !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner,
+.el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  background-color: var(--lui-primary);
+  border-color: var(--lui-primary);
+}
+
+.el-checkbox__input.is-focus .el-checkbox__inner,
+.el-checkbox__inner:hover {
+  border-color: var(--lui-primary);
+}
+
+/* ========== 表格：LUI 默认仅横线，无竖线分割 ========== */
+.el-table {
+  border-radius: var(--lui-radius-base);
+  overflow: hidden;
+  color: var(--lui-text-regular);
+  font-size: 14px;
+  border: none !important;
+}
+
+.el-table::before,
+.el-table::after,
+.el-table--border::after,
+.el-table--group::after,
+.el-table__fixed-right::before,
+.el-table__fixed::before {
+  display: none !important;
+  width: 0 !important;
+  background-color: transparent !important;
+}
+
+.el-table th.el-table__cell {
+  background: #f5f7fa !important;
+  color: #525765 !important;
+  font-weight: 400 !important;
+  font-size: 14px;
+  line-height: 16px;
+  border-bottom: 1px solid var(--lui-table-divider) !important;
+  border-right: none !important;
+  padding: 14px 0; /* 行高约 48 */
+  height: 48px;
+}
+
+.el-table th.el-table__cell .cell {
+  color: #525765 !important;
+  font-weight: 400 !important;
+  line-height: 16px;
+  font-size: 14px;
+}
+
+.el-table td.el-table__cell {
+  border-bottom: 1px solid var(--lui-table-divider) !important;
+  border-right: none !important;
+  padding: 14px 0;
+  height: 48px;
+  color: #525765;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.el-table--border,
+.el-table--group {
+  border: none !important;
+  border-radius: var(--lui-radius-base);
+}
+
+.el-table--border .el-table__cell,
+.el-table--border th.el-table__cell,
+.el-table--border td.el-table__cell,
+.el-table--border .el-table__header-wrapper th.el-table__cell,
+.el-table--border .el-table__body-wrapper td.el-table__cell {
+  border-right: none !important;
+}
+
+.el-table--border th.gutter:last-of-type {
+  border-bottom: 1px solid var(--lui-table-divider);
+  border-bottom-width: 1px;
+}
+
+.el-table .el-table__body tr.el-table__row td.el-table__cell,
+.el-table .el-table__header tr th.el-table__cell,
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  border-bottom-color: var(--lui-table-divider) !important;
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell,
+.el-table__body tr.hover-row > td.el-table__cell,
+.el-table__body tr.current-row > td.el-table__cell {
+  background: #f5f5f6 !important;
+}
+
+/* 悬停 / 选中行：首尾单元格圆角 8px，形成整行圆角高亮 */
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell:first-child,
+.el-table__body tr.hover-row > td.el-table__cell:first-child,
+.el-table__body tr.current-row > td.el-table__cell:first-child {
+  border-top-left-radius: var(--lui-radius-base);
+  border-bottom-left-radius: var(--lui-radius-base);
+}
+
+.el-table--enable-row-hover .el-table__body tr:hover > td.el-table__cell:last-child,
+.el-table__body tr.hover-row > td.el-table__cell:last-child,
+.el-table__body tr.current-row > td.el-table__cell:last-child {
+  border-top-right-radius: var(--lui-radius-base);
+  border-bottom-right-radius: var(--lui-radius-base);
+}
+
+/* 有右侧固定列时：圆角落在固定列右缘，主体末列不再切右圆角 */
+.el-table:has(.el-table__fixed-right) .el-table__body-wrapper tr:hover > td.el-table__cell:last-child,
+.el-table:has(.el-table__fixed-right) .el-table__body-wrapper tr.hover-row > td.el-table__cell:last-child,
+.el-table:has(.el-table__fixed-right) .el-table__body-wrapper tr.current-row > td.el-table__cell:last-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.el-table__fixed-right .el-table__body tr:hover > td.el-table__cell,
+.el-table__fixed-right .el-table__body tr.hover-row > td.el-table__cell,
+.el-table__fixed-right .el-table__body tr.current-row > td.el-table__cell {
+  background: #f5f5f6 !important;
+}
+
+.el-table__fixed-right .el-table__body tr:hover > td.el-table__cell:last-child,
+.el-table__fixed-right .el-table__body tr.hover-row > td.el-table__cell:last-child,
+.el-table__fixed-right .el-table__body tr.current-row > td.el-table__cell:last-child {
+  border-top-right-radius: var(--lui-radius-base);
+  border-bottom-right-radius: var(--lui-radius-base);
+}
+
+.el-table__fixed-right .el-table__body tr:hover > td.el-table__cell:first-child,
+.el-table__fixed-right .el-table__body tr.hover-row > td.el-table__cell:first-child,
+.el-table__fixed-right .el-table__body tr.current-row > td.el-table__cell:first-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.el-table__empty-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  padding: 16px 0;
+  box-sizing: border-box;
+}
+
+/* LUI PC3.0 缺省图：空状态/无任务-小（表格内用小尺寸展示） */
+.el-table .el-table__empty-img,
+.el-table__empty-img {
+  display: block !important;
+  width: 96px !important;
+  height: 66px !important;
+  margin: 0 0 4px !important;
+  background-image: url('/d2c-assets/table-empty.png') !important;
+  background-position: center !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-color: transparent !important;
+  flex-shrink: 0;
+}
+
+.el-table .el-table__empty-text,
+.el-table__empty-text {
+  color: var(--lui-text-secondary) !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+  padding-bottom: 0 !important;
+  width: auto !important;
+}
+
+.el-empty__image {
+  width: 96px !important;
+  height: 66px !important;
+  background: url('/d2c-assets/table-empty.png') center / contain no-repeat !important;
+}
+
+.el-empty__image img,
+.el-empty__image svg {
+  display: none !important;
+}
+
+.el-empty__description p {
+  color: var(--lui-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+/* ========== 分页：左侧总数，右侧控件；圆角 8px；间距固定 ========== */
+.el-pagination {
+  color: var(--lui-text-regular);
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.el-pagination button,
+.el-pagination span:not([class*=suffix]),
+.el-pager li {
+  border-radius: var(--lui-radius-base) !important;
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next,
+.el-pager li {
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+  border: 1px solid var(--lui-border);
+  background: #fff;
+  margin: 0 4px !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+.el-pagination .el-pager {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.el-pagination__sizes {
+  margin: 0 0 0 8px !important;
+  height: 32px;
+}
+
+.el-pagination__jump {
+  margin-left: 8px !important;
+  height: 32px;
+  line-height: 32px;
+}
+
+.el-pager li.active {
+  background: var(--lui-primary) !important;
+  border-color: var(--lui-primary) !important;
+  color: #fff !important;
+}
+
+/* ========== Toast / Message：圆角 8，宽度随内容自适应 ========== */
+.el-message {
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: min(520px, calc(100vw - 32px));
+  min-height: 32px;
+  padding: 4px 16px !important;
+  border-radius: 8px !important;
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 1px solid transparent;
+  box-shadow: none !important;
+}
+
+.el-message .el-message__content {
+  white-space: nowrap;
+  padding-right: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: #525765;
+}
+
+.el-message .el-message__icon {
+  margin-right: 0;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* 警示 Toast：对齐 Figma 71:27816 — 底 #FFF1E6 / 边 #FFD9B8 / 字 #525765 / 图标 #FF7700 */
+.el-message--warning {
+  background: #fff1e6 !important;
+  border-color: #ffd9b8 !important;
+}
+
+.el-message--warning .el-message__content {
+  color: #525765 !important;
+}
+
+.el-message--warning .el-message__icon,
+.el-message--warning .el-icon-warning {
+  color: #ff7700 !important;
+}
+
+.el-pager li:hover {
+  color: var(--lui-primary);
+}
+
+.el-pagination .el-select .el-input__inner {
+  border-radius: var(--lui-radius-base) !important;
+}
+
+.el-pagination__jump .el-input__inner {
+  border-radius: var(--lui-radius-base) !important;
+  height: 32px;
+  line-height: 32px;
+}
+
+/* ========== 弹窗 PC3.0：圆角 8 / 头底分割 / 按钮右对齐 ========== */
+/*
+ * 垂直位置统一：不用 wrapper flex（会破坏遮罩/多弹窗叠层，出现「改A坏B」）。
+ * 所有 el-dialog 统一 top 偏移，避免有的 8vh、有的 15vh。
+ */
+.el-dialog {
+  border-radius: var(--lui-radius-base) !important;
+  box-shadow: var(--lui-shadow-dialog) !important;
+  overflow: hidden;
+  background: #fff;
+  margin-top: 12vh !important;
+  margin-bottom: 5vh !important;
+  max-height: 80vh;
+}
+
+.el-dialog__header {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--lui-border); /* #E4E5E9 */
+}
+
+.el-dialog__title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--lui-text-main); /* #23252B */
+  line-height: 24px;
+}
+
+.el-dialog__headerbtn {
+  top: 14px;
+  right: 20px;
+  width: 16px;
+  height: 16px;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: var(--lui-text-secondary);
+  font-size: 16px;
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: var(--lui-primary);
+}
+
+.el-dialog__body {
+  padding: 16px 24px;
+  color: var(--lui-text-regular);
+  font-size: 14px;
+}
+
+.el-dialog__footer {
+  padding: 8px 24px;
+  border-top: 1px solid var(--lui-border);
+  text-align: right !important;
+}
+
+.el-dialog__footer .dialog-footer {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  width: 100%;
+  gap: 0; /* 间距用按钮自身 margin-left: 10px */
+}
+
+/* 表单弹窗：内容区可滚动 */
+.lui-form-dialog,
+.el-dialog.lui-form-dialog {
+  border-radius: var(--lui-radius-base) !important;
+  overflow: hidden;
+  max-width: 90vw;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.lui-form-dialog .el-dialog__body,
+.el-dialog.lui-form-dialog .el-dialog__body {
+  max-height: calc(80vh - 120px);
+  overflow-y: auto;
+  padding: 16px 24px;
+}
+
+/* 弹窗尺寸：按内容选型，避免过宽；禁止 width:auto 撑满视口 */
+.el-dialog.lui-dialog--fit {
+  width: fit-content !important;
+  min-width: 420px;
+  max-width: min(640px, 90vw);
+}
+
+.el-dialog.lui-dialog--sm {
+  width: 480px !important;
+  max-width: 90vw;
+}
+
+.el-dialog.lui-dialog--md {
+  width: 640px !important;
+  max-width: 90vw;
+}
+
+.el-dialog.lui-dialog--lg {
+  width: 800px !important;
+  max-width: 90vw;
+}
+
+.el-dialog.lui-dialog--xl {
+  width: 920px !important;
+  max-width: 90vw;
+}
+
+/* 计费条件弹窗：固定宽度（对齐多行态图1），单行/多行一致不收缩 */
+.el-dialog.condition-dialog,
+.condition-dialog.el-dialog {
+  width: 560px !important;
+  min-width: 560px;
+  max-width: min(560px, 90vw);
+}
+
+.condition-dialog .el-dialog__body {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* LUI PC3.0 行内提示：对齐 Figma 71:27816 — 底 #FFF1E6 / 边 #FFD9B8 / 字 #525765 / 图标 #FF7700 */
+.lui-inline-alert.el-alert {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 16px;
+  border-radius: 8px !important;
+  background-color: #fff1e6 !important;
+  border: 1px solid #ffd9b8 !important;
+  box-sizing: border-box;
+}
+
+.lui-inline-alert.el-alert .el-alert__content {
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 8px;
+  line-height: 22px;
+}
+
+.lui-inline-alert.el-alert .el-alert__icon {
+  font-size: 16px;
+  width: 16px;
+  color: #ff7700 !important;
+}
+
+.lui-inline-alert.el-alert .el-alert__title {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: #525765 !important;
+  white-space: nowrap;
+}
+
+.lui-inline-alert.el-alert .el-alert__description {
+  display: none;
+}
+
+.lui-inline-alert.el-alert.is-light .el-alert__description {
+  display: none;
+}
+
+/* 弹窗内控件状态与页面一致 */
+.el-dialog .el-input__inner,
+.el-dialog .el-textarea__inner,
+.el-dialog .el-range-editor.el-input__inner {
+  height: var(--lui-control-height);
+  border-radius: var(--lui-radius-base) !important;
+  border-color: var(--lui-border);
+}
+
+.el-dialog .el-textarea__inner {
+  height: auto;
+}
+
+.el-dialog .el-input__inner:hover,
+.el-dialog .el-textarea__inner:hover,
+.el-dialog .el-select:hover .el-input:not(.is-disabled) .el-input__inner {
+  border-color: rgba(60, 110, 240, 0.1);
+}
+
+.el-dialog .el-input__inner:focus,
+.el-dialog .el-textarea__inner:focus,
+.el-dialog .el-select .el-input.is-focus .el-input__inner {
+  border-color: var(--lui-primary) !important;
+  box-shadow: 0 0 0 2px rgba(60, 110, 240, 0.1);
+}
+
+.el-dialog .el-input.is-disabled .el-input__inner {
+  background: var(--lui-bg-fill);
+  border-color: var(--lui-border-light);
+  color: var(--lui-text-disabled);
+}
+
+.el-dialog .el-input__inner::placeholder,
+.el-dialog .el-textarea__inner::placeholder {
+  color: var(--lui-text-disabled);
+}
+
+.el-dialog .el-checkbox__inner,
+.el-dialog .el-checkbox .el-checkbox__inner {
+  border-radius: 4px !important;
+}
+
+.el-dialog .el-checkbox__input.is-checked .el-checkbox__inner,
+.el-dialog .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  background-color: var(--lui-primary);
+  border-color: var(--lui-primary);
+}
+
+.el-dialog .el-upload-dragger {
+  border-radius: var(--lui-radius-base);
+  border-color: var(--lui-border);
+}
+
+.el-dialog .el-upload-dragger:hover {
+  border-color: var(--lui-primary);
+}
+
+.el-dialog .el-upload__text em {
+  color: var(--lui-primary);
+  font-style: normal;
+}
+
+.el-dialog .el-cascader {
+  width: 100%;
+}
+
+.el-message-box {
+  border-radius: var(--lui-radius-base) !important;
+  box-shadow: var(--lui-shadow-dialog);
+  padding-bottom: 0;
+  width: 420px;
+}
+
+.el-message-box__header {
+  padding: 12px 24px;
+  position: relative;
+}
+
+.el-message-box__title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--lui-text-main);
+  line-height: 24px;
+}
+
+.el-message-box__headerbtn {
+  top: 14px;
+  right: 24px;
+  width: 16px;
+  height: 16px;
+}
+
+.el-message-box__headerbtn .el-message-box__close {
+  color: var(--lui-text-secondary);
+  font-size: 16px;
+}
+
+.el-message-box__headerbtn:hover .el-message-box__close {
+  color: var(--lui-primary);
+}
+
+.el-message-box__content {
+  padding: 16px 24px;
+  color: var(--lui-text-regular);
+}
+
+.el-message-box__status.el-icon-warning,
+.el-message-box__status.el-icon-warning-outline {
+  color: #ff7700 !important;
+}
+
+.el-message-box__btns {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  text-align: right !important;
+  padding: 8px 24px 16px !important;
+  border-top: 1px solid var(--lui-border);
+  box-sizing: border-box;
+}
+
+.el-message-box__btns .el-button {
+  min-width: 72px;
+  margin: 0 0 0 12px !important;
+  border-radius: 8px !important;
+}
+
+.el-message-box__btns .el-button--primary {
+  background-color: #3c6ef0 !important;
+  border-color: #3c6ef0 !important;
+  color: #fff !important;
+}
+
+.el-message-box__btns .el-button--primary:hover,
+.el-message-box__btns .el-button--primary:focus {
+  background-color: #2f5cd6 !important;
+  border-color: #2f5cd6 !important;
+}
+
+/* 弹窗内模块标题 / 表格内控件态同步 */
+.el-dialog .section-title {
+  margin: 0 0 16px;
+}
+
+.el-dialog .el-form + .section-title,
+.el-dialog .lui-form-grid + .elements-header,
+.el-dialog .elements-header {
+  margin-top: 16px;
+}
+
+.el-dialog .el-table .el-input__inner,
+.el-dialog .el-table .el-select .el-input__inner {
+  border-radius: var(--lui-radius-base) !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  font-size: 14px !important;
+}
+
+.el-dialog .el-table .el-input__inner:hover,
+.el-dialog .el-table .el-select:hover .el-input:not(.is-disabled) .el-input__inner {
+  border-color: rgba(60, 110, 240, 0.1);
+}
+
+.el-dialog .el-table .el-input__inner:focus,
+.el-dialog .el-table .el-select .el-input.is-focus .el-input__inner {
+  border-color: var(--lui-primary) !important;
+  box-shadow: 0 0 0 2px rgba(60, 110, 240, 0.1);
+}
+
+.el-dialog .el-button--text {
+  min-width: auto;
+  height: auto;
+  padding: 0;
+  color: var(--lui-primary);
+}
+
+.el-dialog .el-button--text:hover {
+  color: var(--lui-primary-hover);
+}
+
+.el-dialog__footer .el-button + .el-button {
+  margin-left: 8px;
+}
+
+.el-dialog .el-form.is-disabled .el-input__inner,
+.el-dialog .el-form.is-disabled .el-textarea__inner {
+  background: var(--lui-bg-fill);
+  border-color: var(--lui-border-light);
+  color: var(--lui-text-disabled);
+}
+
+.el-drawer {
+  border-radius: 0;
+}
+
+.el-drawer.rtl {
+  border-radius: var(--lui-radius-base) 0 0 var(--lui-radius-base);
+}
+
+.el-drawer__header {
+  margin-bottom: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--lui-border-light);
+  color: var(--lui-text-main);
+  font-weight: 600;
+}
+
+/* ========== Tabs ========== */
+.el-tabs--card > .el-tabs__header .el-tabs__item {
+  border-radius: var(--lui-radius-base) var(--lui-radius-base) 0 0;
+}
+
+.el-tabs--card > .el-tabs__header .el-tabs__item.is-active {
+  color: var(--lui-primary);
+  border-bottom-color: #fff;
+}
+
+.el-tabs__item.is-active {
+  color: var(--lui-primary);
+}
+
+.el-tabs__active-bar {
+  background-color: var(--lui-primary);
+}
+
+/* Figma 1:8678：线型二级 Tab（选中蓝字 + 3px 底条） */
+.lui-line-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  padding: 8px 0 0;
+  margin: -4px 0 16px;
+  border-bottom: 1px solid var(--lui-border);
+}
+
+.lui-line-tabs__item {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  color: var(--lui-text-main); /* #23252B */
+  outline: none;
+}
+
+.lui-line-tabs__item::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 24px;
+  height: 3px;
+  margin-left: -12px;
+  border-radius: 1.5px;
+  background: transparent;
+}
+
+.lui-line-tabs__item.is-active {
+  color: var(--lui-primary); /* #3C6EF0 */
+  font-weight: 500;
+}
+
+.lui-line-tabs__item.is-active::after {
+  background: var(--lui-primary);
+}
+
+.lui-line-tabs__item:hover:not(.is-active) {
+  color: var(--lui-primary);
+}
+
+/* ========== 页面骨架 ========== */
+.page-shell {
+  padding: 16px 16px 24px;
+}
+
+.query-card {
+  background: #fff;
+  border-radius: var(--lui-radius-base);
+  padding: 24px 16px; /* Figma VerticalStack: py 24 / px 16 */
+  margin-bottom: 16px;
+  border: none;
+}
+
+.table-card {
+  background: #fff;
+  border-radius: var(--lui-radius-base);
+  padding: 16px; /* 水平 16 与 query-card 一致，保证右缘对齐 */
+  min-height: 640px;
+  box-sizing: border-box;
+}
+
+/* 向导页：白卡片撑满可视区，底栏固定在卡片底部 */
+.page-shell--wizard {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  min-height: 0;
+  box-sizing: border-box;
+  padding-bottom: 16px;
+}
+
+.table-card--wizard {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.table-card--wizard > .table-toolbar,
+.table-card--wizard > .lui-arrow-steps-card,
+.table-card--wizard > .lui-line-tabs {
+  flex-shrink: 0;
+}
+
+.wizard-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 24px;
+  box-sizing: border-box;
+}
+
+/* ========== LUI PC3.0 查询/表单栅格：列距 32 / 行距 16；铺满容器与右侧内容对齐 ========== */
+.lui-form-grid.el-form {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--lui-form-col-gap); /* 48px */
+  row-gap: var(--lui-form-row-gap); /* 16px */
+  justify-content: stretch;
+  --lui-form-label-width: 120px; /* Figma ≈119 */
+}
+
+.lui-form-grid--label-md {
+  --lui-form-label-width: 120px;
+}
+
+.lui-form-grid--label-lg {
+  --lui-form-label-width: 120px;
+}
+
+/* 分区卡片内：短标签 + 收紧列距，避免 120/48 造成空旷与错位感 */
+.partition-card .lui-form-grid.el-form,
+.lui-form-grid--partition.el-form {
+  --lui-form-label-width: 72px;
+  --lui-form-item-gap: 8px;
+  --lui-form-col-gap: 24px;
+  --lui-form-row-gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 24px;
+  row-gap: 12px;
+}
+
+.partition-card .lui-form-grid .el-form-item,
+.lui-form-grid--partition .el-form-item {
+  align-items: center;
+  min-height: var(--lui-control-height);
+}
+
+.partition-card .lui-form-grid .el-form-item__label,
+.lui-form-grid--partition .el-form-item__label {
+  width: 72px !important;
+  min-width: 72px;
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+  padding-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.partition-card .lui-form-grid .el-form-item__content,
+.lui-form-grid--partition .el-form-item__content {
+  display: flex;
+  align-items: center;
+  min-height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+}
+
+@media (min-width: 1920px) {
+  .partition-card .lui-form-grid.el-form,
+  .lui-form-grid--partition.el-form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1199px) {
+  .partition-card .lui-form-grid.el-form,
+  .lui-form-grid--partition.el-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.lui-form-grid--cols-2.el-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.lui-form-grid--cols-1.el-form {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* 弹窗内表单默认两列，与页面三列区分，统一用 class 控制而非行内宽度 */
+.el-dialog .lui-form-grid.el-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1920px) {
+  .lui-form-grid--cols-2.el-form,
+  .el-dialog .lui-form-grid.el-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1920px) {
+  .lui-form-grid.el-form {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1199px) {
+  .lui-form-grid.el-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.lui-form-grid .el-form-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0 !important;
+  margin-right: 0 !important;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.lui-form-grid .el-form-item__label {
+  width: var(--lui-form-label-width) !important;
+  min-width: var(--lui-form-label-width);
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: var(--lui-form-item-gap); /* 12px */
+  line-height: 32px;
+  color: #525765 !important;
+  font-size: 14px;
+  font-weight: 400 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  float: none !important;
+}
+
+.lui-form-grid .el-form-item__content {
+  /* flex-basis:0 保证同列单元格内控件等宽铺满，避免随内容/文案长短变形 */
+  flex: 1 1 0%;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  margin-left: 0 !important;
+  line-height: var(--lui-control-height);
+}
+
+.lui-form-grid .el-input,
+.lui-form-grid .el-select,
+.lui-form-grid .el-date-editor,
+.lui-form-grid .el-cascader,
+.lui-form-grid .el-textarea {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.lui-form-grid .el-input__inner,
+.lui-form-grid .el-textarea__inner {
+  width: 100%;
+}
+
+/* 非栅格场景（工具条、表头筛选）统一固定宽度，禁止再写 style="width:…" */
+.lui-control {
+  width: var(--lui-control-width) !important;
+  max-width: 100%;
+}
+
+.lui-control--sm {
+  width: 220px !important;
+  max-width: 100%;
+}
+
+.lui-control-block {
+  width: 100% !important;
+  max-width: none;
+}
+
+.lui-table-fill {
+  width: 100%;
+}
+
+/* 日期范围：控件仍落在 412 表单项内 */
+.lui-form-grid .el-form-item.lui-form-item--range .el-form-item__content {
+  max-width: none;
+  width: auto;
+}
+
+.lui-form-grid .el-date-editor.el-range-editor.el-input__inner,
+.lui-form-grid .el-date-editor--daterange.el-input__inner,
+.lui-form-grid .el-form-item.lui-form-item--range .el-date-editor,
+.lui-form-grid .el-form-item.lui-form-item--range .el-range-editor.el-input__inner {
+  width: 100% !important;
+  max-width: none;
+}
+
+.lui-form-grid .el-textarea__inner {
+  width: 100%;
+}
+
+/* 多行表单项（描述、备注）顶对齐 */
+.lui-form-grid .el-form-item.is-textarea,
+.lui-form-grid .el-form-item.lui-form-item--top {
+  align-items: flex-start;
+}
+
+.lui-form-grid .el-form-item.is-textarea .el-form-item__label,
+.lui-form-grid .el-form-item.lui-form-item--top .el-form-item__label {
+  line-height: 32px;
+  padding-top: 0;
+}
+
+/* 控件下方有说明文案：标签仍与 32 高控件垂直居中对齐 */
+.lui-form-grid .el-form-item.lui-form-item--with-tip {
+  align-items: flex-start;
+}
+
+.lui-form-grid .el-form-item.lui-form-item--with-tip .el-form-item__label {
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+  padding-top: 0;
+}
+
+.lui-form-grid .el-form-item.lui-form-item--with-tip .el-form-item__content {
+  line-height: normal;
+}
+
+.lui-form-grid .field-tip {
+  margin-top: 4px;
+  color: var(--lui-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* 跨月计费周期：单行可读文案，小输入框不被表单 100% 宽度撑破 */
+.lui-form-grid .el-form-item.lui-form-item--cycle {
+  align-items: flex-start;
+}
+
+.lui-form-grid .el-form-item.lui-form-item--cycle .el-form-item__label {
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+}
+
+.lui-form-grid .el-form-item.lui-form-item--cycle .el-form-item__content {
+  line-height: normal;
+}
+
+.cross-month-cycle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--lui-control-height);
+  padding: 0;
+  color: var(--lui-text-regular);
+  font-size: 14px;
+  line-height: 32px;
+}
+
+.cross-month-cycle__text {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  color: var(--lui-text-regular);
+}
+
+.lui-form-grid .cross-month-cycle .el-input.cross-month-cycle__input,
+.lui-form-grid .cross-month-cycle .cross-month-cycle__input.el-input {
+  width: 64px !important;
+  max-width: 64px !important;
+  flex: 0 0 64px;
+}
+
+.lui-form-grid .cross-month-cycle .el-input__inner {
+  width: 64px !important;
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+  padding: 0 8px;
+  text-align: center;
+  border-radius: var(--lui-radius-base) !important;
+}
+
+/* 带单位后缀输入：高度 32 / 圆角 8，与选择器对齐 */
+.lui-form-grid .el-input-group {
+  display: inline-flex;
+  width: 100%;
+  vertical-align: middle;
+}
+
+.lui-form-grid .el-input-group > .el-input__inner {
+  height: var(--lui-control-height);
+  line-height: var(--lui-control-height);
+  border-radius: var(--lui-radius-base) 0 0 var(--lui-radius-base) !important;
+}
+
+.lui-form-grid .el-input-group__append,
+.lui-form-grid .el-input-group__prepend {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--lui-control-height);
+  min-width: 40px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: var(--lui-bg-fill);
+  border: 1px solid var(--lui-border);
+  color: var(--lui-text-regular);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.lui-form-grid .el-input-group__append {
+  border-left: 0;
+  border-radius: 0 var(--lui-radius-base) var(--lui-radius-base) 0;
+}
+
+.lui-form-grid .el-input-group__prepend {
+  border-right: 0;
+  border-radius: var(--lui-radius-base) 0 0 var(--lui-radius-base);
+}
+
+.lui-form-grid .el-input-group--append .el-input__inner:hover,
+.lui-form-grid .el-input-group--append .el-input__inner:focus {
+  z-index: 1;
+}
+
+.lui-form-grid__span-all {
+  grid-column: 1 / -1;
+}
+
+.lui-form-grid__span-all > .el-form-item__content,
+.lui-form-grid .el-form-item.lui-form-grid__span-all .el-form-item__content {
+  width: 100%;
+  flex: 1;
+  max-width: none;
+}
+
+.lui-form-grid__span-all .el-input,
+.lui-form-grid__span-all .el-select,
+.lui-form-grid__span-all .el-textarea,
+.lui-form-grid .el-form-item.lui-form-grid__span-all .el-input,
+.lui-form-grid .el-form-item.lui-form-grid__span-all .el-select,
+.lui-form-grid .el-form-item.lui-form-grid__span-all .el-textarea {
+  width: 100% !important;
+}
+
+/* 查询区按钮：始终落在当前断点的末列并右对齐（不依赖字段数） */
+.lui-form-grid .query-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  align-self: end;
+  justify-self: stretch;
+  grid-column: -2 / -1;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* 弹窗内表单：铺满容器，行距 16 / 列距 48 */
+.el-dialog .lui-form-grid.el-form {
+  row-gap: 16px;
+  column-gap: var(--lui-form-col-gap);
+}
+
+/* 工具栏内联选择器：上限 380，间距 16 */
+.detail-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-control__label {
+  color: var(--lui-text-regular);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.detail-control .el-select,
+.detail-control .el-input,
+.detail-control .lui-control {
+  width: var(--lui-control-width) !important;
+  max-width: 100%;
+}
+
+.detail-control .el-input__inner {
+  width: 100%;
+}
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.table-toolbar > h3,
+.table-toolbar .section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--lui-text-main);
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 20px;
+  padding-left: 0;
+  border-left: none;
+}
+
+.table-toolbar > h3::before,
+.table-toolbar .section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border-radius: 1px;
+  background: var(--lui-primary);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.pager > span,
+.elements-pager__total {
+  color: #babec7 !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 28px;
+}
+
+.section-title {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--lui-text-main);
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+/* 模块间距 16px：表单/内容区与下一块标题之间 */
+.section-title--module,
+.lui-form-grid + .section-title,
+.el-form + .section-title {
+  margin-top: 16px;
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border-radius: 1px;
+  background: var(--lui-primary);
+}
+
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  max-width: 1000px;
+  margin: 48px auto 0;
+}
+
+.entry-card {
+  background: #fff;
+  border-radius: var(--lui-radius-base);
+  padding: 32px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.entry-card:hover {
+  border-color: var(--lui-primary);
+  box-shadow: var(--lui-shadow-dropdown);
+}
+
+.entry-card h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: var(--lui-text-main);
+}
+
+.entry-card p {
+  margin: 0 0 16px;
+  color: var(--lui-text-secondary);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.entry-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wizard-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--lui-border-light);
+}
+
+.wizard-footer .el-button + .el-button {
+  margin-left: 0;
+}
+
+.wizard-footer--end {
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+@media (max-width: 1200px) {
+  .entry-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 表格内「+新增」：整体下移 4px；常态/hover 色值按规范 */
+.elements-table__add-wrap {
+  margin-top: 12px; /* 原 8px + 下移 4px，避免与表格底部分割线重叠 */
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e4e5e9;
+}
+
+.elements-table__add-wrap .elements-table__add-row,
+.elements-table__add-row,
+.table-add-row {
+  display: block;
+  width: calc(100% - 8px);
+  margin-left: 4px;
+  margin-right: 4px;
+  text-align: center;
+  height: 36px;
+  line-height: 34px;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  border-radius: 8px;
+  outline: none;
+  box-shadow: none;
+  color: #babec7;
+  border: 1px solid #e4e5e9;
+  background: #ffffff;
+  transition: none;
+}
+
+.elements-table__add-wrap .elements-table__add-row:hover,
+.elements-table__add-row:hover,
+.table-add-row:hover,
+.elements-table__add-row.is-hover,
+.table-add-row.is-hover {
+  color: #868d9f;
+  border-color: #e4e5e9;
+  background: #f5f5f6;
+}
+
+/* 仅弹窗内表格「删除」：常态 #868D9F / hover #525765（列表页保持主色蓝） */
+.el-dialog .el-table .element-ops__link--delete.el-button--text,
+.el-dialog .el-table .table-ops__link--delete.el-button--text {
+  color: #868d9f !important;
+  font-size: 14px;
+}
+.el-dialog .el-table .element-ops__link--delete.el-button--text:hover,
+.el-dialog .el-table .element-ops__link--delete.el-button--text:focus,
+.el-dialog .el-table .table-ops__link--delete.el-button--text:hover,
+.el-dialog .el-table .table-ops__link--delete.el-button--text:focus {
+  color: #525765 !important;
+}
+.el-dialog .el-table .element-ops__link--delete.el-button--text.is-disabled,
+.el-dialog .el-table .element-ops__link--delete.el-button--text.is-disabled:hover,
+.el-dialog .el-table .table-ops__link--delete.el-button--text.is-disabled,
+.el-dialog .el-table .table-ops__link--delete.el-button--text.is-disabled:hover {
+  color: #babec7 !important;
+}

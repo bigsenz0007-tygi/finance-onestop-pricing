@@ -1,0 +1,39 @@
+{
+  "cases": [
+    {
+      "id": "AC-BD-01",
+      "module": "billing-docs",
+      "title": "查询并查看计费单据",
+      "steps": ["打开计费单据Tab", "设置筛选条件查询", "点击查看打开抽屉"],
+      "expect": "抽屉只读展示基础信息与计费要素"
+    },
+    {
+      "id": "AC-PC-01",
+      "module": "pricing-capability",
+      "title": "新建业务场景",
+      "steps": ["打开定价能力Tab", "点击新建", "填写必填项保存"],
+      "expect": "列表出现新记录，状态初始化"
+    },
+    {
+      "id": "AC-OP-01",
+      "module": "onestop-pricing",
+      "title": "进入场景定价五步",
+      "steps": ["打开一站定价", "选择按场景定价", "切换步骤"],
+      "expect": "步骤条与内容联动"
+    },
+    {
+      "id": "AC-OQ-01",
+      "module": "onestop-quoting",
+      "title": "报价向导主路径",
+      "steps": ["打开一站报价", "选择产品报价", "完成基础信息进入价格分区"],
+      "expect": "商家编码可带出名称与区域；统计字段按策略显隐"
+    },
+    {
+      "id": "AC-TAB-01",
+      "module": "shell",
+      "title": "四Tab切换",
+      "steps": ["依次点击四个Tab"],
+      "expect": "四个模块可独立切换预览"
+    }
+  ]
+}

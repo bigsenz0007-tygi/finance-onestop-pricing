@@ -1,0 +1,30 @@
+{
+  "feature_id": "quoting-prd-gap",
+  "mode": "p2c",
+  "source_traceability": [
+    {
+      "spec_ref": "step.base.effectiveRange",
+      "reference": "01-spec/feature-spec.json",
+      "target": "src/views/OnestopQuoting.vue"
+    },
+    {
+      "spec_ref": "step.partition.addressEditor",
+      "reference": "01-spec/feature-spec.json",
+      "target": "src/components/quoting/AddressEditorModal.vue"
+    },
+    {
+      "spec_ref": "step.scenario.feeCoverage",
+      "reference": "01-spec/feature-spec.json",
+      "target": "src/utils/scenarioQuoteValidate.js"
+    },
+    {
+      "spec_ref": "step.detail.advancedFields",
+      "reference": "01-spec/feature-spec.json",
+      "target": "src/views/OnestopQuoting.vue"
+    }
+  ],
+  "pages": [
+    { "page_id": "onestop-quoting", "file": "src/views/OnestopQuoting.vue" }
+  ],
+  "style_policy": "reuse-existing-lui-styles-only"
+}

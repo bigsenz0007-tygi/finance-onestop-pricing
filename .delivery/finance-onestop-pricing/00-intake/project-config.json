@@ -1,0 +1,19 @@
+{
+  "feature_id": "finance-onestop-pricing",
+  "project_name": "财务一站式定价方案",
+  "delivery_strategy": "greenfield",
+  "tech": {
+    "framework": "vue2",
+    "ui_library": "lui-pc3",
+    "node": "14",
+    "start_command": "npm run serve:dev"
+  },
+  "modules": [
+    {"id": "billing-docs", "name": "定价中心-计费单据管理"},
+    {"id": "pricing-capability", "name": "定价中心-定价能力管理"},
+    {"id": "onestop-pricing", "name": "一站定价"},
+    {"id": "onestop-quoting", "name": "一站报价"}
+  ],
+  "repo": null,
+  "branch": null
+}

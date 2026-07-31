@@ -1,0 +1,57 @@
+{
+  "feature_id": "finance-onestop-pricing",
+  "mode": "p2c",
+  "source_traceability": [
+    {
+      "spec_ref": "modules.billing-docs",
+      "reference": "00-intake/billing-docs",
+      "target": "src/views/BillingDocs.vue"
+    },
+    {
+      "spec_ref": "modules.pricing-capability",
+      "reference": "00-intake/pricing-capability",
+      "target": "src/views/PricingCapability.vue"
+    },
+    {
+      "spec_ref": "modules.onestop-pricing",
+      "reference": "00-intake/onestop-pricing",
+      "target": "src/views/OnestopPricing.vue"
+    },
+    {
+      "spec_ref": "modules.onestop-quoting",
+      "reference": "00-intake/onestop-quoting",
+      "target": "src/views/OnestopQuoting.vue"
+    },
+    {
+      "spec_ref": "shell.tabs",
+      "reference": "review + user request",
+      "target": "src/App.vue"
+    }
+  ],
+  "pages": [
+    { "page_id": "shell", "file": "src/App.vue" },
+    { "page_id": "billing-docs", "file": "src/views/BillingDocs.vue", "directory": "src/views" },
+    { "page_id": "pricing-capability", "file": "src/views/PricingCapability.vue" },
+    { "page_id": "onestop-pricing", "file": "src/views/OnestopPricing.vue" },
+    { "page_id": "onestop-quoting", "file": "src/views/OnestopQuoting.vue" }
+  ],
+  "components": [
+    { "id": "main", "file": "src/main.js", "source": "new" },
+    { "id": "global-css", "file": "src/styles/global.css", "source": "new" }
+  ],
+  "shell": {
+    "layout": "top-tabs",
+    "tabs": [
+      { "key": "billing-docs", "label": "定价中心-计费单据管理", "component": "BillingDocs" },
+      { "key": "pricing-capability", "label": "定价中心-定价能力管理", "component": "PricingCapability" },
+      { "key": "onestop-pricing", "label": "一站定价", "component": "OnestopPricing" },
+      { "key": "onestop-quoting", "label": "一站报价", "component": "OnestopQuoting" }
+    ]
+  },
+  "rules": {
+    "hide_not_disable": true,
+    "confirm_critical": true,
+    "stats_linkage_visibility": true,
+    "label_first_weight": "首重重量"
+  }
+}

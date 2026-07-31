@@ -1,0 +1,23 @@
+{
+  "feature_id": "quoting-ui2code-sync",
+  "allowed_files": [
+    "src/views/OnestopQuoting.vue"
+  ],
+  "allowed_directories": [],
+  "protected_files": [
+    "src/styles/global.css",
+    "src/views/BillingDocs.vue",
+    "src/views/PricingCapability.vue",
+    "src/views/OnestopPricing.vue",
+    "src/App.vue"
+  ],
+  "expected_new_files": [],
+  "expected_deleted_files": [],
+  "related_regression_targets": [
+    "onestop-quoting"
+  ],
+  "reason_by_file": {
+    "src/views/OnestopQuoting.vue": "同步 UI2Code CHANGELOG：报价明细补齐统计对象显隐，并移除统计累进方式；样式沿用现有 detail-control"
+  },
+  "notes": "仅改报价明细字段显隐；禁止改全局样式与其他业务页"
+}

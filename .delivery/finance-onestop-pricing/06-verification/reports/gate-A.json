@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "gate": "A",
+  "target_stage": "S3",
+  "mode": "p2c",
+  "issues": []
+}

@@ -1,0 +1,35 @@
+{
+  "library": "lui-pc3",
+  "package": "@lui/lui-ui",
+  "preferred_components": [
+    "el-tabs",
+    "el-form",
+    "el-form-item",
+    "el-input",
+    "el-select",
+    "el-option",
+    "el-button",
+    "el-table",
+    "el-table-column",
+    "el-pagination",
+    "el-drawer",
+    "el-dialog",
+    "el-steps",
+    "el-step",
+    "el-tag",
+    "el-checkbox",
+    "el-checkbox-group",
+    "el-radio",
+    "el-radio-group",
+    "el-date-picker",
+    "el-message-box",
+    "el-message",
+    "el-card"
+  ],
+  "tokens": {
+    "primary": "#3C6EF0",
+    "control_height": 32,
+    "query_radius": 8,
+    "query_padding": 16
+  }
+}

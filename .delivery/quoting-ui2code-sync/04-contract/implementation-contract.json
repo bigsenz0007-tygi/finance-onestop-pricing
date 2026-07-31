@@ -1,0 +1,20 @@
+{
+  "feature_id": "quoting-ui2code-sync",
+  "mode": "p2c",
+  "source_traceability": [
+    {
+      "spec_ref": "fields.statTarget",
+      "reference": "00-intake/ui2code-11/CHANGELOG.md",
+      "target": "src/views/OnestopQuoting.vue"
+    },
+    {
+      "spec_ref": "fields.statProgressiveMode.remove",
+      "reference": "00-intake/ui2code-11/CHANGELOG.md",
+      "target": "src/views/OnestopQuoting.vue"
+    }
+  ],
+  "pages": [
+    { "page_id": "onestop-quoting", "file": "src/views/OnestopQuoting.vue" }
+  ],
+  "style_policy": "reuse-existing-lui-styles-only"
+}

@@ -1,0 +1,17 @@
+{
+  "mode": "p2c",
+  "references": [
+    {
+      "id": "ref-ui2code-11",
+      "path": "00-intake/ui2code-11",
+      "type": "prototype-jsx",
+      "pages": ["PriceDetailPage", "PricePartitionPage", "BaseInfoPage"],
+      "changelog": "00-intake/CHANGELOG.md"
+    }
+  ],
+  "page_patterns": ["steps-wizard", "form-toolbar-table"],
+  "field_deltas": [
+    {"action": "ensure_visible", "field": "统计对象", "when": "isStats"},
+    {"action": "remove", "field": "统计累进方式", "where": "报价明细 step3"}
+  ]
+}

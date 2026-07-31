@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "feature_id": "finance-onestop-pricing",
+  "framework": "vue2",
+  "ui_libs": ["@lui/lui-ui"],
+  "node": "14",
+  "start_command": "npm run serve:dev",
+  "delivery_strategy": "greenfield",
+  "notes": "仓库地址与分支尚未提供，本地 greenfield 预览工程"
+}

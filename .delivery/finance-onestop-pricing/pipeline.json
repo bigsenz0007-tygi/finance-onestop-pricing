@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "feature_id": "finance-onestop-pricing",
+  "mode": "p2c",
+  "current_stage": "S5",
+  "status": "active",
+  "stages": {
+    "S0": {
+      "status": "done",
+      "updated_at": "2026-07-27T05:09:33Z",
+      "notes": [],
+      "key_files": []
+    },
+    "S1": {
+      "status": "done",
+      "updated_at": "2026-07-27T05:10:19Z",
+      "notes": [],
+      "key_files": [
+        "01-spec/feature-spec.json"
+      ]
+    },
+    "S2": {
+      "status": "done",
+      "updated_at": "2026-07-27T05:10:27Z",
+      "notes": [],
+      "key_files": [
+        "02-repo/component-registry.json"
+      ]
+    },
+    "S3": {
+      "status": "done",
+      "updated_at": "2026-07-27T05:10:27Z",
+      "notes": [],
+      "key_files": [
+        "03-ui-source/reference-contract.json"
+      ]
+    },
+    "S4": {
+      "status": "done",
+      "updated_at": "2026-07-27T05:10:40Z",
+      "notes": [],
+      "key_files": [
+        "04-contract/change-scope.json"
+      ]
+    },
+    "S5": {
+      "status": "done",
+      "updated_at": "2026-07-27T05:15:48Z",
+      "notes": [
+        {
+          "at": "2026-07-27T05:15:48Z",
+          "text": "preview at http://localhost:5189/"
+        }
+      ],
+      "key_files": [
+        "05-implementation/notes.json"
+      ]
+    },
+    "S6": {
+      "status": "pending",
+      "updated_at": null,
+      "notes": [],
+      "key_files": []
+    },
+    "S7": {
+      "status": "pending",
+      "updated_at": null,
+      "notes": [],
+      "key_files": []
+    },
+    "S8": {
+      "status": "pending",
+      "updated_at": null,
+      "notes": [],
+      "key_files": []
+    }
+  },
+  "risk_items": [],
+  "human_confirmations": [],
+  "decisions": [],
+  "legacy_migration": null,
+  "created_at": "2026-07-27T05:08:34Z",
+  "updated_at": "2026-07-27T05:15:48Z"
+}

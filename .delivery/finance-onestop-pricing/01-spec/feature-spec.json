@@ -1,0 +1,159 @@
+{
+  "meta": {
+    "feature_id": "finance-onestop-pricing",
+    "title": "财务一站式定价方案",
+    "version": "0.1.0",
+    "locked": true,
+    "source": [
+      "通用&标准计费融合、一站式定价_报价产品方案.pdf",
+      "计费要素管理原型",
+      "业务场景管理原型",
+      "定价原型",
+      "报价原型",
+      "PRD评审纪要截图"
+    ],
+    "mode": "p2c",
+    "ui_library": "lui-pc3"
+  },
+  "actors": [
+    { "id": "pricing_ops", "name": "定价运营", "modules": ["billing-docs", "pricing-capability", "onestop-pricing"] },
+    { "id": "sales", "name": "销售/报价配置", "modules": ["onestop-quoting"] },
+    { "id": "admin", "name": "系统管理员", "modules": ["all"] }
+  ],
+  "modules": [
+    {
+      "id": "billing-docs",
+      "name": "定价中心-计费单据管理",
+      "pages": [
+        {
+          "id": "billing-docs-list",
+          "archetype": "list/table",
+          "summary": "单据计费要素查询列表，支持新建/查看/编辑/启停/日志"
+        },
+        {
+          "id": "billing-docs-drawer",
+          "archetype": "drawer+complex-form",
+          "summary": "基础信息 + 计费要素配置（定价维度/计费因子/计费条件）"
+        }
+      ]
+    },
+    {
+      "id": "pricing-capability",
+      "name": "定价中心-定价能力管理",
+      "pages": [
+        {
+          "id": "scenario-list",
+          "archetype": "list/table",
+          "summary": "业务场景档案列表，支持查询/新建/修改/启停/删除/日志"
+        }
+      ]
+    },
+    {
+      "id": "onestop-pricing",
+      "name": "一站定价",
+      "pages": [
+        {
+          "id": "pricing-home",
+          "archetype": "role-homepage",
+          "summary": "按产品定价 / 按场景定价双入口"
+        },
+        {
+          "id": "product-pricing",
+          "archetype": "detail-form",
+          "summary": "物流产品档案详情与费用项标准价绑定"
+        },
+        {
+          "id": "scenario-pricing",
+          "archetype": "steps-wizard",
+          "summary": "基础信息→计费场景→定价规则→扩展点→模拟测算"
+        }
+      ]
+    },
+    {
+      "id": "onestop-quoting",
+      "name": "一站报价",
+      "pages": [
+        {
+          "id": "quote-home",
+          "archetype": "role-homepage",
+          "summary": "按产品报价 / 按场景报价双入口"
+        },
+        {
+          "id": "quote-wizard",
+          "archetype": "steps-wizard",
+          "summary": "基础信息→价格分区→报价明细→拓展规则→报价测算"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "F1-billing-docs-crud",
+      "module": "billing-docs",
+      "main": ["查询筛选", "列表展示", "新建/编辑抽屉", "启停二次确认", "查看操作日志"],
+      "rules": [
+        "未开通功能入口隐藏而非禁用",
+        "关键启停操作需二次确认"
+      ]
+    },
+    {
+      "id": "F2-scenario-archive",
+      "module": "pricing-capability",
+      "main": ["查询", "新建弹窗", "停用态可修改", "初始化态可启用/删除", "日志"],
+      "rules": ["仅停用状态可修改", "启用态修改入口隐藏或禁用"]
+    },
+    {
+      "id": "F3-pricing-config",
+      "module": "onestop-pricing",
+      "main": ["选择产品或场景入口", "产品详情配置", "场景五步配置", "模拟测算"],
+      "rules": ["计费与统计入口联动：仅计费开通时隐藏统计入口"]
+    },
+    {
+      "id": "F4-quoting-config",
+      "module": "onestop-quoting",
+      "main": ["选择报价方式", "基础信息", "价格分区(省市区地址选择+批量导入)", "报价明细阶梯", "拓展规则", "真实单号测算"],
+      "rules": [
+        "报价方案需起止时间权限控制",
+        "计费策略含统计合单/不统计",
+        "统计相关字段仅在统计策略下展示",
+        "阶梯不可留空档，删除从后往前",
+        "首重展示为「首重重量」并带别名说明"
+      ]
+    }
+  ],
+  "states": {
+    "billing_doc": ["已启用", "已停用"],
+    "scenario": ["初始化", "启用", "停用"],
+    "quote_scheme": ["草稿", "已绑定待生效", "生效中", "已失效"]
+  },
+  "fields": {
+    "billing_doc_query": ["来源系统", "单据类型", "交易类型", "状态", "业务条线", "收付方向", "按商家接入"],
+    "scenario_form": ["业务场景编码", "业务场景名称", "计费对象", "收付方向", "定价方式", "备注"],
+    "quote_base": [
+      "报价方案名称", "商家编码", "商家名称(自动带出)", "签约区域(自动带出)", "生效时间",
+      "报价方式", "折扣产品", "业务场景", "结算方式", "计费策略", "金额取整", "是否跨月"
+    ]
+  },
+  "permissions": {
+    "visibility": "未开通能力入口隐藏",
+    "edit_entry": "不支持编辑时隐藏入口",
+    "reuse": "报价方案可被多商家独立绑定生效"
+  },
+  "exceptions": ["空列表", "无权限", "表单校验失败", "测算无结果", "导入模板失败"],
+  "review_decisions": [
+    "功能未开通：隐藏入口，不禁用灰显",
+    "关键操作二次确认",
+    "计费↔统计联动隐藏",
+    "报价模式选择简化：选模式+录价格",
+    "首重→首重重量+别名说明",
+    "测算结果展示总额与计算过程",
+    "地址选择器三级下钻+模糊搜索",
+    "分区/明细支持 Excel 批量导入"
+  ],
+  "open_questions": [
+    "远端仓库与分支待补充",
+    "接口契约与权限中心对接待确认",
+    "维度校验后续扩展口径"
+  ],
+  "decision_log_ref": "01-spec/decision-log.json"
+}

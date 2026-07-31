@@ -1,0 +1,5 @@
+{
+  "mode": "p2c",
+  "reason": "产品提供 UI2Code 原型包与 CHANGELOG，要求按字段变更落地且沿用现有 LUI 样式，无完整 Figma 1:1 还原诉求",
+  "inputs": ["UI2Code (11).zip", "CHANGELOG.md", "现有 OnestopQuoting.vue"]
+}

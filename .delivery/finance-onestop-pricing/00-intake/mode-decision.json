@@ -1,0 +1,6 @@
+{
+  "mode": "p2c",
+  "reason": "有PRD与四模块原型，无完整Figma设计稿；按P2C参考原型+LUI PC3.0生成",
+  "inputs": ["prd-onestop-pricing.pdf", "billing-docs", "pricing-capability", "onestop-pricing", "onestop-quoting", "prd-review-screenshots"],
+  "delivery_strategy": "greenfield"
+}

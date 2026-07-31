@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "feature_id": "finance-onestop-pricing",
+  "decisions": [
+    {
+      "id": "D1",
+      "topic": "未开通能力展示",
+      "decision": "隐藏入口，不灰显禁用",
+      "source": "PRD评审"
+    },
+    {
+      "id": "D2",
+      "topic": "关键操作",
+      "decision": "启停/关闭关键功能需二次确认",
+      "source": "PRD评审"
+    },
+    {
+      "id": "D3",
+      "topic": "计费与统计联动",
+      "decision": "仅计费开通时隐藏统计入口；统计策略下才展示考核阈值等字段",
+      "source": "PRD评审"
+    },
+    {
+      "id": "D4",
+      "topic": "技术栈",
+      "decision": "Vue2 + LUI PC3.0；Node14；npm run serve:dev；仓库地址待补",
+      "source": "用户确认"
+    }
+  ]
+}

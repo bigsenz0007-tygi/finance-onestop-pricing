@@ -1,7 +1,7 @@
 <template>
   <div class="page-shell">
     <div class="query-card">
-        <el-form :model="query" class="lui-form-grid" size="small" data-field-count="7">
+        <el-form :model="query" class="lui-form-grid" size="small" data-field-count="8">
           <el-form-item label="来源系统">
             <el-select v-model="query.sourceSystem" clearable placeholder="请选择" @change="onQuerySourceChange">
               <el-option v-for="item in sourceOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -48,6 +48,12 @@
               <el-option label="否" value="否" />
             </el-select>
           </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="query.status" clearable placeholder="请选择">
+              <el-option label="已启用" value="已启用" />
+              <el-option label="已停用" value="已停用" />
+            </el-select>
+          </el-form-item>
           <div class="query-actions">
             <el-button size="small" @click="resetQuery">重置</el-button>
             <el-button type="primary" size="small" @click="handleSearch">查询</el-button>
@@ -64,8 +70,10 @@
           <el-table-column prop="sourceSystem" label="来源系统" min-width="110" />
           <el-table-column prop="docType" label="单据类型" min-width="100" />
           <el-table-column prop="tradeType" label="交易类型" min-width="100" />
-          <el-table-column prop="bizLine" label="业务条线" min-width="100" />
+          <el-table-column prop="direction" label="收付方向" min-width="90" />
           <el-table-column prop="billingNode" label="计费单据状态" min-width="120" />
+          <el-table-column prop="bizLine" label="业务条线" min-width="100" />
+          <el-table-column prop="isMerchantAccess" label="按商家接入" min-width="100" />
           <el-table-column prop="status" label="状态" min-width="90">
             <template slot-scope="{ row }">
               <el-tag :type="statusTagType(row.status)" size="small">{{ row.status }}</el-tag>
@@ -120,6 +128,9 @@
           <el-form-item label="计费单据状态" required>
             <div class="drawer-view-text">{{ (form.billingNodes || []).join('、') || '-' }}</div>
           </el-form-item>
+          <el-form-item label="按商家接入" required>
+            <div class="drawer-view-text">{{ form.isMerchantAccess || '-' }}</div>
+          </el-form-item>
         </el-form>
         <el-form v-else :model="form" class="lui-form-grid" size="small">
           <el-form-item label="来源系统" required>
@@ -153,6 +164,12 @@
                 :label="item"
                 :value="item"
               />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="按商家接入" required>
+            <el-select v-model="form.isMerchantAccess" clearable placeholder="请选择">
+              <el-option label="是" value="是" />
+              <el-option label="否" value="否" />
             </el-select>
           </el-form-item>
         </el-form>
@@ -348,7 +365,8 @@ function createDefaultForm() {
     sourceSystem: '',
     docType: '',
     tradeType: '',
-    billingNodes: []
+    billingNodes: [],
+    isMerchantAccess: ''
   }
 }
 
@@ -364,7 +382,8 @@ export default {
         billingNodes: [],
         direction: '',
         bizLine: '',
-        isMerchantAccess: ''
+        isMerchantAccess: '',
+        status: ''
       },
       list: BILLING_DOCS.map(i => ({
         ...i,
@@ -400,6 +419,7 @@ export default {
         if (q.direction && row.direction !== q.direction) return false
         if (q.bizLine && row.bizLine !== q.bizLine) return false
         if (q.isMerchantAccess && row.isMerchantAccess !== q.isMerchantAccess) return false
+        if (q.status && row.status !== q.status) return false
         if (q.billingNodes && q.billingNodes.length) {
           const nodes = String(row.billingNode || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean)
           const hit = q.billingNodes.some(n => nodes.includes(n))
@@ -515,7 +535,8 @@ export default {
         billingNodes: [],
         direction: '',
         bizLine: '',
-        isMerchantAccess: ''
+        isMerchantAccess: '',
+        status: ''
       }
       this.applied = {}
     },
@@ -539,7 +560,8 @@ export default {
           billingNodes: String(row.billingNode || '')
             .split(/[,，、]/)
             .map(s => s.trim())
-            .filter(Boolean)
+            .filter(Boolean),
+          isMerchantAccess: row.isMerchantAccess || ''
         }
         this.elements = (row.elements && row.elements.length)
           ? row.elements.map(i => ({ ...i }))
@@ -645,6 +667,10 @@ export default {
         this.$message.warning('请选择计费单据状态')
         return
       }
+      if (!this.form.isMerchantAccess) {
+        this.$message.warning('请选择按商家接入')
+        return
+      }
       const statusKey = this.form.billingNodes.slice().sort().join(',')
       const dup = this.list.find(row => {
         if (this.drawerMode === 'edit' && row.id === this.editingId) return false
@@ -678,7 +704,7 @@ export default {
         billingNode: this.form.billingNodes.join(','),
         direction: '应收',
         bizLine: '冷链物流',
-        isMerchantAccess: '否',
+        isMerchantAccess: this.form.isMerchantAccess,
         creator: '张**',
         elements: this.elements.map(item => ({ ...item }))
       }

@@ -262,7 +262,7 @@ export default {
   user-select: none;
   color: #3c6ef0;
   opacity: 0.18;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'JDZhengHT-EN', Arial, Helvetica, sans-serif;
 }
 
 .lui-arrow-steps__item.is-start .lui-arrow-steps__num {

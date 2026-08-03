@@ -51,7 +51,9 @@
               <el-input v-model="scenario.base.owner" placeholder="请填写erp" />
             </el-form-item>
             <el-form-item label="效期时间" required class="lui-form-item--range">
+              <span v-if="isViewMode" class="view-plain-text">{{ formatRangeText(scenario.base.range) }}</span>
               <el-date-picker
+                v-else
                 v-model="scenario.base.range"
                 type="daterange"
                 range-separator="至"
@@ -118,6 +120,7 @@
           class="lui-inline-alert step-alert"
         />
         <fieldset class="pricing-fieldset">
+        <div class="table-h-scroll">
         <el-table
           :data="scenario.billing.rules"
           border
@@ -194,13 +197,13 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="计费节点" min-width="160">
+          <el-table-column label="计费节点" :min-width="isViewMode ? 200 : 160">
             <template slot-scope="{ row }">
               <el-select
                 v-model="row.nodes"
                 size="small"
                 multiple
-                collapse-tags
+                :collapse-tags="!isViewMode"
                 filterable
                 clearable
                 placeholder="请选择"
@@ -211,9 +214,9 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="计费条件" min-width="320">
+          <el-table-column label="计费条件" :min-width="isViewMode ? 520 : 320">
             <template slot-scope="{ row }">
-              <div class="condition-row">
+              <div class="condition-row" :class="{ 'condition-row--nowrap': isViewMode }">
                 <template v-if="row.conditions && row.conditions.length">
                   <el-tag
                     v-for="(cond, idx) in row.conditions"
@@ -260,6 +263,7 @@
             </template>
           </el-table-column>
         </el-table>
+        </div>
         <div v-if="!isViewMode" class="elements-table__add-wrap">
           <button
             type="button"
@@ -305,13 +309,13 @@
             :model="scenario.quotation"
             class="lui-form-grid lui-form-grid--cols-1 quote-form"
             size="small"
-            label-width="160px"
+            label-width="120px"
           >
             <el-form-item label="报价维度">
               <el-select
                 v-model="scenario.quotation.dimensions"
                 multiple
-                collapse-tags
+                :collapse-tags="!isViewMode"
                 filterable
                 clearable
                 placeholder="请选择报价维度 (可多选)"
@@ -326,22 +330,22 @@
             >
               <div class="dimension-alias-grid">
                 <el-table
-                  v-for="(col, colIndex) in dimensionAliasColumns"
-                  :key="'dim-alias-' + colIndex"
-                  :data="col"
+                  v-for="row in dimensionAliasRows"
+                  :key="'dim-alias-' + row.name"
+                  :data="[row]"
                   size="small"
                   border
                   class="dimension-alias-table elements-table"
                 >
                   <el-table-column label="维度名称" min-width="100">
-                    <template slot-scope="{ row }">
-                      <span>{{ row.name }}</span>
+                    <template slot-scope="{ row: item }">
+                      <span>{{ item.name }}</span>
                     </template>
                   </el-table-column>
                   <el-table-column label="别名" min-width="120">
-                    <template slot-scope="{ row }">
+                    <template slot-scope="{ row: item }">
                       <el-input
-                        v-model="scenario.quotation.dimensionAliases[row.name]"
+                        v-model="scenario.quotation.dimensionAliases[item.name]"
                         size="small"
                         class="lui-control"
                         placeholder="别名"
@@ -356,7 +360,7 @@
                 <el-select
                   v-model="scenario.quotation.modes"
                   multiple
-                  collapse-tags
+                  :collapse-tags="!isViewMode"
                   filterable
                   clearable
                   placeholder="请选择报价模式 (可多选)"
@@ -377,7 +381,8 @@
               label="模式详情"
               class="lui-form-item--top"
             >
-              <el-table :data="modeDetailRows" size="small" class="quote-sub-table">
+              <div class="table-h-scroll">
+              <el-table :data="modeDetailRows" size="small" border class="quote-sub-table quote-sub-table--full">
                 <el-table-column prop="mode" label="报价模式" min-width="120" />
                 <el-table-column label="别名" min-width="120">
                   <template slot-scope="{ row }">
@@ -389,15 +394,28 @@
                     />
                   </template>
                 </el-table-column>
-                <el-table-column prop="formula" label="对应公式" min-width="180" show-overflow-tooltip />
-                <el-table-column prop="dim" label="定价维度" min-width="160" show-overflow-tooltip />
-                <el-table-column prop="priceItems" label="价格项" min-width="180" show-overflow-tooltip />
+                <el-table-column prop="formula" label="对应公式" min-width="300">
+                  <template slot-scope="{ row }">
+                    <span class="table-cell-full">{{ row.formula }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="dim" label="定价维度" min-width="280">
+                  <template slot-scope="{ row }">
+                    <span class="table-cell-full">{{ row.dim }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="priceItems" label="价格项" min-width="300">
+                  <template slot-scope="{ row }">
+                    <span class="table-cell-full">{{ row.priceItems }}</span>
+                  </template>
+                </el-table-column>
                 <el-table-column v-if="!isViewMode" label="操作" width="100" align="center">
                   <template slot-scope="{ row }">
                     <el-button type="text" @click="openAppControl(row.mode)">应用管控</el-button>
                   </template>
                 </el-table-column>
               </el-table>
+              </div>
             </el-form-item>
             <el-form-item>
               <span slot="label" class="field-label-with-tip">
@@ -414,7 +432,7 @@
               <el-select
                 v-model="scenario.quotation.ladders"
                 multiple
-                collapse-tags
+                :collapse-tags="!isViewMode"
                 filterable
                 clearable
                 placeholder="请选择单票报价阶梯 (可多选)"
@@ -430,21 +448,33 @@
           <el-tooltip
             placement="top"
             effect="dark"
+            trigger="click"
             popper-class="quote-tip-popper"
-            content="合单规则说明：合单规则用于定义标准计费流程之外的辅助处理逻辑，可将多个碎片化订单合并计算。"
+            content="说明内容待业务提供"
           >
             <span class="field-tip-trigger" tabindex="0" aria-label="说明">?</span>
           </el-tooltip>
         </h3>
         <div class="ext-block ext-block--plain">
           <el-form
-            class="lui-form-grid lui-form-grid--cols-1 quote-form"
+            class="lui-form-grid lui-form-grid--cols-1 quote-form ext-rule-form"
             size="small"
-            label-width="160px"
+            label-width="120px"
           >
-            <el-form-item label="合单规则">
+            <el-form-item>
+              <span slot="label" class="field-label-with-tip">
+                <span class="ext-rule-form__label">合单规则</span>
+                <el-tooltip
+                  placement="top"
+                  effect="dark"
+                  popper-class="quote-tip-popper"
+                  content="合单规则说明：合单规则用于定义标准计费流程之外的辅助处理逻辑，可将多个碎片化订单合并计算。"
+                >
+                  <span class="field-tip-trigger" tabindex="0" aria-label="说明">?</span>
+                </el-tooltip>
+              </span>
               <div class="ext-block__switch">
-                <span>{{ scenario.extension.enableMerge ? '已启用' : '未启用' }}</span>
+                <span class="ext-block__status">{{ scenario.extension.enableMerge ? '已启用' : '未启用' }}</span>
                 <el-switch v-if="!isViewMode" v-model="scenario.extension.enableMerge" />
               </div>
             </el-form-item>
@@ -456,17 +486,17 @@
             label-width="112px"
           >
             <el-form-item label="可用合单维度">
-              <el-select v-model="scenario.extension.mergeDimensions" multiple collapse-tags clearable placeholder="请选择">
+              <el-select v-model="scenario.extension.mergeDimensions" multiple :collapse-tags="!isViewMode" clearable placeholder="请选择">
                 <el-option v-for="item in mergeDimOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
             <el-form-item label="可用合单对象">
-              <el-select v-model="scenario.extension.mergeTargets" multiple collapse-tags clearable placeholder="请选择">
+              <el-select v-model="scenario.extension.mergeTargets" multiple :collapse-tags="!isViewMode" clearable placeholder="请选择">
                 <el-option v-for="item in mergeTargetOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
             <el-form-item label="可用分摊依据">
-              <el-select v-model="scenario.extension.apportionBasis" multiple collapse-tags clearable placeholder="请选择">
+              <el-select v-model="scenario.extension.apportionBasis" multiple :collapse-tags="!isViewMode" clearable placeholder="请选择">
                 <el-option v-for="item in apportionOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -505,7 +535,7 @@
         </div>
         <div v-if="scenario.sim.type === '模拟' && scenario.sim.mode" class="sim-card">
           <h4 class="section-title">计费因子</h4>
-          <el-form class="lui-form-grid" size="small">
+          <el-form class="lui-form-grid sim-param-form" size="small" label-width="160px">
             <el-form-item
               v-for="item in currentSimConfig.factors"
               :key="item.key"
@@ -518,7 +548,7 @@
         </div>
         <div v-if="scenario.sim.type === '模拟' && scenario.sim.mode" class="sim-card">
           <h4 class="section-title">价格项</h4>
-          <el-form class="lui-form-grid" size="small">
+          <el-form class="lui-form-grid sim-param-form" size="small" label-width="160px">
             <el-form-item
               v-for="item in currentSimConfig.priceItems"
               :key="item.key"
@@ -624,7 +654,10 @@
       :close-on-click-modal="false"
     >
       <div v-if="scenario.sim.result" class="sim-result-dialog__body">
-        <div class="sim-result-dialog__total">¥ {{ scenario.sim.result.total }}</div>
+        <div class="sim-result-dialog__total">
+          <span class="sim-result-dialog__currency">¥</span>
+          <span class="sim-result-dialog__amount">{{ scenario.sim.result.total }}</span>
+        </div>
         <el-timeline class="sim-result-dialog__timeline">
           <el-timeline-item v-for="(item, idx) in scenario.sim.result.path" :key="idx">{{ item }}</el-timeline-item>
         </el-timeline>
@@ -1030,16 +1063,6 @@ export default {
     dimensionAliasRows() {
       return (this.scenario.quotation.dimensions || []).map(name => ({ name }))
     },
-    dimensionAliasColumns() {
-      const list = this.dimensionAliasRows
-      if (!list.length) return []
-      const colCount = Math.min(3, list.length)
-      const cols = Array.from({ length: colCount }, () => [])
-      list.forEach((item, index) => {
-        cols[index % colCount].push(item)
-      })
-      return cols
-    },
     modeDetailRows() {
       return (this.scenario.quotation.modes || []).map(mode => {
         const detail = this.modeDetailMap[mode] || { formula: '-', dim: '-', priceItems: '-' }
@@ -1181,6 +1204,10 @@ export default {
       if (this.step <= 0) return
       this.step -= 1
     },
+    formatRangeText(range) {
+      if (!(range && range.length === 2 && range[0] && range[1])) return '—'
+      return `${range[0]} 至 ${range[1]}`
+    },
     hydrateViewPreview() {
       const dims = ['始发城市', '目的城市', '商家业务类型', '配送区域', '时效等级']
       const modes = ['首续重计费', '按件型']
@@ -1233,6 +1260,12 @@ export default {
       this.scenario.quotation.modeAliases = {
         首续重计费: '首续重',
         按件型: '件型价'
+      }
+      this.scenario.extension = {
+        enableMerge: true,
+        mergeDimensions: ['商家订单号'],
+        mergeTargets: ['件数'],
+        apportionBasis: ['按重量分摊']
       }
     },
     onLimitMerchantChange(val) {
@@ -1508,7 +1541,7 @@ export default {
         this.$message.warning(quoteCheck.message)
         return
       }
-      this.$confirm('确定发布嘛？', '确定发布', { type: 'warning' })
+      this.$confirm('确定发布本次定价设置吗？', '确定发布', { type: 'warning' })
         .then(() => {
           const scenarioName = this.scenario.base.scenario || '未命名场景'
           this.$emit('published', {
@@ -1645,6 +1678,32 @@ export default {
   line-height: 22px !important;
   font-weight: 500;
   margin-bottom: 12px;
+}
+.table-card--view .section-title {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  margin-bottom: 12px;
+}
+.view-plain-text {
+  display: inline;
+  color: #23252b;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+.table-card--view .pricing-section + .pricing-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #f1f2f4;
+}
+.table-card--view .pricing-section__sub {
+  margin-top: 24px;
+}
+.table-card--view >>> .el-select__tags {
+  max-width: none !important;
+}
+.table-card--view >>> .el-select .el-select__tags-text {
+  display: inline;
 }
 .section-title::before {
   height: 16px;
@@ -1874,6 +1933,38 @@ export default {
   border-bottom: none;
   padding-bottom: 0;
 }
+.table-h-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+.table-card--view .table-h-scroll {
+  pointer-events: auto;
+}
+/* 仅保留表格 body 一条横滑，避免与外层双滚动条 */
+.table-h-scroll >>> .el-table__header-wrapper {
+  overflow: hidden !important;
+}
+.table-h-scroll >>> .el-table__body-wrapper {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+.table-h-scroll >>> .el-table__body-wrapper::-webkit-scrollbar {
+  width: 48px;
+  height: 4px;
+}
+.table-h-scroll >>> .el-table__body-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.table-h-scroll >>> .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  min-width: 48px;
+  background: #f1f2f4;
+  border-radius: 2px;
+}
+.table-h-scroll >>> .el-table__body-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #f1f2f4 transparent;
+}
 .scene-rules-table {
   width: 100%;
 }
@@ -1884,6 +1975,9 @@ export default {
   background: #f2f5f8 !important;
 }
 .scene-rules-table >>> .el-table__body .cell {
+  overflow: hidden;
+}
+.table-card--wizard .scene-rules-table >>> .el-table__body .cell {
   overflow: visible !important;
 }
 .scene-rules-table >>> .el-table__body td.el-table__cell {
@@ -1943,6 +2037,15 @@ export default {
   align-items: center;
   gap: 8px;
 }
+.condition-row--nowrap {
+  flex-wrap: nowrap;
+  width: max-content;
+  max-width: none;
+}
+.condition-row--nowrap .condition-tag {
+  flex-shrink: 0;
+  margin-right: 0;
+}
 .quote-card {
   padding: 0;
   border: none;
@@ -1951,7 +2054,7 @@ export default {
 }
 .quote-form {
   max-width: 100%;
-  --lui-form-label-width: 160px;
+  --lui-form-label-width: 120px;
 }
 .quote-form >>> .el-form-item__label {
   display: flex !important;
@@ -1960,6 +2063,75 @@ export default {
   text-align: right !important;
   overflow: visible !important;
   float: none !important;
+  width: var(--lui-form-label-width) !important;
+  min-width: var(--lui-form-label-width) !important;
+  max-width: var(--lui-form-label-width) !important;
+  padding-right: 12px !important;
+  box-sizing: border-box;
+  color: #525765 !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+  font-weight: 400 !important;
+}
+.quote-form >>> .el-form-item__content {
+  min-width: 0;
+  margin-left: 0 !important;
+  flex: 1 1 0%;
+}
+/* 报价维度 / 维度别名 / 报价模式 / 模式详情 / 阶梯：内容左缘对齐 */
+.quote-form >>> .el-form-item__content > .dimension-alias-grid,
+.quote-form >>> .el-form-item__content > .mode-row,
+.quote-form >>> .el-form-item__content > .table-h-scroll,
+.quote-form >>> .el-form-item__content > .el-select {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.quote-form .dimension-alias-table,
+.quote-form .quote-sub-table {
+  margin: 0;
+}
+.quote-form .dimension-alias-table >>> .el-table .cell,
+.quote-form .quote-sub-table >>> .el-table .cell {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.quote-form .field-label-with-tip {
+  width: 100%;
+  justify-content: flex-end;
+}
+/* 查看态：多选标签改为文档流排布，与表格左缘对齐 */
+.table-card--view .quote-form >>> .el-select {
+  display: block;
+}
+.table-card--view .quote-form >>> .el-select .el-input {
+  display: none !important;
+}
+.table-card--view .quote-form >>> .el-select .el-select__tags {
+  position: static !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.table-card--view .quote-form >>> .el-select .el-tag {
+  margin: 0 !important;
+}
+.table-card--view .quote-form .mode-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.table-card--view .quote-form .mode-row .el-select {
+  flex: 1;
+  min-width: 0;
 }
 .field-label-with-tip {
   display: inline-flex;
@@ -2036,15 +2208,14 @@ export default {
   color: #525765;
 }
 .dimension-alias-grid {
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 24px;
   width: 100%;
 }
 .dimension-alias-table {
-  flex: 1;
+  width: 100%;
   min-width: 0;
-  width: auto;
   background: #fff;
 }
 .dimension-alias-table >>> .el-table__header th.el-table__cell {
@@ -2069,6 +2240,16 @@ export default {
 .quote-sub-table >>> .lui-control {
   width: 160px;
   max-width: 100%;
+}
+.quote-sub-table--full >>> .el-table__body .cell {
+  overflow: visible;
+}
+.table-cell-full {
+  display: inline-block;
+  white-space: nowrap;
+  color: #23252b;
+  font-size: 14px;
+  line-height: 22px;
 }
 .strategy-dup-alert {
   margin-top: 8px;
@@ -2105,6 +2286,9 @@ export default {
   border-radius: 0;
   background: transparent;
 }
+.ext-rule-form.lui-form-grid {
+  --lui-form-label-width: 120px;
+}
 .ext-merge-fields.lui-form-grid {
   --lui-form-label-width: 112px;
   margin-top: 12px;
@@ -2115,14 +2299,32 @@ export default {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+.ext-rule-form__label,
+.ext-block__status {
+  color: #23252b;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+}
 .ext-block__switch {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #646a73;
+  color: #23252b;
   font-size: 14px;
   line-height: 22px;
   height: 32px;
+}
+.table-card--view .ext-rule-form >>> .el-select__tags,
+.table-card--view .ext-merge-fields >>> .el-select__tags {
+  max-width: none !important;
+  flex-wrap: wrap;
+}
+.table-card--view .ext-rule-form >>> .el-select .el-select__tags-text,
+.table-card--view .ext-merge-fields >>> .el-select .el-select__tags-text {
+  max-width: none !important;
+  overflow: visible;
+  text-overflow: clip;
 }
 .sim-card {
   margin-bottom: 12px;
@@ -2133,6 +2335,14 @@ export default {
 }
 .sim-card h4.section-title {
   margin: 0 0 12px;
+}
+.sim-param-form.lui-form-grid {
+  --lui-form-label-width: 160px;
+}
+.sim-param-form >>> .el-form-item__label {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap;
 }
 .sim-card__action {
   display: flex;
@@ -2338,9 +2548,17 @@ export default {
 .sim-result-dialog .sim-result-dialog__total {
   margin: 0 0 16px;
   color: #23252b;
-  font-size: 28px;
-  font-weight: 600;
+  font-family: var(--lui-font-number);
   line-height: 36px;
+}
+.sim-result-dialog .sim-result-dialog__currency {
+  margin-right: 4px;
+  font-size: 20px;
+  font-weight: 400;
+}
+.sim-result-dialog .sim-result-dialog__amount {
+  font-size: 28px;
+  font-weight: 400;
 }
 .sim-result-dialog .sim-result-dialog__timeline.el-timeline {
   padding-left: 0;

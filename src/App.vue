@@ -686,7 +686,8 @@ export default {
 }
 .pricing-view-dialog .el-dialog__body {
   max-height: calc(92vh - 120px);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 8px 24px 16px;
 }
 .pricing-view-dialog .pricing-view-embed {
@@ -766,6 +767,123 @@ export default {
 .pricing-view-dialog .table-card--view .pricing-section + .pricing-section {
   margin-top: 24px;
   padding-top: 24px;
+}
+.pricing-view-dialog .table-card--view .pricing-section__sub {
+  margin-top: 24px;
+}
+.pricing-view-dialog .table-card--view .section-title {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  font-weight: 500;
+}
+.pricing-view-dialog .table-card--view .el-form-item__label,
+.pricing-view-dialog .table-card--view .el-form-item__content,
+.pricing-view-dialog .table-card--view .drawer-view-text,
+.pricing-view-dialog .table-card--view .view-plain-text,
+.pricing-view-dialog .table-card--view .ext-rule-form__label,
+.pricing-view-dialog .table-card--view .ext-block__status {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  font-family: var(--lui-font-sans);
+}
+.pricing-view-dialog .table-card--view .view-plain-text {
+  display: inline;
+  color: #23252b;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+.pricing-view-dialog .table-card--view .el-select__tags {
+  max-width: none !important;
+  flex-wrap: wrap;
+}
+.pricing-view-dialog .table-card--view .el-select .el-input {
+  height: auto !important;
+}
+.pricing-view-dialog .table-card--view .el-select .el-input__inner {
+  height: auto !important;
+  min-height: 22px;
+}
+.pricing-view-dialog .table-card--view .table-h-scroll {
+  pointer-events: auto;
+  overflow: hidden;
+  max-width: 100%;
+}
+.pricing-view-dialog .table-card--view .table-h-scroll .el-table__header-wrapper {
+  overflow: hidden !important;
+}
+.pricing-view-dialog .table-card--view .table-h-scroll .el-table__body-wrapper {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+.pricing-view-dialog .table-card--view .table-h-scroll .el-table__body-wrapper::-webkit-scrollbar {
+  width: 48px;
+  height: 4px;
+}
+.pricing-view-dialog .table-card--view .table-h-scroll .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  min-width: 48px;
+  background: #f1f2f4;
+  border-radius: 2px;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__label {
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  padding-right: 12px !important;
+  box-sizing: border-box;
+  text-align: right !important;
+  justify-content: flex-end !important;
+  color: #525765 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__content {
+  margin-left: 0 !important;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__content > .dimension-alias-grid,
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__content > .mode-row,
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__content > .table-h-scroll,
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__content > .el-select {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.pricing-view-dialog .table-card--view .quote-form .dimension-alias-table .el-table .cell,
+.pricing-view-dialog .table-card--view .quote-form .quote-sub-table .el-table .cell {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-select .el-input {
+  display: none !important;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-select .el-select__tags {
+  position: static !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-select .el-tag {
+  margin: 0 !important;
+}
+.pricing-view-dialog .table-card--view .quote-form .field-label-with-tip {
+  width: 100%;
+  justify-content: flex-end;
+}
+.pricing-view-dialog .table-card--view .ext-rule-form__label,
+.pricing-view-dialog .table-card--view .ext-block__status {
+  color: #23252b;
+}
+.pricing-view-dialog .table-card--view .table-cell-full {
+  white-space: nowrap;
+}
+.pricing-view-dialog .table-card--view .condition-row--nowrap {
+  flex-wrap: nowrap;
 }
 .pricing-view-dialog .table-card--view .field-tip-btn {
   display: inline-flex !important;

@@ -1,5 +1,24 @@
 /* LUI PC3.0 落地覆盖：圆角 / 选择器状态 / 下拉 / 按钮 / 表格 / 分页 / 弹窗 / 标签 */
 
+/* 京东正黑 EN：仅覆盖数字与常见数值符号 */
+@font-face {
+  font-family: 'JDZhengHT-EN';
+  src: url('../assets/fonts/JDZhengHT-EN-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+002B, U+002C, U+002D, U+002E, U+0025, U+00A5, U+FFE5;
+}
+
+@font-face {
+  font-family: 'JDZhengHT-EN';
+  src: url('../assets/fonts/JDZhengHT-EN-Bold.ttf') format('truetype');
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+002B, U+002C, U+002D, U+002E, U+0025, U+00A5, U+FFE5;
+}
+
 :root {
   --lui-primary: #3c6ef0;
   --lui-primary-hover: #2f5cd6;
@@ -32,6 +51,8 @@
   --lui-shadow-dropdown: 0 2px 6px rgba(35, 37, 43, 0.1);
   --lui-shadow-dialog: 0 4px 16px rgba(35, 37, 43, 0.1);
   --lui-blue-01: rgba(60, 110, 240, 0.1); /* Lui-blue-01 / #3C6EF0 10% */
+  --lui-font-sans: 'JDZhengHT-EN', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --lui-font-number: 'JDZhengHT-EN', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 html,
@@ -41,12 +62,28 @@ body,
   min-height: 100%;
   background: var(--lui-bg-page);
   color: var(--lui-text-main);
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: var(--lui-font-sans);
   font-size: 14px;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* 强制输入框、金额、表格单元格等继承数字字体栈 */
+.el-input__inner,
+.el-textarea__inner,
+.el-range-input,
+.el-pagination,
+.el-table,
+.el-tag,
+.el-button,
+.el-dialog,
+.el-message-box,
+.el-timeline,
+.sim-result-dialog__total,
+.font-number {
+  font-family: var(--lui-font-number);
 }
 
 /* ========== 输入 / 选择器：8px 圆角 + 状态 ========== */

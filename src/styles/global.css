@@ -98,6 +98,31 @@ body,
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+/* 日期范围：选中文字 #23252B；「至」与两侧文案横轴居中对齐（光学下移 2px） */
+.el-range-editor.el-input__inner {
+  display: inline-flex;
+  align-items: center;
+}
+.el-range-editor .el-range-input {
+  color: #23252B;
+  font-size: 14px;
+  line-height: 1;
+  height: auto;
+}
+.el-range-editor .el-range-separator {
+  color: #23252B;
+  font-size: 14px;
+  line-height: 14px;
+  height: auto !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  margin: 0;
+  position: relative;
+  top: 2px; /* 下移 2px，与「开始/结束日期」横轴对齐 */
+}
+
 .el-textarea__inner {
   height: auto;
   line-height: 1.5;
@@ -382,6 +407,48 @@ body,
 /* ========== 标签：LUI PC3.0 展示型（Figma 14:1022）==========
  * 蓝=待完成/待审批 · 橙=进行中/审批中 · 红=异常/驳回 · 灰=失效 · 绿=已完成
  */
+/* ========== 文字提示气泡：LUI PC3.0（Figma 231:23461）========== */
+.el-tooltip__popper.is-dark {
+  max-width: 360px;
+  padding: 8px 16px !important;
+  background: rgba(35, 37, 43, 0.9) !important;
+  border: none !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
+  font-weight: 400 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(35, 37, 43, 0.1) !important;
+}
+.el-tooltip__popper.is-dark .popper__arrow,
+.el-tooltip__popper.is-dark .popper__arrow::after {
+  border-color: transparent !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='top'] .popper__arrow {
+  border-top-color: rgba(35, 37, 43, 0.9) !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='top'] .popper__arrow::after {
+  border-top-color: rgba(35, 37, 43, 0.9) !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='bottom'] .popper__arrow {
+  border-bottom-color: rgba(35, 37, 43, 0.9) !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='bottom'] .popper__arrow::after {
+  border-bottom-color: rgba(35, 37, 43, 0.9) !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='left'] .popper__arrow {
+  border-left-color: rgba(35, 37, 43, 0.9) !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='left'] .popper__arrow::after {
+  border-left-color: rgba(35, 37, 43, 0.9) !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='right'] .popper__arrow {
+  border-right-color: rgba(35, 37, 43, 0.9) !important;
+}
+.el-tooltip__popper.is-dark[x-placement^='right'] .popper__arrow::after {
+  border-right-color: rgba(35, 37, 43, 0.9) !important;
+}
+
 /* 多选 Select 标签 dark tooltip：彻底隐藏（popper 挂 body） */
 .el-tooltip__popper.is-dark.is-select-tag-tip,
 .el-select__tags .el-tooltip__popper {
@@ -391,7 +458,6 @@ body,
   pointer-events: none !important;
 }
 .el-tooltip__popper.is-dark[x-placement] {
-  max-width: 320px;
   word-break: break-all;
 }
 
@@ -683,13 +749,16 @@ body,
   line-height: 22px;
 }
 
-/* ========== 分页：左侧总数，右侧控件；圆角 8px；间距固定 ========== */
+/* ========== 分页：左侧总数，右侧控件；LUI PC3.0 紧凑页码 24 / 圆角 8 ========== */
 .el-pagination {
   color: var(--lui-text-regular);
   font-weight: 400;
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
+  font-size: 14px;
+  height: 24px;
+  line-height: 24px;
 }
 
 .el-pagination button,
@@ -701,14 +770,40 @@ body,
 .el-pagination .btn-prev,
 .el-pagination .btn-next,
 .el-pager li {
-  min-width: 32px;
-  height: 32px;
-  line-height: 32px;
+  min-width: 24px !important;
+  width: 24px;
+  height: 24px !important;
+  line-height: 24px !important;
   border: 1px solid var(--lui-border);
   background: #fff;
   margin: 0 4px !important;
   padding: 0 !important;
   box-sizing: border-box;
+  font-size: 12px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.el-pagination .btn-prev .el-icon,
+.el-pagination .btn-next .el-icon {
+  font-size: 12px;
+  line-height: 1 !important;
+  width: 12px;
+  height: 12px;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: static;
+}
+.el-pagination .btn-prev .el-icon::before,
+.el-pagination .btn-next .el-icon::before {
+  display: block;
+  line-height: 1;
+  speak: none;
 }
 
 .el-pagination .el-pager {
@@ -720,13 +815,38 @@ body,
 
 .el-pagination__sizes {
   margin: 0 0 0 8px !important;
-  height: 32px;
+  height: 24px;
+  line-height: 24px;
+}
+
+.el-pagination__sizes .el-input {
+  width: 100px;
+  margin: 0;
+}
+
+.el-pagination__sizes .el-input__inner {
+  height: 24px !important;
+  line-height: 22px !important;
+  font-size: 14px !important;
+  padding: 0 22px 0 8px !important;
+}
+
+.el-pagination__sizes .el-input .el-input__suffix {
+  right: 4px;
+  height: 24px;
+  line-height: 24px;
+}
+
+.el-pagination__sizes .el-input .el-select__caret {
+  font-size: 12px;
+  line-height: 24px !important;
 }
 
 .el-pagination__jump {
   margin-left: 8px !important;
-  height: 32px;
-  line-height: 32px;
+  height: 24px;
+  line-height: 24px;
+  font-size: 14px;
 }
 
 .el-pager li.active {
@@ -790,10 +910,18 @@ body,
   border-radius: var(--lui-radius-base) !important;
 }
 
+.el-pagination__jump .el-input {
+  width: 40px;
+  margin: 0 4px;
+}
+
 .el-pagination__jump .el-input__inner {
   border-radius: var(--lui-radius-base) !important;
-  height: 32px;
-  line-height: 32px;
+  height: 24px !important;
+  line-height: 22px !important;
+  padding: 0 4px !important;
+  font-size: 14px !important;
+  text-align: center;
 }
 
 /* ========== 弹窗 PC3.0：圆角 8 / 头底分割 / 按钮右对齐 ========== */
@@ -903,12 +1031,12 @@ body,
   max-width: 90vw;
 }
 
-/* 计费条件弹窗：固定宽度（对齐多行态图1），单行/多行一致不收缩 */
+/* 计费条件弹窗：三列（维度 / 比较符 / 值）+ 操作 */
 .el-dialog.condition-dialog,
 .condition-dialog.el-dialog {
-  width: 560px !important;
-  min-width: 560px;
-  max-width: min(560px, 90vw);
+  width: 720px !important;
+  min-width: 720px;
+  max-width: min(720px, 90vw);
 }
 
 .condition-dialog .el-dialog__body {
@@ -1010,16 +1138,199 @@ body,
 
 .el-dialog .el-upload-dragger {
   border-radius: var(--lui-radius-base);
-  border-color: var(--lui-border);
+  border: 1px dashed var(--lui-border);
+  background: #fff;
 }
 
 .el-dialog .el-upload-dragger:hover {
   border-color: var(--lui-primary);
 }
 
+.el-dialog .el-upload-dragger.is-dragover {
+  background-color: var(--lui-blue-01);
+  border: 1px dashed var(--lui-primary);
+}
+
+.el-dialog .el-upload__text {
+  color: var(--lui-text-regular);
+  font-size: 14px;
+  line-height: 22px;
+}
+
 .el-dialog .el-upload__text em {
   color: var(--lui-primary);
   font-style: normal;
+}
+
+.el-dialog .el-upload__tip {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--lui-text-secondary);
+}
+
+/* LUI PC3.0 拖拽上传面板（弹窗内） */
+.lui-upload-panel {
+  width: 100%;
+}
+
+.lui-upload-drag {
+  width: 100%;
+  display: block;
+}
+
+.lui-upload-drag .el-upload {
+  width: 100%;
+  display: block;
+}
+
+.lui-upload-drag .el-upload-dragger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 180px;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  border: 1px dashed var(--lui-border);
+  border-radius: var(--lui-radius-base);
+  background: #fff;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.lui-upload-drag .el-upload-dragger:hover {
+  border-color: var(--lui-primary);
+}
+
+.lui-upload-drag .el-upload-dragger.is-dragover {
+  background-color: var(--lui-blue-01);
+  border-color: var(--lui-primary);
+}
+
+.lui-upload-drag__icon {
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 0 0 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.lui-upload-drag .el-upload__text {
+  margin: 0;
+  color: var(--lui-text-regular);
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.lui-upload-drag .el-upload__text em {
+  color: var(--lui-primary);
+  font-style: normal;
+}
+
+.lui-upload-drag .el-upload__tip {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--lui-text-secondary);
+  text-align: center;
+}
+
+.lui-upload-drag__extra {
+  margin-top: 12px;
+  text-align: left;
+}
+
+.lui-upload-drag__link.el-button--text {
+  padding: 0;
+  height: auto;
+  min-height: auto;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--lui-primary);
+}
+
+.lui-upload-drag__link.el-button--text:hover,
+.lui-upload-drag__link.el-button--text:focus {
+  color: var(--lui-primary-hover);
+}
+
+.lui-upload-dialog .el-dialog__body {
+  padding: 16px 24px;
+}
+
+.lui-upload-dialog .el-dialog__footer .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.addr-tip-popper {
+  max-width: 360px;
+  line-height: 20px;
+  word-break: break-all;
+}
+
+/* 地址多选 hover 气泡：展示全部已选项（对齐 PC3.0 文字提示） */
+.addr-hover-tip {
+  max-width: 420px !important;
+  padding: 8px 16px !important;
+  line-height: 18px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+  background: rgba(35, 37, 43, 0.9) !important;
+  box-shadow: 0 4px 16px rgba(35, 37, 43, 0.1) !important;
+}
+.addr-hover-tip__list {
+  margin: 0;
+  padding: 0;
+  max-height: 240px;
+  overflow: auto;
+}
+.addr-hover-tip__item {
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  font-size: 12px;
+  line-height: 20px;
+  word-break: break-all;
+}
+.addr-hover-tip__item + .addr-hover-tip__item {
+  margin-top: 4px;
+}
+
+/* 地址多选展开：对齐计费节点 collapse-tags 下拉观感 */
+.addr-select-popper {
+  padding: 6px !important;
+  border: 1px solid #e4e5e9 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(37, 42, 61, 0.12) !important;
+}
+.addr-select-panel {
+  max-height: 200px;
+  overflow: auto;
+}
+.addr-select-panel__item {
+  display: block;
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.addr-select-panel__item.is-checked {
+  background: #edf2ff;
+}
+.addr-select-panel__item .el-checkbox {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+.addr-select-panel__item .el-checkbox__label {
+  color: #3c6ef0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .el-dialog .el-cascader {
@@ -1189,7 +1500,7 @@ body,
 .lui-line-tabs {
   display: flex;
   align-items: stretch;
-  gap: 12px;
+  gap: 48px;
   padding: 8px 0 0;
   margin: -4px 0 16px;
   border-bottom: 1px solid var(--lui-border);
@@ -1203,12 +1514,12 @@ body,
   justify-content: center;
   min-width: 82px;
   height: 32px;
-  padding: 0 12px;
+  padding: 0;
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 400;
   color: var(--lui-text-main); /* #23252B */
   outline: none;
@@ -1288,8 +1599,21 @@ body,
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  padding-top: 0;
   padding-bottom: 24px;
   box-sizing: border-box;
+}
+
+/* 步骤条 → 分割线 24 / 分割线 → 首个小标题 24（由步骤条卡片 margin-bottom 承担） */
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .quoting-section:first-child > .section-title:first-child,
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .quoting-section:first-child > .table-toolbar:first-child,
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .quoting-fieldset > .quoting-section:first-child > .section-title:first-child,
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .quoting-fieldset > .quoting-section:first-child > .table-toolbar:first-child,
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .pricing-section:first-child > .section-title:first-child,
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .pricing-section:first-child > .table-toolbar:first-child,
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .pricing-fieldset > .pricing-section:first-child > .section-title:first-child,
+.table-card--wizard > .lui-arrow-steps-card + .wizard-body > .pricing-fieldset > .pricing-section:first-child > .table-toolbar:first-child {
+  margin-top: 0;
 }
 
 /* ========== LUI PC3.0 查询/表单栅格：列距 32 / 行距 16；铺满容器与右侧内容对齐 ========== */
@@ -1314,7 +1638,7 @@ body,
 /* 分区卡片内：短标签 + 收紧列距，避免 120/48 造成空旷与错位感 */
 .partition-card .lui-form-grid.el-form,
 .lui-form-grid--partition.el-form {
-  --lui-form-label-width: 72px;
+  --lui-form-label-width: 84px;
   --lui-form-item-gap: 8px;
   --lui-form-col-gap: 24px;
   --lui-form-row-gap: 12px;
@@ -1331,14 +1655,15 @@ body,
 
 .partition-card .lui-form-grid .el-form-item__label,
 .lui-form-grid--partition .el-form-item__label {
-  width: 72px !important;
-  min-width: 72px;
+  width: 84px !important;
+  min-width: 84px;
   height: var(--lui-control-height);
   line-height: var(--lui-control-height);
   padding-right: 8px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  white-space: nowrap;
 }
 
 .partition-card .lui-form-grid .el-form-item__content,
@@ -1724,7 +2049,7 @@ body,
   color: #babec7 !important;
   font-size: 14px;
   font-weight: 400;
-  line-height: 28px;
+  line-height: 24px;
 }
 
 .section-title {
@@ -1736,11 +2061,11 @@ body,
   white-space: nowrap;
 }
 
-/* 模块间距 16px：表单/内容区与下一块标题之间 */
+/* 模块间距：表单/内容区与下一块标题之间 */
 .section-title--module,
 .lui-form-grid + .section-title,
 .el-form + .section-title {
-  margin-top: 16px;
+  margin-top: 24px;
 }
 
 .section-title::before {

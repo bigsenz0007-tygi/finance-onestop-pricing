@@ -99,7 +99,7 @@ export default {
   box-sizing: border-box;
   align-items: stretch;
   padding: 0;
-  margin: 0 0 16px;
+  margin: 0 0 24px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -109,7 +109,7 @@ export default {
   display: block;
   width: 100%;
   height: 0;
-  margin-top: 16px;
+  margin-top: 24px;
   border-bottom: 1px solid #e4e5e9;
 }
 .lui-arrow-steps {

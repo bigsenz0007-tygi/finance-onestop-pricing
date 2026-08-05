@@ -311,14 +311,14 @@
             size="small"
             label-width="120px"
           >
-            <el-form-item label="报价维度">
+            <el-form-item label="定价维度">
               <el-select
                 v-model="scenario.quotation.dimensions"
                 multiple
                 :collapse-tags="!isViewMode"
                 filterable
                 clearable
-                placeholder="请选择报价维度 (可多选)"
+                placeholder="请选择定价维度 (可多选)"
               >
                 <el-option v-for="item in quoteDimensionOptions" :key="item" :label="item" :value="item" />
               </el-select>
@@ -355,7 +355,7 @@
                 </el-table>
               </div>
             </el-form-item>
-            <el-form-item label="报价模式">
+            <el-form-item label="定价模式">
               <div class="mode-row">
                 <el-select
                   v-model="scenario.quotation.modes"
@@ -363,7 +363,7 @@
                   :collapse-tags="!isViewMode"
                   filterable
                   clearable
-                  placeholder="请选择报价模式 (可多选)"
+                  placeholder="请选择定价模式 (可多选)"
                 >
                   <el-option v-for="item in quoteModeOptions" :key="item" :label="item" :value="item" />
                 </el-select>
@@ -399,7 +399,7 @@
                     <span class="table-cell-full">{{ row.formula }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="dim" label="定价维度" min-width="280">
+                <el-table-column prop="dim" label="定价明细维度" min-width="280">
                   <template slot-scope="{ row }">
                     <span class="table-cell-full">{{ row.dim }}</span>
                   </template>
@@ -579,9 +579,9 @@
     </div>
 
     <el-dialog
-      :title="isViewMode ? '计费条件' : '计费条件配置'"
+      :title="isViewMode ? '计费条件' : '计费条件编辑'"
       :visible.sync="conditionVisible"
-      width="560px"
+      width="720px"
       custom-class="lui-form-dialog condition-dialog"
       append-to-body
       :close-on-click-modal="false"
@@ -591,11 +591,24 @@
         <el-select
           v-model="cond.dimension"
           size="small"
-          placeholder="计费条件"
+          placeholder="维度"
           class="condition-edit-row__dim"
           @change="onTempDimChange(cond)"
         >
           <el-option v-for="item in conditionDimOptions" :key="item.code" :label="item.name" :value="item.code" />
+        </el-select>
+        <el-select
+          v-model="cond.operator"
+          size="small"
+          placeholder="比较符"
+          class="condition-edit-row__op"
+        >
+          <el-option
+            v-for="item in conditionOperatorOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
         </el-select>
         <el-select
           v-if="conditionValueOptions(cond.dimension).length"
@@ -942,6 +955,16 @@ export default {
         { code: '122', name: '支付方式', options: [{ code: '01', name: '在线支付' }, { code: '02', name: '货到付款' }] },
         { code: '106', name: '重量', options: [] }
       ],
+      conditionOperatorOptions: [
+        { value: '=', label: '等于' },
+        { value: '!=', label: '不等于' },
+        { value: '>', label: '大于' },
+        { value: '>=', label: '大于等于' },
+        { value: '<', label: '小于' },
+        { value: '<=', label: '小于等于' },
+        { value: 'in', label: '包含' },
+        { value: 'notIn', label: '不包含' }
+      ],
       formulaGroups: [
         {
           label: '计算符号',
@@ -1231,8 +1254,8 @@ export default {
           items: '运费',
           nodes: ['揽收', '妥投'],
           conditions: [
-            { dimension: '101', values: ['01'], inputValue: '' },
-            { dimension: '102', values: ['1'], inputValue: '' }
+            { dimension: '101', operator: 'in', values: ['01', '02'], inputValue: '' },
+            { dimension: '106', operator: '>', values: [], inputValue: '1' }
           ]
         }),
         createBillingRule({
@@ -1244,7 +1267,7 @@ export default {
           items: '运费',
           nodes: ['揽收', '妥投'],
           conditions: [
-            { dimension: '101', values: ['01'], inputValue: '' }
+            { dimension: '101', operator: '=', values: ['01'], inputValue: '' }
           ]
         })
       ]
@@ -1363,15 +1386,16 @@ export default {
     formatCondition(cond) {
       if (typeof cond === 'string') return cond
       const dim = (this.conditionDimOptions.find(d => d.code === cond.dimension) || {}).name || cond.dimension
+      const op = (this.conditionOperatorOptions.find(o => o.value === (cond.operator || '=')) || {}).label || cond.operator || '等于'
       const opts = this.conditionValueOptions(cond.dimension)
       if (opts.length) {
         const labels = (cond.values || []).map(code => {
           const hit = opts.find(o => o.code === code)
           return hit ? hit.name : code
         })
-        return `${dim}=${labels.join(',')}`
+        return `${dim} ${op} ${labels.join(',')}`
       }
-      return `${dim}=${cond.inputValue || ''}`
+      return `${dim} ${op} ${cond.inputValue || ''}`
     },
     conditionValueOptions(dimension) {
       const dim = this.conditionDimOptions.find(d => d.code === dimension)
@@ -1386,16 +1410,18 @@ export default {
         ? list.map((c, i) => ({
           id: `c-${i}`,
           dimension: c.dimension || '',
+          operator: c.operator || '=',
           values: (c.values || []).slice(),
           inputValue: c.inputValue || ''
         }))
-        : [{ id: 'c-0', dimension: '', values: [], inputValue: '' }]
+        : [{ id: 'c-0', dimension: '', operator: '=', values: [], inputValue: '' }]
       this.conditionVisible = true
     },
     addTempCondition() {
       this.tempConditions.push({
         id: `c-${Date.now()}`,
         dimension: '',
+        operator: '=',
         values: [],
         inputValue: ''
       })
@@ -1403,11 +1429,12 @@ export default {
     onTempDimChange(cond) {
       cond.values = []
       cond.inputValue = ''
+      if (!cond.operator) cond.operator = '='
     },
     saveConditions() {
       if (!this.activeBillingRule) return
       const incomplete = (this.tempConditions || []).some((c) => {
-        if (!c.dimension) return true
+        if (!c.dimension || !c.operator) return true
         const opts = this.conditionValueOptions(c.dimension)
         if (opts.length) return !(c.values && c.values.length)
         return !(c.inputValue && String(c.inputValue).trim())
@@ -1418,6 +1445,7 @@ export default {
       }
       this.activeBillingRule.conditions = this.tempConditions.map(c => ({
         dimension: c.dimension,
+        operator: c.operator || '=',
         values: (c.values || []).slice(),
         inputValue: c.inputValue || ''
       }))
@@ -1517,8 +1545,8 @@ export default {
     },
     validateQuotationRequired() {
       const q = this.scenario.quotation || {}
-      if (!(q.dimensions && q.dimensions.length)) return { ok: false, message: '请选择报价维度' }
-      if (!(q.modes && q.modes.length)) return { ok: false, message: '请选择报价模式' }
+      if (!(q.dimensions && q.dimensions.length)) return { ok: false, message: '请选择定价维度' }
+      if (!(q.modes && q.modes.length)) return { ok: false, message: '请选择定价模式' }
       if (!(q.ladders && q.ladders.length)) return { ok: false, message: '请选择单票报价阶梯' }
       return { ok: true }
     },
@@ -2370,8 +2398,12 @@ export default {
   width: 100%;
 }
 .condition-edit-row__dim {
-  width: 160px;
-  flex: 0 0 160px;
+  width: 140px;
+  flex: 0 0 140px;
+}
+.condition-edit-row__op {
+  width: 120px;
+  flex: 0 0 120px;
 }
 .condition-edit-row__value {
   flex: 1 1 auto;

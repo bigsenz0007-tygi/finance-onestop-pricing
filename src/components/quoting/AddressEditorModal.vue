@@ -19,7 +19,7 @@
         :value="allRegionsChecked"
         @change="toggleAllRegions"
       >全选大区</el-checkbox>
-      <el-checkbox-group v-model="selectedRegions" class="addr-regions__group">
+      <el-checkbox-group v-model="selectedRegions" class="addr-regions__group" @change="onRegionChange">
         <el-checkbox v-for="r in regions" :key="r" :label="r">{{ r }}</el-checkbox>
       </el-checkbox-group>
     </div>
@@ -30,10 +30,47 @@
       type="textarea"
       :rows="2"
       class="addr-search"
-      placeholder="请输入省份/城市/园区搜索，多个用逗号、顿号或换行分隔；上限300"
+      placeholder="请输入省份/城市/区县，多个用逗号、顿号或换行分隔；上限300"
       @input="onSearchInput"
     />
     <div v-if="searchOverflow" class="field-tip field-tip--warn">已超过 300 条上限，仅保留前 300 条。</div>
+    <div v-if="searchMiss" class="field-tip field-tip--warn">未匹配到地址，请换关键词或手动选择省市区。</div>
+
+    <!-- 省 / 市 / 区 联级 -->
+    <div v-if="activeTab === 'domestic'" class="addr-cascade">
+      <el-select
+        v-model="cascade.province"
+        size="small"
+        clearable
+        placeholder="省"
+        class="addr-cascade__item"
+        @change="onProvinceChange"
+      >
+        <el-option v-for="p in provinceOptions" :key="p" :label="p" :value="p" />
+      </el-select>
+      <el-select
+        v-model="cascade.city"
+        size="small"
+        clearable
+        placeholder="市"
+        class="addr-cascade__item"
+        :disabled="!cascade.province"
+        @change="onCityChange"
+      >
+        <el-option v-for="c in cityOptions" :key="c" :label="c" :value="c" />
+      </el-select>
+      <el-select
+        v-model="cascade.district"
+        size="small"
+        clearable
+        placeholder="区/县"
+        class="addr-cascade__item"
+        :disabled="!cascade.city"
+        @change="onDistrictChange"
+      >
+        <el-option v-for="d in districtOptions" :key="d" :label="d" :value="d" />
+      </el-select>
+    </div>
 
     <div class="addr-tree">
       <div class="addr-tree__path">
@@ -43,6 +80,7 @@
       <el-checkbox-group v-model="selectedLeaves" class="addr-tree__list">
         <el-checkbox v-for="leaf in visibleLeaves" :key="leaf.value" :label="leaf.value">{{ leaf.label }}</el-checkbox>
       </el-checkbox-group>
+      <div v-if="!visibleLeaves.length" class="field-tip">请先选择省市区，或通过搜索定位街道/园区。</div>
     </div>
 
     <div class="addr-selected">
@@ -54,7 +92,7 @@
           size="mini"
           closable
           @close="removeSelected(item)"
-        >{{ item }}</el-tag>
+        >{{ shortLeafLabel(item) }}</el-tag>
         <el-button
           v-if="selectedLeaves.length > collapseCount"
           type="text"
@@ -75,34 +113,100 @@
 <script>
 const REGIONS = ['西北', '西南', '华北', '华南', '华中', '华东', '东北']
 
-const LEAF_POOL = {
-  华东: [
-    { value: '斜土路街道', label: '斜土路街道' },
-    { value: '枫林路街道', label: '枫林路街道' },
-    { value: '长桥路街道', label: '长桥路街道' },
-    { value: '田林街道', label: '田林街道' },
-    { value: '虹梅路街道', label: '虹梅路街道' },
-    { value: '康健新村街道', label: '康健新村街道' },
-    { value: '徐家汇街道', label: '徐家汇街道' },
-    { value: '凌云路街道', label: '凌云路街道' },
-    { value: '龙华街道', label: '龙华街道' },
-    { value: '漕河泾街道', label: '漕河泾街道' },
-    { value: '华泾镇', label: '华泾镇' },
-    { value: '漕河泾新兴技术开发区', label: '漕河泾新兴技术开发区' }
-  ],
-  华北: [
-    { value: '朝阳区', label: '朝阳区' },
-    { value: '海淀区', label: '海淀区' },
-    { value: '和平区', label: '和平区' }
-  ],
-  华南: [
-    { value: '广州市', label: '广州市' },
-    { value: '深圳市', label: '深圳市' }
-  ],
-  默认: [
-    { value: '示例园区A', label: '示例园区A' },
-    { value: '示例园区B', label: '示例园区B' }
-  ]
+/** 大区 → 省 → 市 → 区 → 街道（预览 mock） */
+const ADDRESS_TREE = {
+  华东: {
+    上海市: {
+      上海市: {
+        徐汇区: [
+          '天平路街道', '湖南路街道', '斜土路街道', '枫林路街道', '长桥街道',
+          '田林街道', '虹梅路街道', '康健新村街道', '徐家汇街道', '凌云路街道',
+          '龙华街道', '漕河泾街道', '华泾镇', '漕河泾新兴技术开发区'
+        ],
+        黄浦区: ['南京东路街道', '外滩街道', '半淞园路街道']
+      }
+    },
+    江苏省: {
+      南京市: {
+        鼓楼区: ['宁海路街道', '华侨路街道'],
+        玄武区: ['梅园新村街道', '新街口街道']
+      },
+      苏州市: {
+        姑苏区: ['双塔街道', '沧浪街道']
+      }
+    },
+    浙江省: {
+      杭州市: {
+        西湖区: ['西溪街道', '灵隐街道'],
+        滨江区: ['西兴街道', '长河街道']
+      }
+    }
+  },
+  华北: {
+    北京市: {
+      北京市: {
+        朝阳区: ['建外街道', '朝外街道', '三里屯街道'],
+        海淀区: ['中关村街道', '海淀街道']
+      }
+    },
+    天津市: {
+      天津市: {
+        和平区: ['小白楼街道', '南市街道']
+      }
+    }
+  },
+  华南: {
+    广东省: {
+      广州市: {
+        天河区: ['天河南街道', '石牌街道'],
+        越秀区: ['北京街道', '洪桥街道']
+      },
+      深圳市: {
+        南山区: ['粤海街道', '南头街道'],
+        福田区: ['园岭街道', '华强北街道']
+      }
+    }
+  },
+  华中: {
+    湖北省: {
+      武汉市: {
+        武昌区: ['积玉桥街道', '黄鹤楼街道']
+      }
+    }
+  },
+  西南: {
+    四川省: {
+      成都市: {
+        武侯区: ['浆洗街街道', '望江路街道']
+      }
+    }
+  },
+  西北: {
+    陕西省: {
+      西安市: {
+        雁塔区: ['小寨路街道', '大雁塔街道']
+      }
+    }
+  },
+  东北: {
+    辽宁省: {
+      沈阳市: {
+        和平区: ['南湖街道', '马路湾街道']
+      }
+    },
+    黑龙江省: {
+      哈尔滨市: {
+        南岗区: ['花园街道', '奋斗路街道', '大成街道', '曲线街道'],
+        道里区: ['兆麟街道', '新阳路街道', '抚顺街道'],
+        香坊区: ['香坊大街街道', '安埠街道']
+      }
+    },
+    吉林省: {
+      长春市: {
+        朝阳区: ['南湖街道', '红旗街道']
+      }
+    }
+  }
 }
 
 function parseSearchTokens(text) {
@@ -111,6 +215,75 @@ function parseSearchTokens(text) {
     .split(/[,，、\n\r]+/)
     .map(s => s.trim())
     .filter(Boolean)
+}
+
+function leavesFromDistrict(region, province, city, district) {
+  const streets = (((ADDRESS_TREE[region] || {})[province] || {})[city] || {})[district] || []
+  return streets.map(s => ({
+    value: `${province}-${city}-${district}-${s}`,
+    label: s,
+    region,
+    province,
+    city,
+    district
+  }))
+}
+
+/** 扁平检索索引：省/市/区/街道 */
+function buildSearchIndex() {
+  const index = []
+  Object.keys(ADDRESS_TREE).forEach(region => {
+    const provinces = ADDRESS_TREE[region] || {}
+    Object.keys(provinces).forEach(province => {
+      index.push({ level: 'province', region, province, city: '', district: '', street: '', text: province })
+      const cities = provinces[province] || {}
+      Object.keys(cities).forEach(city => {
+        index.push({ level: 'city', region, province, city, district: '', street: '', text: city })
+        const districts = cities[city] || {}
+        Object.keys(districts).forEach(district => {
+          index.push({ level: 'district', region, province, city, district, street: '', text: district })
+          ;(districts[district] || []).forEach(street => {
+            index.push({
+              level: 'street',
+              region,
+              province,
+              city,
+              district,
+              street,
+              text: street,
+              value: `${province}-${city}-${district}-${street}`
+            })
+          })
+        })
+      })
+    })
+  })
+  return index
+}
+
+const SEARCH_INDEX = buildSearchIndex()
+
+function matchToken(token) {
+  const t = String(token || '').trim()
+  if (!t) return null
+  // 优先级：精确 > 包含；层级：市 > 区 > 省 > 街道（城市名搜索更常见）
+  const levelRank = { city: 4, district: 3, province: 2, street: 1 }
+  let best = null
+  let bestScore = -1
+  SEARCH_INDEX.forEach(item => {
+    if (!item.text) return
+    let score = 0
+    if (item.text === t || item.text === `${t}市` || item.text === `${t}省` || item.text === `${t}区`) {
+      score = 100 + (levelRank[item.level] || 0)
+    } else if (item.text.includes(t) || t.includes(item.text.replace(/(省|市|区|县)$/, ''))) {
+      score = 50 + (levelRank[item.level] || 0) + Math.min(20, item.text.length)
+    }
+    if (score > bestScore) {
+      bestScore = score
+      best = item
+    }
+  })
+  return bestScore > 0 ? best : null
 }
 
 export default {
@@ -129,13 +302,51 @@ export default {
       selectedLeaves: [],
       expanded: false,
       collapseCount: 6,
-      searchOverflow: false
+      searchOverflow: false,
+      searchMiss: false,
+      syncingFromSearch: false,
+      cascade: {
+        province: '上海市',
+        city: '上海市',
+        district: '徐汇区'
+      }
     }
   },
   computed: {
     dialogVisible: {
       get() { return this.visible },
       set(v) { this.$emit('update:visible', v) }
+    },
+    primaryRegion() {
+      return this.selectedRegions[0] || '华东'
+    },
+    provinceOptions() {
+      const keys = this.selectedRegions.length ? this.selectedRegions : REGIONS
+      const set = new Set()
+      keys.forEach(r => {
+        Object.keys(ADDRESS_TREE[r] || {}).forEach(p => set.add(p))
+      })
+      return Array.from(set)
+    },
+    cityOptions() {
+      if (!this.cascade.province) return []
+      const set = new Set()
+      const regions = this.selectedRegions.length ? this.selectedRegions : REGIONS
+      regions.forEach(r => {
+        const cities = (ADDRESS_TREE[r] || {})[this.cascade.province]
+        if (cities) Object.keys(cities).forEach(c => set.add(c))
+      })
+      return Array.from(set)
+    },
+    districtOptions() {
+      if (!this.cascade.province || !this.cascade.city) return []
+      const set = new Set()
+      const regions = this.selectedRegions.length ? this.selectedRegions : REGIONS
+      regions.forEach(r => {
+        const districts = ((ADDRESS_TREE[r] || {})[this.cascade.province] || {})[this.cascade.city]
+        if (districts) Object.keys(districts).forEach(d => set.add(d))
+      })
+      return Array.from(set)
     },
     allRegionsChecked() {
       return this.selectedRegions.length === this.regions.length
@@ -145,21 +356,60 @@ export default {
       return n > 0 && n < this.regions.length
     },
     leafOptions() {
-      const set = new Map()
-      const keys = this.selectedRegions.length ? this.selectedRegions : ['默认']
-      keys.forEach(r => {
-        ;(LEAF_POOL[r] || LEAF_POOL.默认).forEach(item => set.set(item.value, item))
+      if (!this.cascade.province || !this.cascade.city || !this.cascade.district) return []
+      const regions = this.selectedRegions.length ? this.selectedRegions : [this.primaryRegion]
+      const map = new Map()
+      regions.forEach(r => {
+        leavesFromDistrict(r, this.cascade.province, this.cascade.city, this.cascade.district)
+          .forEach(item => map.set(item.value, item))
       })
-      return Array.from(set.values())
+      return Array.from(map.values())
+    },
+    /** 搜索命中时：若匹配到市/区则展示该节点下街道；若匹配街道则展示命中街道 */
+    searchLeafOptions() {
+      const tokens = this.searchTokens
+      if (!tokens.length) return null
+      const map = new Map()
+      tokens.forEach(token => {
+        const hit = matchToken(token)
+        if (!hit) return
+        if (hit.level === 'street') {
+          map.set(hit.value, {
+            value: hit.value,
+            label: hit.street,
+            region: hit.region,
+            province: hit.province,
+            city: hit.city,
+            district: hit.district
+          })
+          return
+        }
+        const districts = hit.level === 'district'
+          ? [hit.district]
+          : Object.keys((((ADDRESS_TREE[hit.region] || {})[hit.province] || {})[hit.city] || {}))
+        const cities = hit.level === 'province'
+          ? Object.keys((ADDRESS_TREE[hit.region] || {})[hit.province] || {})
+          : [hit.city]
+        cities.forEach(city => {
+          const distMap = ((ADDRESS_TREE[hit.region] || {})[hit.province] || {})[city] || {}
+          const distList = hit.level === 'district' ? [hit.district] : Object.keys(distMap)
+          distList.forEach(district => {
+            leavesFromDistrict(hit.region, hit.province, city, district).forEach(item => {
+              map.set(item.value, item)
+            })
+          })
+        })
+      })
+      return Array.from(map.values())
     },
     searchTokens() {
       return parseSearchTokens(this.searchText).slice(0, 300)
     },
     visibleLeaves() {
-      if (!this.searchTokens.length) return this.leafOptions
-      return this.leafOptions.filter(l =>
-        this.searchTokens.some(t => l.label.includes(t) || l.value.includes(t))
-      )
+      if (this.searchTokens.length && this.searchLeafOptions) {
+        return this.searchLeafOptions
+      }
+      return this.leafOptions
     },
     allLeafChecked() {
       return this.visibleLeaves.length > 0 && this.visibleLeaves.every(l => this.selectedLeaves.includes(l.value))
@@ -169,8 +419,11 @@ export default {
       return n > 0 && n < this.visibleLeaves.length
     },
     pathLabel() {
-      const region = this.selectedRegions[0] || '未选大区'
-      return `${region} - 请选择`
+      const { province, city, district } = this.cascade
+      if (province && city && district) return `${province} - ${city} - ${district}`
+      if (province && city) return `${province} - ${city}`
+      if (province) return province
+      return '请选择省 / 市 / 区'
     },
     displaySelected() {
       if (this.expanded) return this.selectedLeaves
@@ -178,12 +431,45 @@ export default {
     }
   },
   methods: {
+    shortLeafLabel(value) {
+      const parts = String(value || '').split('-')
+      return parts.length ? parts[parts.length - 1] : value
+    },
     onOpen() {
       this.selectedLeaves = Array.isArray(this.value) ? this.value.slice() : []
       this.searchText = ''
       this.searchOverflow = false
+      this.searchMiss = false
       this.expanded = false
       this.activeTab = 'domestic'
+      this.selectedRegions = ['华东']
+      this.cascade = { province: '上海市', city: '上海市', district: '徐汇区' }
+    },
+    applyMatch(hit) {
+      if (!hit) return
+      this.syncingFromSearch = true
+      this.selectedRegions = [hit.region]
+      this.cascade = {
+        province: hit.province || '',
+        city: hit.city || '',
+        district: hit.district || ''
+      }
+      // 匹配到省/市时，自动落到第一个区，便于展示街道列表
+      if (hit.level === 'province' || hit.level === 'city') {
+        this.$nextTick(() => {
+          if (!this.cascade.city && this.cityOptions.length) {
+            this.cascade.city = this.cityOptions[0]
+          }
+          if (!this.cascade.district && this.districtOptions.length) {
+            this.cascade.district = this.districtOptions[0]
+          }
+          this.syncingFromSearch = false
+        })
+      } else {
+        this.$nextTick(() => {
+          this.syncingFromSearch = false
+        })
+      }
     },
     onSearchInput(val) {
       const tokens = parseSearchTokens(val)
@@ -191,9 +477,44 @@ export default {
       if (this.searchOverflow) {
         this.searchText = tokens.slice(0, 300).join('，')
       }
+      const latest = tokens[tokens.length - 1]
+      if (!latest) {
+        this.searchMiss = false
+        return
+      }
+      const hit = matchToken(latest)
+      this.searchMiss = !hit
+      if (hit) this.applyMatch(hit)
     },
+    onRegionChange() {
+      if (this.syncingFromSearch) return
+      if (!this.provinceOptions.includes(this.cascade.province)) {
+        this.cascade.province = this.provinceOptions[0] || ''
+        this.onProvinceChange(this.cascade.province)
+      }
+    },
+    onProvinceChange(val) {
+      if (this.syncingFromSearch) return
+      this.cascade.city = ''
+      this.cascade.district = ''
+      if (!val) return
+      const cities = this.cityOptions
+      if (cities.length) {
+        this.cascade.city = cities[0]
+        this.onCityChange(cities[0])
+      }
+    },
+    onCityChange(val) {
+      if (this.syncingFromSearch) return
+      this.cascade.district = ''
+      if (!val) return
+      const districts = this.districtOptions
+      if (districts.length) this.cascade.district = districts[0]
+    },
+    onDistrictChange() {},
     toggleAllRegions(val) {
       this.selectedRegions = val ? this.regions.slice() : []
+      this.onRegionChange()
     },
     toggleAllLeaves(val) {
       const ids = this.visibleLeaves.map(l => l.value)
@@ -229,6 +550,15 @@ export default {
 }
 .addr-search {
   margin-bottom: 8px;
+}
+.addr-cascade {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.addr-cascade__item {
+  flex: 1;
+  min-width: 0;
 }
 .addr-tree {
   border: 1px solid #e4e5e9;

@@ -977,9 +977,11 @@ export default {
   margin: 0 0 24px;
   border-bottom: none;
 }
-/* 去掉 table-card 额外 16px，避免小标题比大标题更靠右 */
+/* 去掉 table-card 额外左右 padding（弹窗 body 已预留 24），避免表宽再缩一圈 */
 .pricing-view-dialog .table-card--view {
-  padding: 0;
+  padding: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
   min-height: 0;
   background: transparent;
   border-radius: 0;
@@ -1218,10 +1220,13 @@ export default {
 /* 预览：报价模块三列；一站定价 quote-form 拓展除外 */
 .pricing-view-dialog .table-card--view .complex-quote-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .quoting-base-form.lui-form-grid.el-form,
-.pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .ext-rule-form.lui-form-grid.el-form:not(.quote-form) {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   column-gap: 48px !important;
+}
+.pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid.el-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  column-gap: 24px !important;
 }
 .pricing-view-dialog .table-card--view .ext-merge-fields.lui-form-grid.el-form {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -1417,15 +1422,21 @@ export default {
 .pricing-view-dialog .table-card--view .partition-table-wrap.table-h-scroll,
 .pricing-view-dialog .table-card--view .detail-table-wrap.table-h-scroll {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   border-radius: 8px;
+  box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: #c0c4cc transparent;
 }
 .pricing-view-dialog .table-card--view .partition-table-wrap .el-table.quoting-data-table,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table.quoting-data-table {
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table.quoting-editable-table,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table.quoting-data-table,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table.quoting-editable-table {
   width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
   border-radius: 8px;
 }
 .pricing-view-dialog .table-card--view .quoting-data-table .el-table__header th.el-table__cell:first-child {

@@ -301,28 +301,29 @@ body,
   line-height: 1;
 }
 
-/* Figma 典型页：重置等次按钮为灰底无描边 */
+/* Figma / LUI PC3.0：次按钮灰底填充、无描边 */
 .el-button--default {
   background: var(--lui-bg-fill);
-  border-color: var(--lui-bg-fill);
+  border-color: transparent;
+  border: 1px solid transparent;
   color: var(--lui-text-main);
 }
 
 .el-button--default:focus {
   background: var(--lui-bg-fill);
-  border-color: var(--lui-bg-fill);
+  border-color: transparent;
   color: var(--lui-text-main);
 }
 
 .el-button--default:hover {
   color: var(--lui-primary);
-  border-color: var(--lui-primary-light-7);
+  border-color: transparent;
   background: var(--lui-primary-light-9);
 }
 
 .el-button--default:active {
   color: var(--lui-primary-active);
-  border-color: var(--lui-primary-active);
+  border-color: transparent;
   background: var(--lui-bg-fill);
 }
 
@@ -2131,6 +2132,18 @@ body,
   margin-top: 0;
   padding-top: 16px;
   border-top: 1px solid var(--lui-border-light);
+}
+
+/* LUI PC3.0：次按钮为填充（灰底），非描边 */
+.wizard-footer .el-button--default,
+.wizard-footer .el-button--default:hover,
+.wizard-footer .el-button--default:focus,
+.wizard-footer .el-button--default:active,
+.wizard-footer .el-button--default.is-disabled,
+.wizard-footer .el-button--default.is-disabled:hover {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .wizard-footer .el-button + .el-button {

@@ -239,7 +239,7 @@
 
       <!-- Step 2 价格分区 -->
       <div v-show="showSection('partition', 1)" class="quoting-section">
-        <h3 v-if="!isViewMode" class="section-title">价格分区配置</h3>
+        <h3 class="section-title">价格分区配置</h3>
         <el-form class="lui-form-grid partition-dims-form" size="small" label-width="120px">
           <el-form-item
             :label="isViewMode ? '已选报价维度' : '可选报价维度'"
@@ -510,7 +510,7 @@
 
       <!-- Step 3 报价明细 -->
       <div v-show="showSection('detail', 2)" class="quoting-section">
-        <h3 v-if="!isViewMode" class="section-title">报价明细配置</h3>
+        <h3 class="section-title">报价明细配置</h3>
         <!-- 图3：一行三列；配置分区纳入栅格；图5：内容间距 24px -->
         <div class="detail-meta-bar">
           <el-form
@@ -787,7 +787,10 @@
 
       <!-- 报价拓展规则：向导跟明细同一步；预览独立 Tab -->
       <div v-show="showSection('extension', 2)" class="quoting-section">
-        <h3 v-if="!isViewMode" class="section-title section-title--module">报价拓展规则</h3>
+        <h3
+          class="section-title"
+          :class="{ 'section-title--module': !isViewMode }"
+        >报价拓展规则</h3>
         <div v-if="showMergeRules" class="ext-block ext-block--plain">
           <div class="ext-block__title">合单规则</div>
           <el-form class="lui-form-grid ext-rule-form" size="small">
@@ -2093,7 +2096,7 @@ export default {
   margin-bottom: 12px;
 }
 .table-card--view .section-title {
-  font-size: 14px !important;
+  font-size: 16px !important;
   line-height: 22px !important;
   margin-bottom: 12px;
 }

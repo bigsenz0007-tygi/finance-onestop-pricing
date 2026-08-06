@@ -1085,7 +1085,7 @@ export default {
   margin-top: 24px;
 }
 .pricing-view-dialog .table-card--view .section-title {
-  font-size: 14px !important;
+  font-size: 16px !important;
   line-height: 22px !important;
   font-weight: 500;
 }

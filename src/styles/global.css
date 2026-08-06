@@ -47,7 +47,8 @@
   --lui-form-col-gap: 48px;
   --lui-form-row-gap: 16px;
   --lui-success: #12b35d;
-  --lui-danger: #fc3737;
+  --lui-danger: #fc3737; /* Lui-red-06 */
+  --lui-danger-bg: rgba(252, 55, 55, 0.1); /* 未填/报错底 */
   --lui-shadow-dropdown: 0 2px 6px rgba(35, 37, 43, 0.1);
   --lui-shadow-dialog: 0 4px 16px rgba(35, 37, 43, 0.1);
   --lui-blue-01: rgba(60, 110, 240, 0.1); /* Lui-blue-01 / #3C6EF0 10% */
@@ -152,6 +153,96 @@ body,
   background: #f5f5f6;
   border-color: var(--lui-border-light);
   color: var(--lui-text-disabled);
+}
+
+/*
+ * LUI PC3.0 报错态（Figma 录入-通用录入框 / 未填报错）：
+ * 边框 #FC3737 + 底 rgba(252,55,55,0.1)；下方 4px 间距 + 14 图标 + 12/#FC3737 文案
+ */
+.el-input.is-error .el-input__inner,
+.el-input.is-error .el-input__inner:hover,
+.el-input.is-error .el-input__inner:focus,
+.el-input.is-error.is-active .el-input__inner,
+.el-input.is-error.is-focus .el-input__inner,
+.el-textarea.is-error .el-textarea__inner,
+.el-textarea.is-error .el-textarea__inner:hover,
+.el-textarea.is-error .el-textarea__inner:focus,
+.el-select.is-error .el-input__inner,
+.el-select.is-error .el-input.is-focus .el-input__inner,
+.el-select.is-error:hover .el-input:not(.is-disabled) .el-input__inner,
+.el-range-editor.is-error.el-input__inner,
+.el-range-editor.is-error.el-input__inner:hover,
+.el-range-editor.is-error.is-active,
+.el-form-item.is-error .el-input__inner,
+.el-form-item.is-error .el-input__inner:hover,
+.el-form-item.is-error .el-input__inner:focus,
+.el-form-item.is-error .el-textarea__inner,
+.el-form-item.is-error .el-textarea__inner:hover,
+.el-form-item.is-error .el-textarea__inner:focus,
+.el-form-item.is-error .el-select .el-input__inner,
+.el-form-item.is-error .el-select .el-input.is-focus .el-input__inner,
+.el-form-item.is-error .el-range-editor.el-input__inner,
+.lui-field.is-error .el-input__inner,
+.lui-field.is-error .el-input__inner:hover,
+.lui-field.is-error .el-input__inner:focus,
+.lui-field.is-error .el-textarea__inner,
+.lui-field.is-error .el-select .el-input__inner,
+.lui-field.is-error .el-select .el-input.is-focus .el-input__inner,
+.lui-field.is-error .el-range-editor.el-input__inner,
+.lui-field.is-error .addr-select {
+  border-color: var(--lui-danger) !important;
+  background-color: var(--lui-danger-bg) !important;
+  box-shadow: none !important;
+}
+
+/* 日期范围报错：内层输入透明，避免框内白底 */
+.el-range-editor.is-error .el-range-input,
+.el-form-item.is-error .el-range-editor .el-range-input {
+  background-color: transparent !important;
+}
+
+.lui-field {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/*
+ * 报错文案：叠在控件正下方，不占文档流，整体高度/区块位置不变
+ */
+.el-form-item__content {
+  position: relative;
+}
+
+.lui-field-error,
+.lui-field-error--overlay {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 2px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  color: var(--lui-danger);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.lui-field-error__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+  display: block;
+}
+
+.lui-field-error__text {
+  color: var(--lui-danger);
 }
 
 .el-input--small .el-input__inner {
@@ -260,6 +351,53 @@ body,
   background: transparent !important;
   font-weight: 400;
   cursor: not-allowed;
+}
+
+/*
+ * 多选下拉：
+ * - 已选：蓝字 + checkbox，默认无背景
+ * - 仅「最近一次点选」.is-last-selected 保留浅蓝背景
+ * - 未选项 hover 浅蓝；已选非末次点选即使 hover 也不铺背景
+ * 需压过上方单选「选中即铺底」规则，故用更高优先级 + :not
+ */
+.el-select-dropdown.is-multiple .el-select-dropdown__item {
+  padding-left: 34px !important;
+  padding-right: 12px !important;
+  color: var(--lui-text-regular);
+}
+
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected,
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected:not(.is-last-selected),
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected.hover:not(.is-last-selected),
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected:hover:not(.is-last-selected) {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--lui-primary) !important;
+  font-weight: 500;
+}
+
+.el-select-dropdown.is-multiple .el-select-dropdown__item.hover:not(.selected),
+.el-select-dropdown.is-multiple .el-select-dropdown__item:hover:not(.selected) {
+  background: var(--lui-primary-light-9) !important; /* #ecf1fe */
+  color: var(--lui-text-regular) !important;
+  font-weight: 400;
+}
+
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected.is-last-selected,
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected.is-last-selected.hover,
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected.is-last-selected:hover {
+  background: var(--lui-primary-light-9) !important;
+  background-color: var(--lui-primary-light-9) !important;
+  color: var(--lui-primary) !important;
+  font-weight: 500;
+}
+
+.el-select-dropdown.is-multiple .el-select-dropdown__item.is-disabled,
+.el-select-dropdown.is-multiple .el-select-dropdown__item.is-disabled:hover,
+.el-select-dropdown.is-multiple .el-select-dropdown__item.is-disabled.hover {
+  color: var(--lui-text-disabled) !important;
+  background: transparent !important;
+  font-weight: 400;
 }
 
 .el-cascader__dropdown,
@@ -1302,6 +1440,27 @@ body,
   margin-top: 4px;
 }
 
+/* 全局多选 hover 气泡（跟随标签 / +N） */
+.multi-select-hover-tip {
+  position: fixed;
+  z-index: 4000;
+  max-width: 420px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(35, 37, 43, 0.9);
+  box-shadow: 0 4px 16px rgba(35, 37, 43, 0.1);
+  color: #fff;
+  font-size: 12px;
+  line-height: 18px;
+  word-break: break-all;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 10px));
+  white-space: normal;
+}
+.multi-select-hover-tip.is-hidden {
+  display: none !important;
+}
+
 /* 地址多选展开：对齐计费节点 collapse-tags 下拉观感 */
 .addr-select-popper {
   padding: 6px !important;
@@ -1628,6 +1787,7 @@ body,
   row-gap: var(--lui-form-row-gap); /* 16px */
   justify-content: stretch;
   --lui-form-label-width: 120px; /* Figma ≈119 */
+  overflow: visible;
 }
 
 .lui-form-grid--label-md {
@@ -1731,6 +1891,7 @@ body,
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 .lui-form-grid .el-form-item__label {
@@ -1757,6 +1918,8 @@ body,
   max-width: none;
   margin-left: 0 !important;
   line-height: var(--lui-control-height);
+  position: relative;
+  overflow: visible;
 }
 
 .lui-form-grid .el-input,
@@ -1805,6 +1968,13 @@ body,
 .lui-form-grid .el-form-item.lui-form-item--range .el-range-editor.el-input__inner {
   width: 100% !important;
   max-width: none;
+}
+
+/* 日期范围报错底色（class 打在 el-date-editor 根节点） */
+.lui-form-grid .el-date-editor.el-range-editor.is-error,
+.lui-form-grid .el-form-item.is-error .el-date-editor.el-range-editor.el-input__inner {
+  background-color: var(--lui-danger-bg) !important;
+  border-color: var(--lui-danger) !important;
 }
 
 .lui-form-grid .el-textarea__inner {
@@ -2171,7 +2341,9 @@ body,
 .elements-table__add-wrap .elements-table__add-row,
 .elements-table__add-row,
 .table-add-row {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: calc(100% - 8px);
   margin-left: 4px;
   margin-right: 4px;
@@ -2190,6 +2362,22 @@ body,
   border: 1px solid #e4e5e9;
   background: #ffffff;
   transition: none;
+}
+
+/* 「+」原随按钮 14px，加大 2 号为 16px；与「新增」间距 4px */
+.elements-table__add-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+.elements-table__add-text {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .elements-table__add-wrap .elements-table__add-row:hover,

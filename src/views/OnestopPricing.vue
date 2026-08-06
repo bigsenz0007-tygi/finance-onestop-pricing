@@ -30,8 +30,15 @@
           <h3 class="section-title">基础信息填写</h3>
           <fieldset class="pricing-fieldset">
           <el-form :model="scenario.base" class="lui-form-grid" size="small">
-            <el-form-item label="业务场景" required>
-              <el-select v-model="scenario.base.scenario" filterable clearable placeholder="请输入或选择业务场景">
+            <el-form-item label="业务场景" required :class="{ 'is-error': fieldErrors.scenario }">
+              <el-select
+                v-model="scenario.base.scenario"
+                filterable
+                clearable
+                placeholder="请输入或选择业务场景"
+                :class="{ 'is-error': fieldErrors.scenario }"
+                @change="clearFieldError('scenario')"
+              >
                 <el-option
                   v-for="item in scenarioOptions"
                   :key="item.value"
@@ -39,28 +46,48 @@
                   :value="item.value"
                 />
               </el-select>
+              <lui-field-error :message="fieldErrors.scenario" />
             </el-form-item>
-            <el-form-item label="关联产品" required>
-              <el-select v-model="scenario.base.product" filterable clearable placeholder="请输入或选择产品">
+            <el-form-item label="关联产品" required :class="{ 'is-error': fieldErrors.product }">
+              <el-select
+                v-model="scenario.base.product"
+                filterable
+                clearable
+                placeholder="请输入或选择产品"
+                :class="{ 'is-error': fieldErrors.product }"
+                @change="clearFieldError('product')"
+              >
                 <el-option label="P001 - 特快重货" value="P001" />
                 <el-option label="P002 - 标快" value="P002" />
                 <el-option label="P003 - 特快" value="P003" />
               </el-select>
+              <lui-field-error :message="fieldErrors.product" />
             </el-form-item>
-            <el-form-item label="责任人" required>
-              <el-input v-model="scenario.base.owner" placeholder="请填写erp" />
-            </el-form-item>
-            <el-form-item label="效期时间" required class="lui-form-item--range">
-              <span v-if="isViewMode" class="view-plain-text">{{ formatRangeText(scenario.base.range) }}</span>
-              <el-date-picker
-                v-else
-                v-model="scenario.base.range"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                value-format="yyyy-MM-dd"
+            <el-form-item label="责任人" required :class="{ 'is-error': fieldErrors.owner }">
+              <el-input
+                v-model="scenario.base.owner"
+                placeholder="请填写erp"
+                :class="{ 'is-error': fieldErrors.owner }"
+                @input="clearFieldError('owner')"
               />
+              <lui-field-error :message="fieldErrors.owner" />
+            </el-form-item>
+            <el-form-item label="效期时间" required class="lui-form-item--range" :class="{ 'is-error': fieldErrors.range }">
+              <span v-if="isViewMode" class="view-plain-text">{{ formatRangeText(scenario.base.range) }}</span>
+              <div v-else class="lui-field" :class="{ 'is-error': fieldErrors.range }">
+                <el-date-picker
+                  v-model="scenario.base.range"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  value-format="yyyy-MM-dd"
+                  class="lui-range-error-host"
+                  :class="{ 'is-error': fieldErrors.range }"
+                  @change="clearFieldError('range')"
+                />
+                <lui-field-error :message="fieldErrors.range" />
+              </div>
             </el-form-item>
             <el-form-item label="限定商家使用" required>
               <span v-if="isViewMode">{{ scenario.base.isLimitMerchant ? '是' : '否' }}</span>
@@ -120,7 +147,7 @@
           class="lui-inline-alert step-alert"
         />
         <fieldset class="pricing-fieldset">
-        <div class="table-h-scroll">
+        <div class="table-h-scroll table-h-scroll--error-tip">
         <el-table
           :data="scenario.billing.rules"
           border
@@ -129,7 +156,8 @@
         >
           <el-table-column label="交易类型" min-width="140">
             <template slot-scope="{ row }">
-              <el-select
+              <div class="lui-field" :class="{ 'is-error': row._validateError && !row.tradeType }">
+<el-select
                 v-model="row.tradeType"
                 size="small"
                 clearable
@@ -145,11 +173,14 @@
                   :value="item.value"
                 />
               </el-select>
+              <lui-field-error overlay :message="row._validateError && !row.tradeType ? '请填写' : ''" />
+            </div>
             </template>
           </el-table-column>
           <el-table-column label="来源系统" min-width="140">
             <template slot-scope="{ row }">
-              <el-select
+              <div class="lui-field" :class="{ 'is-error': row._validateError && !row.sourceSystem }">
+<el-select
                 v-model="row.sourceSystem"
                 size="small"
                 clearable
@@ -160,11 +191,14 @@
               >
                 <el-option v-for="item in sourceOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
+              <lui-field-error overlay :message="row._validateError && !row.sourceSystem ? '请填写' : ''" />
+            </div>
             </template>
           </el-table-column>
           <el-table-column label="单据类型" min-width="140">
             <template slot-scope="{ row }">
-              <el-select
+              <div class="lui-field" :class="{ 'is-error': row._validateError && !row.docType }">
+<el-select
                 v-model="row.docType"
                 size="small"
                 clearable
@@ -180,11 +214,14 @@
                   :value="item.value"
                 />
               </el-select>
+              <lui-field-error overlay :message="row._validateError && !row.docType ? '请填写' : ''" />
+            </div>
             </template>
           </el-table-column>
           <el-table-column label="计费项目" min-width="120">
             <template slot-scope="{ row }">
-              <el-select
+              <div class="lui-field" :class="{ 'is-error': row._validateError && !row.items }">
+<el-select
                 v-model="row.items"
                 size="small"
                 filterable
@@ -195,23 +232,29 @@
               >
                 <el-option v-for="item in feeItemOptions" :key="item" :label="item" :value="item" />
               </el-select>
+              <lui-field-error overlay :message="row._validateError && !row.items ? '请填写' : ''" />
+            </div>
             </template>
           </el-table-column>
           <el-table-column label="计费节点" :min-width="isViewMode ? 200 : 160">
             <template slot-scope="{ row }">
-              <el-select
-                v-model="row.nodes"
-                size="small"
-                multiple
-                :collapse-tags="!isViewMode"
-                filterable
-                clearable
-                placeholder="请选择"
-                class="lui-select-no-tag-tip"
-                :class="{ 'is-error': row._validateError && !(row.nodes && row.nodes.length) }"
-              >
-                <el-option v-for="item in billingNodeOptions" :key="item" :label="item" :value="item" />
-              </el-select>
+              <div class="lui-field" :class="{ 'is-error': row._validateError && !(row.nodes && row.nodes.length) }">
+                <el-select
+                  v-model="row.nodes"
+                  size="small"
+                  multiple
+                  :collapse-tags="!isViewMode"
+                  filterable
+                  clearable
+                  placeholder="请选择"
+                  class="lui-select-no-tag-tip"
+                  :class="{ 'is-error': row._validateError && !(row.nodes && row.nodes.length) }"
+                  @change="row._validateError && markBillingRuleErrors()"
+                >
+                  <el-option v-for="item in billingNodeOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+                <lui-field-error overlay :message="row._validateError && !(row.nodes && row.nodes.length) ? '请填写' : ''" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column label="计费条件" :min-width="isViewMode ? 520 : 320">
@@ -269,7 +312,7 @@
             type="button"
             class="elements-table__add-row"
             @click="addBillingRule"
-          >+新增</button>
+          ><span class="elements-table__add-plus">+</span><span class="elements-table__add-text">新增</span></button>
         </div>
         </fieldset>
         </div>
@@ -311,7 +354,7 @@
             size="small"
             label-width="120px"
           >
-            <el-form-item label="定价维度">
+            <el-form-item label="定价维度" :class="{ 'is-error': fieldErrors.dimensions }">
               <el-select
                 v-model="scenario.quotation.dimensions"
                 multiple
@@ -319,9 +362,13 @@
                 filterable
                 clearable
                 placeholder="请选择定价维度 (可多选)"
+                class="lui-select-no-tag-tip"
+                :class="{ 'is-error': fieldErrors.dimensions }"
+                @change="clearFieldError('dimensions')"
               >
                 <el-option v-for="item in quoteDimensionOptions" :key="item" :label="item" :value="item" />
               </el-select>
+              <lui-field-error :message="fieldErrors.dimensions" />
             </el-form-item>
             <el-form-item
               v-if="scenario.quotation.dimensions.length"
@@ -355,7 +402,7 @@
                 </el-table>
               </div>
             </el-form-item>
-            <el-form-item label="定价模式">
+            <el-form-item label="定价模式" :class="{ 'is-error': fieldErrors.modes }">
               <div class="mode-row">
                 <el-select
                   v-model="scenario.quotation.modes"
@@ -364,6 +411,9 @@
                   filterable
                   clearable
                   placeholder="请选择定价模式 (可多选)"
+                  class="lui-select-no-tag-tip"
+                  :class="{ 'is-error': fieldErrors.modes }"
+                  @change="clearFieldError('modes')"
                 >
                   <el-option v-for="item in quoteModeOptions" :key="item" :label="item" :value="item" />
                 </el-select>
@@ -375,6 +425,7 @@
                   @click="createModeVisible = true"
                 >+ 新建报价模式</el-button>
               </div>
+              <lui-field-error :message="fieldErrors.modes" />
             </el-form-item>
             <el-form-item
               v-if="scenario.quotation.modes.length"
@@ -417,7 +468,7 @@
               </el-table>
               </div>
             </el-form-item>
-            <el-form-item>
+            <el-form-item :class="{ 'is-error': fieldErrors.ladders }">
               <span slot="label" class="field-label-with-tip">
                 <span>单票报价阶梯</span>
                 <el-tooltip
@@ -436,9 +487,13 @@
                 filterable
                 clearable
                 placeholder="请选择单票报价阶梯 (可多选)"
+                class="lui-select-no-tag-tip"
+                :class="{ 'is-error': fieldErrors.ladders }"
+                @change="clearFieldError('ladders')"
               >
                 <el-option v-for="item in ladderOptions" :key="item" :label="item" :value="item" />
               </el-select>
+              <lui-field-error :message="fieldErrors.ladders" />
             </el-form-item>
           </el-form>
         </div>
@@ -486,17 +541,38 @@
             label-width="112px"
           >
             <el-form-item label="可用合单维度">
-              <el-select v-model="scenario.extension.mergeDimensions" multiple :collapse-tags="!isViewMode" clearable placeholder="请选择">
+              <el-select
+                v-model="scenario.extension.mergeDimensions"
+                multiple
+                :collapse-tags="!isViewMode"
+                clearable
+                placeholder="请选择"
+                class="lui-select-no-tag-tip"
+              >
                 <el-option v-for="item in mergeDimOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
             <el-form-item label="可用合单对象">
-              <el-select v-model="scenario.extension.mergeTargets" multiple :collapse-tags="!isViewMode" clearable placeholder="请选择">
+              <el-select
+                v-model="scenario.extension.mergeTargets"
+                multiple
+                :collapse-tags="!isViewMode"
+                clearable
+                placeholder="请选择"
+                class="lui-select-no-tag-tip"
+              >
                 <el-option v-for="item in mergeTargetOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
             <el-form-item label="可用分摊依据">
-              <el-select v-model="scenario.extension.apportionBasis" multiple :collapse-tags="!isViewMode" clearable placeholder="请选择">
+              <el-select
+                v-model="scenario.extension.apportionBasis"
+                multiple
+                :collapse-tags="!isViewMode"
+                clearable
+                placeholder="请选择"
+                class="lui-select-no-tag-tip"
+              >
                 <el-option v-for="item in apportionOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -509,7 +585,7 @@
         <fieldset class="pricing-fieldset">
         <div class="sim-card">
           <h4 class="section-title">测算参数配置</h4>
-          <el-form class="lui-form-grid" size="small">
+          <el-form class="lui-form-grid sim-param-config-form" size="small">
             <el-form-item label="测算类型" required>
               <el-radio-group v-model="scenario.sim.type" @change="onSimTypeChange">
                 <el-radio label="模拟">模拟测算</el-radio>
@@ -531,6 +607,9 @@
                 <el-input v-model="scenario.sim.orderNo" placeholder="输入真实运单号验证计费结果" />
               </el-form-item>
             </template>
+            <el-form-item class="sim-run-item">
+              <el-button type="primary" size="small" @click="runSim">开始测算</el-button>
+            </el-form-item>
           </el-form>
         </div>
         <div v-if="scenario.sim.type === '模拟' && scenario.sim.mode" class="sim-card">
@@ -559,6 +638,20 @@
             </el-form-item>
           </el-form>
         </div>
+        <div v-if="scenario.sim.result" class="sim-result">
+          <div class="sim-result__head">
+            <span class="sim-result__title">测算结果</span>
+          </div>
+          <div class="sim-result__amount-row">
+            <span class="sim-result__amount-label">预估总金额:</span>
+            <span class="sim-result__currency">¥</span>
+            <span class="sim-result__amount">{{ scenario.sim.result.total }}</span>
+          </div>
+          <div class="sim-result__process">
+            <span class="sim-result__process-label">计算过程：</span>
+            <span class="sim-result__process-text">{{ scenario.sim.result.formula }}</span>
+          </div>
+        </div>
         </fieldset>
       </div>
       </div>
@@ -571,7 +664,6 @@
           <el-button size="small" :disabled="step === 0" @click="goPrevStep">上一步</el-button>
           <el-button v-if="step < 2" type="primary" size="small" @click="goNextStep">下一步</el-button>
           <template v-else>
-            <el-button type="primary" size="small" @click="runSim">开始测算</el-button>
             <el-button type="primary" size="small" @click="publishPricing">发布</el-button>
           </template>
         </template>
@@ -617,7 +709,7 @@
           multiple
           collapse-tags
           placeholder="条件值"
-          class="condition-edit-row__value"
+          class="condition-edit-row__value lui-select-no-tag-tip"
         >
           <el-option
             v-for="item in conditionValueOptions(cond.dimension)"
@@ -655,28 +747,6 @@
           <el-button size="small" @click="conditionVisible = false">取消</el-button>
           <el-button type="primary" size="small" @click="saveConditions">保存</el-button>
         </template>
-      </div>
-    </el-dialog>
-
-    <el-dialog
-      title="测算结果"
-      :visible.sync="simResultVisible"
-      width="560px"
-      custom-class="lui-form-dialog sim-result-dialog"
-      append-to-body
-      :close-on-click-modal="false"
-    >
-      <div v-if="scenario.sim.result" class="sim-result-dialog__body">
-        <div class="sim-result-dialog__total">
-          <span class="sim-result-dialog__currency">¥</span>
-          <span class="sim-result-dialog__amount">{{ scenario.sim.result.total }}</span>
-        </div>
-        <el-timeline class="sim-result-dialog__timeline">
-          <el-timeline-item v-for="(item, idx) in scenario.sim.result.path" :key="idx">{{ item }}</el-timeline-item>
-        </el-timeline>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" size="small" @click="simResultVisible = false">确定</el-button>
       </div>
     </el-dialog>
 
@@ -827,6 +897,7 @@
 <script>
 import { PRODUCT_FEE_ROWS } from '../mock/data'
 import LuiArrowSteps from '../components/LuiArrowSteps.vue'
+import LuiFieldError from '../components/LuiFieldError.vue'
 import {
   listSourceSystems,
   listDocTypes,
@@ -902,7 +973,7 @@ function createBillingRule(overrides = {}) {
 
 export default {
   name: 'OnestopPricing',
-  components: { LuiArrowSteps },
+  components: { LuiArrowSteps, LuiFieldError },
   props: {
     detailMode: {
       type: String,
@@ -920,6 +991,7 @@ export default {
       isBase: true
     })
     return {
+      fieldErrors: {},
       mode: 'scenario',
       step: 0,
       maxReachedStep: 0,
@@ -935,7 +1007,6 @@ export default {
       merchantCodesFocused: false,
       activeBillingRuleId: 'rule-1',
       conditionVisible: false,
-      simResultVisible: false,
       createModeVisible: false,
       tempConditions: [],
       feeItemOptions: ['运费', '保价费', '出库费', '包装费', '装卸费', '上楼费', '快递运费', '快运运费'],
@@ -1215,10 +1286,15 @@ export default {
     goNextStep() {
       const curCheck = this.validateStep(this.step)
       if (!curCheck.ok) {
-        if (this.step === 0) this.markBillingRuleErrors()
+        if (this.step === 0) {
+          this.markBaseFieldErrors()
+          this.markBillingRuleErrors()
+        }
+        if (this.step === 1) this.markQuotationFieldErrors()
         this.$message.warning(curCheck.message || '请完成本步骤必填项后再进入下一步')
         return
       }
+      this.fieldErrors = {}
       const next = this.step + 1
       this.step = next
       this.maxReachedStep = Math.max(this.maxReachedStep, next)
@@ -1397,6 +1473,22 @@ export default {
       }
       return `${dim} ${op} ${cond.inputValue || ''}`
     },
+    /** collapse-tags 多选：超过 1 项时 hover 横向展示全部 */
+    needMultiSelectTip(list) {
+      return Array.isArray(list) && list.length > 1
+    },
+    formatMultiSelectTip(list) {
+      if (!Array.isArray(list) || !list.length) return ''
+      return list.join('、')
+    },
+    conditionValueLabels(cond) {
+      if (!cond) return []
+      const opts = this.conditionValueOptions(cond.dimension)
+      return (cond.values || []).map(code => {
+        const hit = opts.find(o => o.code === code)
+        return (hit && hit.name) || code
+      })
+    },
     conditionValueOptions(dimension) {
       const dim = this.conditionDimOptions.find(d => d.code === dimension)
       return (dim && dim.options) || []
@@ -1532,6 +1624,31 @@ export default {
       const p = n => String(n).padStart(2, '0')
       return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
     },
+    clearFieldError(key) {
+      if (this.fieldErrors && this.fieldErrors[key]) this.$delete(this.fieldErrors, key)
+    },
+    markBaseFieldErrors() {
+      const ERR = '请填写'
+      const base = this.scenario.base || {}
+      const errors = {}
+      if (!base.scenario) errors.scenario = ERR
+      if (!base.product) errors.product = ERR
+      if (!(base.owner || '').trim()) errors.owner = ERR
+      if (!(base.range && base.range.length === 2)) errors.range = ERR
+      if (base.isLimitMerchant && !(base.merchantCodes && base.merchantCodes.length)) {
+        errors.merchantCodes = ERR
+      }
+      this.fieldErrors = errors
+    },
+    markQuotationFieldErrors() {
+      const ERR = '请填写'
+      const q = this.scenario.quotation || {}
+      const errors = { ...this.fieldErrors }
+      if (!(q.dimensions && q.dimensions.length)) errors.dimensions = ERR
+      if (!(q.modes && q.modes.length)) errors.modes = ERR
+      if (!(q.ladders && q.ladders.length)) errors.ladders = ERR
+      this.fieldErrors = errors
+    },
     validateBaseInfo() {
       const base = this.scenario.base || {}
       if (!base.scenario) return { ok: false, message: '请选择业务场景' }
@@ -1554,6 +1671,7 @@ export default {
       const baseCheck = this.validateBaseInfo()
       if (!baseCheck.ok) {
         this.step = 0
+        this.markBaseFieldErrors()
         this.$message.warning(baseCheck.message)
         return
       }
@@ -1566,6 +1684,7 @@ export default {
       const quoteCheck = this.validateQuotationRequired()
       if (!quoteCheck.ok) {
         this.step = 1
+        this.markQuotationFieldErrors()
         this.$message.warning(quoteCheck.message)
         return
       }
@@ -1618,9 +1737,9 @@ export default {
             `报价模式：${mode}`,
             `运单号 ${this.scenario.sim.orderNo}`,
             '金额取整后输出总额 36.80'
-          ]
+          ],
+          formula: `运单号[${this.scenario.sim.orderNo}]匹配场景[${this.scenario.base.scenario || '当前场景'}]；报价模式[${mode}]，金额取整后输出总额[36.80]`
         }
-        this.simResultVisible = true
         return
       }
 
@@ -1636,6 +1755,7 @@ export default {
       }
       let total = 0
       const path = [`报价模式：${mode}`]
+      let formula = `报价模式[${mode}]；`
       if (mode === '首续重计费') {
         const w = num(factors.weight)
         const limit = num(prices.firstWeightLimit)
@@ -1646,6 +1766,7 @@ export default {
         path.push(`计费重量 ${w}kg，首重 ${limit}kg`)
         path.push(`首重费 ${firstFee.toFixed(2)}`)
         if (contWeight > 0) path.push(`续重费 ${(contWeight * contUnit).toFixed(2)}`)
+        formula += `计费重量[${w}]>首重[${limit}]，金额=(首重价格[${firstFee}]+(计费重量[${w}]-首重公斤[${limit}])*续重价格[${contUnit}])`
       } else if (mode === '按件型') {
         const n = num(factors.pieceCount)
         const unit = num(prices.unitPrice)
@@ -1657,6 +1778,7 @@ export default {
         if (total === minFee && minFee > pieceFee) {
           path.push(`起步价补差 ${(minFee - pieceFee).toFixed(2)}`)
         }
+        formula += `金额=max(件数[${n}]*单件价[${unit}],起步价[${minFee}])`
       } else if (mode === '按方') {
         const v = num(factors.volume)
         const cbm = num(prices.cbmPrice)
@@ -1668,9 +1790,11 @@ export default {
         if (total === minFee && minFee > volFee) {
           path.push(`起步价补差 ${(minFee - volFee).toFixed(2)}`)
         }
+        formula += `金额=max(体积[${v}]*方单价[${cbm}],起步价[${minFee}])`
       } else if (mode === '一口价') {
         total = num(prices.flatFee)
         path.push(`一口价 ${total.toFixed(2)}`)
+        formula += `一口价[${total.toFixed(2)}]`
       } else if (mode === '百分比提成') {
         const base = num(factors.baseAmount)
         const rate = num(prices.rate) / 100
@@ -1679,16 +1803,19 @@ export default {
         total = Math.max(minFee, fee)
         path.push(`基数 ${base}，提成比例 ${(rate * 100).toFixed(2)}%`)
         path.push(`提成费用 ${fee.toFixed(2)}`)
+        formula += `金额=max(基数[${base}]*提成比例[${(rate * 100).toFixed(2)}%],起步价[${minFee}])`
       } else {
         total = 0
         path.push('暂无匹配算法，输出 0.00')
+        formula += '暂无匹配算法'
       }
       path.push(`金额取整后输出总额 ${total.toFixed(2)}`)
+      formula += `，金额取整后输出总额[${total.toFixed(2)}]`
       this.scenario.sim.result = {
         total: total.toFixed(2),
-        path
+        path,
+        formula
       }
-      this.simResultVisible = true
     }
   }
 }
@@ -1966,6 +2093,13 @@ export default {
   max-width: 100%;
   overflow: hidden;
 }
+/* 计费场景表：允许行内报错浮层露出，不被外层裁切 */
+.table-h-scroll--error-tip {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 20px;
+  margin-bottom: -8px;
+}
 .table-card--view .table-h-scroll {
   pointer-events: auto;
 }
@@ -1976,6 +2110,10 @@ export default {
 .table-h-scroll >>> .el-table__body-wrapper {
   overflow-x: auto !important;
   overflow-y: hidden !important;
+}
+.table-h-scroll--error-tip >>> .el-table__body-wrapper {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 .table-h-scroll >>> .el-table__body-wrapper::-webkit-scrollbar {
   width: 48px;
@@ -1995,6 +2133,7 @@ export default {
 }
 .scene-rules-table {
   width: 100%;
+  overflow: visible !important;
 }
 .scene-rules-table >>> .el-table__header th.el-table__cell {
   font-size: 14px;
@@ -2003,18 +2142,41 @@ export default {
   background: #f2f5f8 !important;
 }
 .scene-rules-table >>> .el-table__body .cell {
-  overflow: hidden;
+  overflow: visible !important;
 }
 .table-card--wizard .scene-rules-table >>> .el-table__body .cell,
 .table-card--view .scene-rules-table >>> .el-table__body .cell {
+  overflow: visible !important;
+}
+.scene-rules-table >>> .el-table__body-wrapper,
+.scene-rules-table >>> .el-table__header-wrapper {
   overflow: visible !important;
 }
 .scene-rules-table >>> .el-table__body td.el-table__cell {
   vertical-align: middle;
   padding-top: 10px !important;
   padding-bottom: 10px !important;
+  overflow: visible !important;
+}
+/* 表格内报错文案浮在行上，避免被下一行/裁剪挡住 */
+.scene-rules-table >>> .lui-field {
+  position: relative;
+  z-index: 1;
+}
+.scene-rules-table >>> .lui-field.is-error {
+  z-index: 20;
+}
+.scene-rules-table >>> .lui-field-error--overlay {
+  z-index: 30;
 }
 .scene-rules-table >>> .el-select {
+  width: 100%;
+}
+.multi-select-tip-wrap {
+  width: 100%;
+  min-width: 0;
+}
+.multi-select-tip-wrap .el-select {
   width: 100%;
 }
 .scene-rules-table >>> .el-input__inner,
@@ -2057,7 +2219,8 @@ export default {
 .scene-rules-table >>> .el-select.is-error .el-input__inner,
 .scene-rules-table >>> .el-select.is-error .el-input.is-focus .el-input__inner,
 .scene-rules-table >>> .el-select.is-error:hover .el-input:not(.is-disabled) .el-input__inner {
-  border-color: #f53f3f !important;
+  border-color: var(--lui-danger, #fc3737) !important;
+  background-color: var(--lui-danger-bg, rgba(252, 55, 55, 0.1)) !important;
   box-shadow: none !important;
 }
 .condition-row {
@@ -2375,20 +2538,93 @@ export default {
 }
 .sim-card__action {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   margin-top: 8px;
 }
-.sim-result {
-  margin-top: 16px;
-  padding: 16px 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
+/* 图1：测算参数表单横向居中；开始测算跟在选择项后 */
+.sim-card .sim-param-config-form.lui-form-grid.el-form {
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
 }
-.sim-result h4 {
-  margin: 0 0 8px;
-  font-size: 15px;
+.sim-card .sim-run-item {
+  margin-bottom: 0 !important;
+}
+.sim-card .sim-run-item >>> .el-form-item__label {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.sim-card .sim-run-item >>> .el-form-item__content {
+  margin-left: 0 !important;
+  display: flex !important;
+  justify-content: flex-start;
+  align-items: center;
+  line-height: 32px;
+  min-height: 32px;
+}
+/* 图3：蓝色结果卡 + 计算过程 */
+.sim-result {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: rgba(60, 110, 240, 0.08);
+  border: 1px solid rgba(60, 110, 240, 0.28);
+  box-sizing: border-box;
+}
+.sim-result__head {
+  margin-bottom: 12px;
+}
+.sim-result__title {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #3c6ef0;
+}
+.sim-result__amount-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-bottom: 12px;
+  font-family: var(--lui-font-number);
+  line-height: 36px;
+}
+.sim-result__amount-label {
+  font-size: 14px;
+  font-weight: 500;
   color: #23252b;
+  font-family: var(--lui-font-sans);
+  line-height: 22px;
+}
+.sim-result__currency {
+  margin-right: 2px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #3c6ef0;
+}
+.sim-result__amount {
+  font-size: 28px;
+  font-weight: 500;
+  color: #3c6ef0;
+}
+.sim-result__process {
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #e4e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #23252b;
+  word-break: break-word;
+}
+.sim-result__process-label {
+  font-weight: 500;
+}
+.sim-result__process-text {
+  font-weight: 400;
+  color: #525765;
 }
 .condition-edit-row {
   display: flex;
@@ -2575,34 +2811,4 @@ export default {
   border-bottom-color: rgba(35, 37, 43, 0.9) !important;
 }
 
-.sim-result-dialog .sim-result-dialog__body {
-  padding-top: 4px;
-}
-.sim-result-dialog .sim-result-dialog__total {
-  margin: 0 0 16px;
-  color: #23252b;
-  font-family: var(--lui-font-number);
-  line-height: 36px;
-}
-.sim-result-dialog .sim-result-dialog__currency {
-  margin-right: 4px;
-  font-size: 20px;
-  font-weight: 400;
-}
-.sim-result-dialog .sim-result-dialog__amount {
-  font-size: 28px;
-  font-weight: 400;
-}
-.sim-result-dialog .sim-result-dialog__timeline.el-timeline {
-  padding-left: 0;
-}
-.sim-result-dialog .sim-result-dialog__timeline .el-timeline-item {
-  padding-bottom: 12px;
-}
-.sim-result-dialog .sim-result-dialog__timeline .el-timeline-item:last-child {
-  padding-bottom: 0;
-}
-.sim-result-dialog .sim-result-dialog__timeline .el-timeline-item__timestamp {
-  display: none;
-}
 </style>

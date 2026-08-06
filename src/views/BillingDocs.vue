@@ -216,8 +216,14 @@
                   :class="{ 'is-error': isElementNameDuplicate(row) || (elementSubmitAttempted && isElementRowIncomplete(row)) }"
                   @blur="onElementNameBlur(row)"
                 />
-                <p v-if="isElementNameDuplicate(row)" class="element-field__error">内容重复</p>
-                <p v-else-if="elementSubmitAttempted && isElementRowIncomplete(row)" class="element-field__error">未填写</p>
+                <p v-if="isElementNameDuplicate(row)" class="element-field__error">
+                  <img class="element-field__error-icon" :src="errorHintIcon" alt="" width="14" height="14">
+                  <span>内容重复</span>
+                </p>
+                <p v-else-if="elementSubmitAttempted && isElementRowIncomplete(row)" class="element-field__error">
+                  <img class="element-field__error-icon" :src="errorHintIcon" alt="" width="14" height="14">
+                  <span>请填写</span>
+                </p>
               </div>
               <span v-else>{{ row.name }}</span>
             </template>
@@ -286,7 +292,7 @@
           <div
             class="elements-table__add-row"
             @click="addElement"
-          >+新增</div>
+          ><span class="elements-table__add-plus">+</span><span class="elements-table__add-text">新增</span></div>
         </div>
         <div class="elements-pager">
           <span class="elements-pager__total">共 {{ elements.length }} 条记录</span>
@@ -338,6 +344,7 @@ import {
   isValidCascadePath
 } from '../mock/cascade'
 import { statusTagType } from '../utils/statusTag'
+import { publicAsset } from '../utils/publicAsset'
 
 const BILLING_STATUS_OPTIONS = ['揽收', '妥投', '派送', '签收', '异常', '理赔', '退回', '待入库']
 const ELEMENT_NAME_CODE = {
@@ -405,6 +412,9 @@ export default {
     }
   },
   computed: {
+    errorHintIcon() {
+      return publicAsset('d2c-assets/icon-hint-error.svg')
+    },
     drawerTitle() {
       if (this.drawerMode === 'create') return '新建单据计费要素'
       if (this.drawerMode === 'edit') return '编辑单据计费要素'
@@ -874,22 +884,32 @@ export default {
 .elements-table >>> .el-select.is-error:hover .el-input:not(.is-disabled) .el-input__inner,
 .elements-table >>> .el-input.is-error .el-input__inner,
 .elements-table >>> .element-field__control.is-error .el-input__inner {
-  border-color: #f53f3f !important;
+  border-color: var(--lui-danger, #fc3737) !important;
+  background-color: var(--lui-danger-bg, rgba(252, 55, 55, 0.1)) !important;
   box-shadow: none !important;
 }
 /* 红字原地叠在框下，不撑高行 */
 .element-field__error {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   position: absolute;
   left: 0;
   top: 100%;
   margin: 2px 0 0;
   padding: 0;
-  color: #f53f3f;
+  color: var(--lui-danger, #fc3737);
   font-size: 12px;
   line-height: 16px;
   white-space: nowrap;
   z-index: 3;
   pointer-events: none;
+}
+.element-field__error-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 .element-ops__link.el-button--text {
   padding: 0;

@@ -70,13 +70,29 @@
       <div v-show="showSection('base', 0)" class="quoting-section">
         <h3 class="section-title">基础信息</h3>
         <el-form :model="base" class="lui-form-grid quoting-base-form" size="small">
-          <el-form-item label="报价方案名称" required>
+          <el-form-item label="报价方案名称" required :class="{ 'is-error': fieldErrors.quotationName }">
             <span v-if="isViewMode" class="view-plain-text">{{ base.quotationName || '-' }}</span>
-            <el-input v-else v-model="base.quotationName" placeholder="请输入报价方案名称" />
+            <template v-else>
+              <el-input
+                v-model="base.quotationName"
+                placeholder="请输入报价方案名称"
+                :class="{ 'is-error': fieldErrors.quotationName }"
+                @input="clearFieldError('quotationName')"
+              />
+              <lui-field-error :message="fieldErrors.quotationName" />
+            </template>
           </el-form-item>
-          <el-form-item label="商家编码" required>
+          <el-form-item label="商家编码" required :class="{ 'is-error': fieldErrors.merchantCode }">
             <span v-if="isViewMode" class="view-plain-text">{{ base.merchantCode || '-' }}</span>
-            <el-input v-else v-model="base.merchantCode" placeholder="请输入商家编码" @input="onMerchantCode" />
+            <template v-else>
+              <el-input
+                v-model="base.merchantCode"
+                placeholder="请输入商家编码"
+                :class="{ 'is-error': fieldErrors.merchantCode }"
+                @input="onMerchantCode(); clearFieldError('merchantCode')"
+              />
+              <lui-field-error :message="fieldErrors.merchantCode" />
+            </template>
           </el-form-item>
           <el-form-item label="商家名称" required>
             <span v-if="isViewMode" class="view-plain-text">{{ base.merchantName || '-' }}</span>
@@ -104,26 +120,43 @@
               <el-option label="场景报价" value="场景报价" />
             </el-select>
           </el-form-item>
-          <el-form-item label="折扣产品" required>
+          <el-form-item label="折扣产品" required :class="{ 'is-error': fieldErrors.discountProduct }">
             <span v-if="isViewMode" class="view-plain-text">{{ base.discountProduct || '-' }}</span>
-            <el-select v-else v-model="base.discountProduct" clearable placeholder="请选择" @change="onDiscountProductChange">
-              <el-option label="重货标快" value="重货标快" />
-              <el-option label="京东标快" value="京东标快" />
-              <el-option label="京东特快" value="京东特快" />
-            </el-select>
+            <template v-else>
+              <el-select
+                v-model="base.discountProduct"
+                clearable
+                placeholder="请选择"
+                :class="{ 'is-error': fieldErrors.discountProduct }"
+                @change="onDiscountProductChange(); clearFieldError('discountProduct')"
+              >
+                <el-option label="重货标快" value="重货标快" />
+                <el-option label="京东标快" value="京东标快" />
+                <el-option label="京东特快" value="京东特快" />
+              </el-select>
+              <lui-field-error :message="fieldErrors.discountProduct" />
+            </template>
           </el-form-item>
-          <el-form-item v-if="base.quotationMethod === '场景报价'" label="业务场景" required>
+          <el-form-item
+            v-if="base.quotationMethod === '场景报价'"
+            label="业务场景"
+            required
+            :class="{ 'is-error': fieldErrors.businessScenario }"
+          >
             <span v-if="isViewMode" class="view-plain-text">{{ base.businessScenario || '-' }}</span>
-            <el-select
-              v-else
-              v-model="base.businessScenario"
-              clearable
-              placeholder="请选择"
-              :disabled="!scenarios.length"
-              @change="onBusinessScenarioChange"
-            >
-              <el-option v-for="s in scenarios" :key="s" :label="s" :value="s" />
-            </el-select>
+            <template v-else>
+              <el-select
+                v-model="base.businessScenario"
+                clearable
+                placeholder="请选择"
+                :disabled="!scenarios.length"
+                :class="{ 'is-error': fieldErrors.businessScenario }"
+                @change="onBusinessScenarioChange(); clearFieldError('businessScenario')"
+              >
+                <el-option v-for="s in scenarios" :key="s" :label="s" :value="s" />
+              </el-select>
+              <lui-field-error :message="fieldErrors.businessScenario" />
+            </template>
           </el-form-item>
           <el-form-item label="结算方式" required>
             <span v-if="isViewMode" class="view-plain-text">{{ base.settlementMethod || '-' }}</span>
@@ -140,14 +173,24 @@
               <el-option v-if="base.quotationMethod !== '场景报价'" label="到付现结" value="到付现结" />
             </el-select>
           </el-form-item>
-          <el-form-item label="计费策略" required>
+          <el-form-item label="计费策略" required :class="{ 'is-error': fieldErrors.billingStrategy }">
             <span v-if="isViewMode" class="view-plain-text">{{ base.billingStrategy || '-' }}</span>
-            <el-select v-else v-model="base.billingStrategy" clearable placeholder="请选择" :disabled="isCash">
-              <el-option label="普通" value="普通" />
-              <el-option v-if="!isCash" label="统计考核" value="统计考核" />
-              <el-option v-if="!isCash" label="合单计费" value="合单计费" />
-              <el-option v-if="!isCash" label="统计+合单" value="统计+合单" />
-            </el-select>
+            <template v-else>
+              <el-select
+                v-model="base.billingStrategy"
+                clearable
+                placeholder="请选择"
+                :disabled="isCash"
+                :class="{ 'is-error': fieldErrors.billingStrategy }"
+                @change="clearFieldError('billingStrategy')"
+              >
+                <el-option label="普通" value="普通" />
+                <el-option v-if="!isCash" label="统计考核" value="统计考核" />
+                <el-option v-if="!isCash" label="合单计费" value="合单计费" />
+                <el-option v-if="!isCash" label="统计+合单" value="统计+合单" />
+              </el-select>
+              <lui-field-error :message="fieldErrors.billingStrategy" />
+            </template>
           </el-form-item>
           <el-form-item v-if="isStats" label="统计考核方式" required>
             <span v-if="isViewMode" class="view-plain-text">{{ base.statisticsMethod || '-' }}</span>
@@ -217,20 +260,42 @@
                 <el-radio label="是">是</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item v-if="complexQuoteOpen && base.hasIdentityPriority === '是'" label="身份优先级" required>
+            <el-form-item
+              v-if="complexQuoteOpen && base.hasIdentityPriority === '是'"
+              label="身份优先级"
+              required
+              :class="{ 'is-error': fieldErrors.identityPriority }"
+            >
               <span v-if="isViewMode" class="view-plain-text">{{ base.identityPriority || '-' }}</span>
-              <el-input
-                v-else
-                :value="base.identityPriority"
-                placeholder="请输入数字，如 1"
-                @input="onIntFieldInput(base, 'identityPriority', $event)"
-              />
+              <template v-else>
+                <el-input
+                  :value="base.identityPriority"
+                  placeholder="请输入数字，如 1"
+                  :class="{ 'is-error': fieldErrors.identityPriority }"
+                  @input="onIntFieldInput(base, 'identityPriority', $event); clearFieldError('identityPriority')"
+                />
+                <lui-field-error :message="fieldErrors.identityPriority" />
+              </template>
             </el-form-item>
-            <el-form-item v-if="complexQuoteOpen && base.hasIdentityPriority === '是'" label="替核模式规则" required>
+            <el-form-item
+              v-if="complexQuoteOpen && base.hasIdentityPriority === '是'"
+              label="替核模式规则"
+              required
+              :class="{ 'is-error': fieldErrors.substituteModeRule }"
+            >
               <span v-if="isViewMode" class="view-plain-text">{{ base.substituteModeRule || '-' }}</span>
-              <el-select v-else v-model="base.substituteModeRule" clearable placeholder="请选择">
-                <el-option v-for="r in substituteModeRules" :key="r" :label="r" :value="r" />
-              </el-select>
+              <template v-else>
+                <el-select
+                  v-model="base.substituteModeRule"
+                  clearable
+                  placeholder="请选择"
+                  :class="{ 'is-error': fieldErrors.substituteModeRule }"
+                  @change="clearFieldError('substituteModeRule')"
+                >
+                  <el-option v-for="r in substituteModeRules" :key="r" :label="r" :value="r" />
+                </el-select>
+                <lui-field-error :message="fieldErrors.substituteModeRule" />
+              </template>
             </el-form-item>
             <!-- 价格本优先级 / 跨月计费：本期不做（PRD + 图2） -->
           </el-form>
@@ -264,7 +329,7 @@
               clearable
               collapse-tags
               placeholder="请选择报价维度"
-              class="dims-select"
+              class="dims-select lui-select-no-tag-tip"
             >
               <el-option
                 v-for="d in dimOptions"
@@ -527,22 +592,26 @@
               >
                 <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(feeItemLabel(row.feeItem)) }">{{ displayText(feeItemLabel(row.feeItem)) }}</span>
               </el-tooltip>
-              <el-select
-                v-else
-                v-model="row.feeItem"
-                size="small"
-                clearable
-                filterable
-                allow-create
-                placeholder="请选择"
-              >
-                <el-option
-                  v-for="f in scenarioFeeItemOptions"
-                  :key="f.value"
-                  :label="f.label"
-                  :value="f.value"
-                />
-              </el-select>
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'feeItem') }">
+                <el-select
+                  v-model="row.feeItem"
+                  size="small"
+                  clearable
+                  filterable
+                  allow-create
+                  placeholder="请选择"
+                  :class="{ 'is-error': rowFieldError(row, 'feeItem') }"
+                  @change="clearRowFieldError(row, 'feeItem')"
+                >
+                  <el-option
+                    v-for="f in scenarioFeeItemOptions"
+                    :key="f.value"
+                    :label="f.label"
+                    :value="f.value"
+                  />
+                </el-select>
+                <lui-field-error overlay :message="rowFieldError(row, 'feeItem')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="selectedDims.includes('商家订单类型')" label="商家订单类型" min-width="184">
@@ -638,6 +707,8 @@
                 class="detail-partition-filter"
                 :clearable="!isViewMode"
                 placeholder="请选择分区"
+                :class="{ 'is-error': detailFieldErrors.activePartitionId }"
+                @change="clearDetailFieldError('activePartitionId')"
               >
                 <el-option
                   v-for="p in partitions"
@@ -651,63 +722,80 @@
               <span class="view-plain-text detail-meta-partition-text">{{ activePartitionName }}</span>
             </el-form-item>
             <template v-if="!isViewMode">
-              <el-form-item v-if="showStatTarget" label="统计对象" required>
+              <el-form-item v-if="showStatTarget" label="统计对象" required :class="{ 'is-error': detailFieldErrors.statTarget }">
                 <el-select
                   v-model="currentDetail.statTarget"
                   clearable
                   placeholder="请选择"
+                  :class="{ 'is-error': detailFieldErrors.statTarget }"
+                  @change="clearDetailFieldError('statTarget')"
                 >
                   <el-option label="月度单量" value="月度单量" />
                   <el-option label="月度金额" value="月度金额" />
                 </el-select>
+                <lui-field-error :message="detailFieldErrors.statTarget" />
               </el-form-item>
-              <el-form-item label="单票阶梯模式" required>
+              <el-form-item label="单票阶梯模式" required :class="{ 'is-error': detailFieldErrors.stairMode }">
                 <el-select
                   v-model="currentDetail.stairMode"
                   clearable
                   placeholder="请选择"
+                  :class="{ 'is-error': detailFieldErrors.stairMode }"
+                  @change="clearDetailFieldError('stairMode')"
                 >
                   <el-option label="计费重量" value="计费重量" />
                   <el-option label="体积" value="体积" />
                   <el-option label="无" value="无" />
                 </el-select>
+                <lui-field-error :message="detailFieldErrors.stairMode" />
               </el-form-item>
-              <el-form-item v-if="showStairColumns" label="阶梯累进" required>
+              <el-form-item v-if="showStairColumns" label="阶梯累进" required :class="{ 'is-error': detailFieldErrors.stairProgress }">
                 <el-select
                   v-model="currentDetail.stairProgress"
                   clearable
                   placeholder="请选择"
+                  :class="{ 'is-error': detailFieldErrors.stairProgress }"
+                  @change="clearDetailFieldError('stairProgress')"
                 >
                   <el-option label="全量累进" value="全量累进" />
                   <el-option label="超量累进" value="超量累进" />
                 </el-select>
+                <lui-field-error :message="detailFieldErrors.stairProgress" />
               </el-form-item>
-              <el-form-item v-if="showStairColumns" label="区间开闭类型" required>
+              <el-form-item v-if="showStairColumns" label="区间开闭类型" required :class="{ 'is-error': detailFieldErrors.intervalType }">
                 <el-select
                   v-model="currentDetail.intervalType"
                   clearable
                   placeholder="请选择"
+                  :class="{ 'is-error': detailFieldErrors.intervalType }"
+                  @change="clearDetailFieldError('intervalType')"
                 >
                   <el-option label="前开后闭" value="前开后闭" />
                   <el-option label="前闭后开" value="前闭后开" />
                 </el-select>
+                <lui-field-error :message="detailFieldErrors.intervalType" />
               </el-form-item>
-              <el-form-item v-if="showBusinessCarry" label="业务进位" required>
+              <el-form-item v-if="showBusinessCarry" label="业务进位" required :class="{ 'is-error': detailFieldErrors.businessCarry }">
                 <el-select
                   v-model="currentDetail.businessCarry"
                   clearable
                   placeholder="请选择"
+                  :class="{ 'is-error': detailFieldErrors.businessCarry }"
+                  @change="clearDetailFieldError('businessCarry')"
                 >
                   <el-option label="0.5 进位" value="0.5 进位" />
                   <el-option label="四舍五入取整" value="四舍五入取整" />
                 </el-select>
+                <lui-field-error :message="detailFieldErrors.businessCarry" />
               </el-form-item>
-              <el-form-item v-if="currentDetail.stairMode === '计费重量'" label="轻抛系数" required>
+              <el-form-item v-if="currentDetail.stairMode === '计费重量'" label="轻抛系数" required :class="{ 'is-error': detailFieldErrors.lightThrow }">
                 <el-input
                   :value="currentDetail.lightThrow"
                   placeholder="请输入"
-                  @input="onDecimalInput(currentDetail, 'lightThrow', $event, 'lightThrowError')"
+                  :class="{ 'is-error': detailFieldErrors.lightThrow }"
+                  @input="onDecimalInput(currentDetail, 'lightThrow', $event, 'lightThrowError'); clearDetailFieldError('lightThrow')"
                 />
+                <lui-field-error :message="detailFieldErrors.lightThrow" />
               </el-form-item>
               <el-form-item class="detail-meta-actions-item">
                 <div class="detail-table-actions">
@@ -785,73 +873,89 @@
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">统计最小值(不含)</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text">{{ row.statMin === 0 || row.statMin ? row.statMin : '-' }}</span>
-              <el-input
-                v-else
-                :value="row.statMin"
-                size="small"
-                class="detail-stair-control"
-                @input="onDecimalInput(row, 'statMin', $event)"
-              />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'statMin') }">
+                <el-input
+                  :value="row.statMin"
+                  size="small"
+                  class="detail-stair-control"
+                  :class="{ 'is-error': rowFieldError(row, 'statMin') }"
+                  @input="onDecimalInput(row, 'statMin', $event); clearRowFieldError(row, 'statMin')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'statMin')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="showStatColumns" min-width="184">
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">统计最大值(含)</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text">{{ row.statMax === 0 || row.statMax ? row.statMax : '-' }}</span>
-              <el-input
-                v-else
-                :value="row.statMax"
-                size="small"
-                class="detail-stair-control"
-                @input="onDecimalInput(row, 'statMax', $event)"
-              />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'statMax') }">
+                <el-input
+                  :value="row.statMax"
+                  size="small"
+                  class="detail-stair-control"
+                  :class="{ 'is-error': rowFieldError(row, 'statMax') }"
+                  @input="onDecimalInput(row, 'statMax', $event); clearRowFieldError(row, 'statMax')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'statMax')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="showStairColumns" min-width="184">
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">单票阶梯最小值(不含)</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text">{{ row.stairMin === 0 || row.stairMin ? row.stairMin : '-' }}</span>
-              <el-input
-                v-else
-                :value="row.stairMin"
-                size="small"
-                class="detail-stair-control"
-                @input="onDecimalInput(row, 'stairMin', $event)"
-              />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'stairMin') }">
+                <el-input
+                  :value="row.stairMin"
+                  size="small"
+                  class="detail-stair-control"
+                  :class="{ 'is-error': rowFieldError(row, 'stairMin') }"
+                  @input="onDecimalInput(row, 'stairMin', $event); clearRowFieldError(row, 'stairMin')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'stairMin')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="showStairColumns" min-width="184">
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">单票阶梯最大值(含)</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text">{{ row.stairMax || '-' }}</span>
-              <el-input
-                v-else
-                :value="row.stairMax"
-                size="small"
-                class="detail-stair-control"
-                @input="onStairMaxInput(row, $event)"
-              />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'stairMax') }">
+                <el-input
+                  :value="row.stairMax"
+                  size="small"
+                  class="detail-stair-control"
+                  :class="{ 'is-error': rowFieldError(row, 'stairMax') }"
+                  @input="onStairMaxInput(row, $event); clearRowFieldError(row, 'stairMax')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'stairMax')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column min-width="184">
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">折扣模式</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text cell-ellipsis">{{ displayText(row.discountMode) }}</span>
-              <el-select
-                v-else
-                v-model="row.discountMode"
-                size="small"
-                clearable
-                placeholder="请选择"
-                class="detail-stair-control"
-              >
-                <el-option label="折扣率" value="折扣率" />
-                <el-option label="一口价" value="一口价" />
-                <el-option label="首续重报价" value="首续重报价" />
-              </el-select>
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'discountMode') }">
+                <el-select
+                  v-model="row.discountMode"
+                  size="small"
+                  clearable
+                  placeholder="请选择"
+                  class="detail-stair-control"
+                  :class="{ 'is-error': rowFieldError(row, 'discountMode') }"
+                  @change="clearRowFieldError(row, 'discountMode')"
+                >
+                  <el-option label="折扣率" value="折扣率" />
+                  <el-option label="一口价" value="一口价" />
+                  <el-option label="首续重报价" value="首续重报价" />
+                </el-select>
+                <lui-field-error overlay :message="rowFieldError(row, 'discountMode')" />
+              </div>
             </template>
           </el-table-column>
-          <el-table-column min-width="184">
+          <el-table-column min-width="480">
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">报价明细</span></template>
             <template slot-scope="{ row }">
               <el-tooltip
@@ -874,7 +978,8 @@
                     :value="row.firstWeight"
                     size="small"
                     class="detail-stair-control detail-stair-control--sm"
-                    @input="onDecimalInput(row, 'firstWeight', $event)"
+                    :class="{ 'is-error': rowFieldError(row, 'firstWeight') }"
+                    @input="onDecimalInput(row, 'firstWeight', $event); clearRowFieldError(row, 'firstWeight')"
                   />
                 </div>
                 <div class="detail-first-continue__item">
@@ -883,7 +988,8 @@
                     :value="row.firstWeightPrice"
                     size="small"
                     class="detail-stair-control detail-stair-control--sm"
-                    @input="onDecimalInput(row, 'firstWeightPrice', $event)"
+                    :class="{ 'is-error': rowFieldError(row, 'firstWeightPrice') }"
+                    @input="onDecimalInput(row, 'firstWeightPrice', $event); clearRowFieldError(row, 'firstWeightPrice')"
                   />
                 </div>
                 <div class="detail-first-continue__item">
@@ -892,7 +998,8 @@
                     :value="row.continueWeight"
                     size="small"
                     class="detail-stair-control detail-stair-control--sm"
-                    @input="onDecimalInput(row, 'continueWeight', $event)"
+                    :class="{ 'is-error': rowFieldError(row, 'continueWeight') }"
+                    @input="onDecimalInput(row, 'continueWeight', $event); clearRowFieldError(row, 'continueWeight')"
                   />
                 </div>
                 <div class="detail-first-continue__item">
@@ -901,7 +1008,8 @@
                     :value="row.continueWeightPrice"
                     size="small"
                     class="detail-stair-control detail-stair-control--sm"
-                    @input="onDecimalInput(row, 'continueWeightPrice', $event)"
+                    :class="{ 'is-error': rowFieldError(row, 'continueWeightPrice') }"
+                    @input="onDecimalInput(row, 'continueWeightPrice', $event); clearRowFieldError(row, 'continueWeightPrice')"
                   />
                 </div>
                 <div class="detail-first-continue__item">
@@ -914,15 +1022,30 @@
                   />
                 </div>
               </div>
-              <div v-else class="detail-value-cell">
+              <div
+                v-else
+                class="detail-value-cell lui-field"
+                :class="{
+                  'detail-value-cell--unit': row.discountMode === '折扣率',
+                  'is-error': rowFieldError(row, 'discountDetail')
+                }"
+              >
                 <el-input
                   :value="row.discountDetail"
                   size="small"
                   class="detail-stair-control"
+                  :class="{
+                    'detail-stair-control--unit': row.discountMode === '折扣率',
+                    'is-error': rowFieldError(row, 'discountDetail')
+                  }"
                   placeholder="请输入数值"
-                  @input="onDecimalInput(row, 'discountDetail', $event)"
-                />
-                <span v-if="row.discountMode === '折扣率'">%</span>
+                  @input="onDecimalInput(row, 'discountDetail', $event); clearRowFieldError(row, 'discountDetail')"
+                >
+                  <template v-if="row.discountMode === '折扣率'" slot="suffix">
+                    <span class="detail-input-unit">%</span>
+                  </template>
+                </el-input>
+                <lui-field-error overlay :message="rowFieldError(row, 'discountDetail')" />
               </div>
             </template>
           </el-table-column>
@@ -963,7 +1086,7 @@
                 >{{ item }}</el-tag>
                 <span v-if="!(extension.mergeDimensions && extension.mergeDimensions.length)" class="view-plain-text">-</span>
               </div>
-              <el-select v-else v-model="extension.mergeDimensions" multiple collapse-tags clearable placeholder="取自场景定价">
+              <el-select v-else v-model="extension.mergeDimensions" multiple collapse-tags clearable placeholder="取自场景定价" class="lui-select-no-tag-tip">
                 <el-option v-for="item in mergeDimOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -979,7 +1102,7 @@
                 >{{ item }}</el-tag>
                 <span v-if="!(extension.mergeTargets && extension.mergeTargets.length)" class="view-plain-text">-</span>
               </div>
-              <el-select v-else v-model="extension.mergeTargets" multiple collapse-tags clearable placeholder="含票量扩展">
+              <el-select v-else v-model="extension.mergeTargets" multiple collapse-tags clearable placeholder="含票量扩展" class="lui-select-no-tag-tip">
                 <el-option v-for="item in mergeTargetOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -995,7 +1118,7 @@
                 >{{ item }}</el-tag>
                 <span v-if="!(extension.apportionBasis && extension.apportionBasis.length)" class="view-plain-text">-</span>
               </div>
-              <el-select v-else v-model="extension.apportionBasis" multiple collapse-tags clearable placeholder="取自场景定价">
+              <el-select v-else v-model="extension.apportionBasis" multiple collapse-tags clearable placeholder="取自场景定价" class="lui-select-no-tag-tip">
                 <el-option v-for="item in apportionOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -1015,7 +1138,7 @@
                 >{{ item }}</el-tag>
                 <span v-if="!(extension.statDimensions && extension.statDimensions.length)" class="view-plain-text">-</span>
               </div>
-              <el-select v-else v-model="extension.statDimensions" multiple collapse-tags clearable placeholder="取自场景定价">
+              <el-select v-else v-model="extension.statDimensions" multiple collapse-tags clearable placeholder="取自场景定价" class="lui-select-no-tag-tip">
                 <el-option v-for="item in statDimOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -1031,7 +1154,7 @@
                 >{{ item }}</el-tag>
                 <span v-if="!(extension.statTargets && extension.statTargets.length)" class="view-plain-text">-</span>
               </div>
-              <el-select v-else v-model="extension.statTargets" multiple collapse-tags clearable placeholder="取自场景定价">
+              <el-select v-else v-model="extension.statTargets" multiple collapse-tags clearable placeholder="取自场景定价" class="lui-select-no-tag-tip">
                 <el-option v-for="item in statTargetOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -1044,7 +1167,7 @@
       <div v-show="!isViewMode && step === 3" class="quoting-section">
         <div class="sim-card">
           <h3 class="section-title">测算参数配置</h3>
-          <el-form class="lui-form-grid" size="small">
+          <el-form class="lui-form-grid sim-param-config-form" size="small">
             <el-form-item label="测算类型" required>
               <el-radio-group v-model="sim.type" @change="onSimTypeChange">
                 <el-radio label="虚单">虚单测算</el-radio>
@@ -1077,6 +1200,9 @@
                 <el-input v-model="sim.businessVolume" placeholder="如月度单量" />
               </el-form-item>
             </template>
+            <el-form-item class="sim-run-item">
+              <el-button type="primary" size="small" @click="runSim">开始测算</el-button>
+            </el-form-item>
           </el-form>
           <div v-if="sim.partitionId && simDetailPreview" class="sim-detail-preview">
             <div class="sim-detail-preview__meta">
@@ -1085,7 +1211,7 @@
               <span>单票阶梯：{{ simDetailPreview.stairMode }}</span>
               <span>区间开闭：{{ simDetailPreview.intervalType }}</span>
             </div>
-            <el-table :data="simDetailPreview.rows" size="mini" max-height="160">
+            <el-table :data="pagedSimDetailRows" size="mini">
               <el-table-column v-if="showStatColumns" prop="statMin" label="统计最小" min-width="80" />
               <el-table-column v-if="showStatColumns" prop="statMax" label="统计最大" min-width="80" />
               <el-table-column prop="stairMin" label="阶梯最小" min-width="80" />
@@ -1093,6 +1219,30 @@
               <el-table-column prop="discountMode" label="折扣模式" min-width="90" />
               <el-table-column prop="discountDetail" label="明细" min-width="80" />
             </el-table>
+            <div v-if="simDetailRowTotal > 10" class="pager sim-detail-pager">
+              <span>共 {{ simDetailRowTotal }} 条</span>
+              <el-pagination
+                layout="prev, pager, next"
+                :total="simDetailRowTotal"
+                :current-page="simDetailPage"
+                :page-size="10"
+                @current-change="onSimDetailPageChange"
+              />
+            </div>
+          </div>
+          <div v-if="sim.result" class="sim-result">
+            <div class="sim-result__head">
+              <span class="sim-result__title">测算结果</span>
+            </div>
+            <div class="sim-result__amount-row">
+              <span class="sim-result__amount-label">预估总金额:</span>
+              <span class="sim-result__currency">¥</span>
+              <span class="sim-result__amount">{{ sim.result.total }}</span>
+            </div>
+            <div class="sim-result__process">
+              <span class="sim-result__process-label">计算过程：</span>
+              <span class="sim-result__process-text">{{ sim.result.formula }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1109,34 +1259,11 @@
             {{ step === 2 ? '下一步，报价测算' : '下一步' }}
           </el-button>
           <template v-else>
-            <el-button type="primary" plain size="small" @click="runSim">开始测算</el-button>
             <el-button type="primary" size="small" @click="submitQuote">完成并发布</el-button>
           </template>
         </template>
       </div>
     </div>
-
-    <el-dialog
-      title="测算结果"
-      :visible.sync="simResultVisible"
-      width="560px"
-      custom-class="lui-form-dialog sim-result-dialog"
-      append-to-body
-      :close-on-click-modal="false"
-    >
-      <div v-if="sim.result" class="sim-result-dialog__body">
-        <div class="sim-result-dialog__total">
-          <span class="sim-result-dialog__currency">¥</span>
-          <span class="sim-result-dialog__amount">{{ sim.result.total }}</span>
-        </div>
-        <el-timeline class="sim-result-dialog__timeline">
-          <el-timeline-item v-for="(item, idx) in sim.result.path" :key="idx">{{ item }}</el-timeline-item>
-        </el-timeline>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" size="small" @click="simResultVisible = false">确定</el-button>
-      </div>
-    </el-dialog>
 
     <AddressEditorModal
       :visible.sync="addressEditor.visible"
@@ -1197,6 +1324,7 @@
 
 <script>
 import LuiArrowSteps from '../components/LuiArrowSteps.vue'
+import LuiFieldError from '../components/LuiFieldError.vue'
 import AddressEditorModal from '../components/quoting/AddressEditorModal.vue'
 import { DISCOUNT_PRODUCT_SCENARIOS } from '../mock/cascade'
 import {
@@ -1260,7 +1388,7 @@ function createDetail() {
 
 export default {
   name: 'OnestopQuoting',
-  components: { LuiArrowSteps, AddressEditorModal },
+  components: { LuiArrowSteps, AddressEditorModal, LuiFieldError },
   props: {
     detailMode: {
       type: String,
@@ -1286,10 +1414,11 @@ export default {
       step: 0,
       editingId: null,
       complexQuoteOpen: false,
-      simResultVisible: false,
       cycleError: '',
       lightThrowError: '',
       priorityError: '',
+      fieldErrors: {},
+      detailFieldErrors: {},
       quoteSteps: [
         { title: '基础信息' },
         { title: '价格分区' },
@@ -1362,6 +1491,7 @@ export default {
         businessVolume: '',
         result: null
       },
+      simDetailPage: 1,
       importVisible: false,
       detailImportVisible: false,
       addressEditor: {
@@ -1474,6 +1604,18 @@ export default {
         intervalType: detail.intervalType,
         rows: (detail.rows || []).slice()
       }
+    },
+    simDetailRowTotal() {
+      return (this.simDetailPreview && this.simDetailPreview.rows && this.simDetailPreview.rows.length) || 0
+    },
+    pagedSimDetailRows() {
+      const rows = (this.simDetailPreview && this.simDetailPreview.rows) || []
+      if (!rows.length) return []
+      const size = 10
+      const maxPage = Math.max(1, Math.ceil(rows.length / size))
+      const page = Math.min(maxPage, Math.max(1, Number(this.simDetailPage) || 1))
+      const start = (page - 1) * size
+      return rows.slice(start, start + size)
     },
     uploadIcon() {
       return publicAsset('d2c-assets/icon-upload.svg')
@@ -1759,8 +1901,97 @@ export default {
     },
     onSimPartitionChange() {
       this.sim.result = null
+      this.simDetailPage = 1
     },
-    validateStep(step) {
+    onSimDetailPageChange(page) {
+      this.simDetailPage = Math.max(1, Number(page) || 1)
+    },
+    isBlank(v) {
+      return v === '' || v === null || v === undefined
+    },
+    clearFieldError(key) {
+      if (this.fieldErrors && this.fieldErrors[key]) this.$delete(this.fieldErrors, key)
+    },
+    clearDetailFieldError(key) {
+      if (this.detailFieldErrors && this.detailFieldErrors[key]) this.$delete(this.detailFieldErrors, key)
+    },
+    clearRowFieldError(row, key) {
+      if (row && row._errors && row._errors[key]) this.$delete(row._errors, key)
+    },
+    rowFieldError(row, key) {
+      return (row && row._errors && row._errors[key]) || ''
+    },
+    markStepFieldErrors(step) {
+      const ERR = '请填写'
+      if (step === 0) {
+        const errors = {}
+        if (this.complexQuoteOpen && this.base.hasIdentityPriority === '是') {
+          if (!this.base.identityPriority) errors.identityPriority = ERR
+          if (!this.base.substituteModeRule) errors.substituteModeRule = ERR
+        }
+        if (!this.base.quotationName) errors.quotationName = ERR
+        if (!(this.base.merchantCode || '').trim()) errors.merchantCode = ERR
+        if (!this.base.billingStrategy) errors.billingStrategy = ERR
+        if (this.base.quotationMethod === '场景报价') {
+          if (!this.base.discountProduct) errors.discountProduct = ERR
+          if (!this.base.businessScenario) errors.businessScenario = ERR
+        }
+        this.fieldErrors = errors
+        return
+      }
+      if (step === 1) {
+        this.fieldErrors = {}
+        ;(this.partitions || []).forEach((row) => {
+          const pe = {}
+          if (!(row.name || '').trim()) pe.name = ERR
+          if (!(row.applyNo || '').trim()) pe.applyNo = ERR
+          if (!(row.contractCode || '').trim()) pe.contractCode = ERR
+          if (this.isStats) {
+            if (!(row.statGroup || '').trim()) pe.statGroup = ERR
+            if (!(row.statBillingObject || '').trim()) pe.statBillingObject = ERR
+          }
+          if (this.selectedDims.includes('费用项') && !(row.feeItem || '').trim()) pe.feeItem = ERR
+          this.$set(row, '_errors', pe)
+        })
+        return
+      }
+      if (step === 2) {
+        const de = {}
+        if (!this.activePartitionId) de.activePartitionId = ERR
+        const d = this.currentDetail || {}
+        if (!d.stairMode) de.stairMode = ERR
+        if (this.showStatTarget && !d.statTarget) de.statTarget = ERR
+        if (this.showStairColumns) {
+          if (!d.stairProgress) de.stairProgress = ERR
+          if (!d.intervalType) de.intervalType = ERR
+        }
+        if (this.showBusinessCarry && !d.businessCarry) de.businessCarry = ERR
+        if (d.stairMode === '计费重量' && this.isBlank(d.lightThrow)) de.lightThrow = ERR
+        this.detailFieldErrors = de
+        ;(d.rows || []).forEach((r) => {
+          const re = {}
+          if (this.showStatColumns) {
+            if (this.isBlank(r.statMin)) re.statMin = ERR
+            if (this.isBlank(r.statMax)) re.statMax = ERR
+          }
+          if (this.showStairColumns) {
+            if (this.isBlank(r.stairMin)) re.stairMin = ERR
+            if (this.isBlank(r.stairMax)) re.stairMax = ERR
+          }
+          if (!r.discountMode) re.discountMode = ERR
+          if (r.discountMode === '首续重报价') {
+            if (!r.firstWeight) re.firstWeight = ERR
+            if (!r.firstWeightPrice) re.firstWeightPrice = ERR
+            if (!r.continueWeight) re.continueWeight = ERR
+            if (!r.continueWeightPrice) re.continueWeightPrice = ERR
+          } else if (this.isBlank(r.discountDetail)) {
+            re.discountDetail = ERR
+          }
+          this.$set(r, '_errors', re)
+        })
+      }
+    },
+        validateStep(step) {
       if (step === 0) {
         if (this.complexQuoteOpen && this.base.hasIdentityPriority === '是') {
           if (!this.base.identityPriority) return '请填写身份优先级'
@@ -1830,9 +2061,12 @@ export default {
     nextStep() {
       const msg = this.validateStep(this.step)
       if (msg) {
+        this.markStepFieldErrors(this.step)
         this.$message.warning(msg)
         return
       }
+      this.fieldErrors = {}
+      this.detailFieldErrors = {}
       this.step += 1
       if (!this.activePartitionId && this.partitions[0]) {
         this.activePartitionId = String(this.partitions[0].id)
@@ -1843,6 +2077,7 @@ export default {
         for (let s = this.step; s < index; s += 1) {
           const msg = this.validateStep(s)
           if (msg) {
+            this.markStepFieldErrors(s)
             this.$message.warning(msg)
             return
           }
@@ -2146,25 +2381,37 @@ export default {
         return
       }
       const partName = (this.simDetailPreview && this.simDetailPreview.name) || this.activePartitionName
+      const merchant = this.base.merchantName || this.base.merchantCode || '-'
+      const method = this.base.quotationMethod || '-'
+      const strategy = this.base.billingStrategy || '-'
+      const interval = (this.currentDetail && this.currentDetail.intervalType) || '-'
+      const lightThrow = (this.currentDetail && this.currentDetail.lightThrow) || '-'
+      const total = '36.80'
       const path = [
         `测算类型：${this.sim.type === '实单' ? '实单测算' : '虚单测算'}`,
-        `匹配商家 ${this.base.merchantName || this.base.merchantCode || '-'}`,
-        `报价方式：${this.base.quotationMethod} / 策略：${this.base.billingStrategy}`,
+        `匹配商家 ${merchant}`,
+        `报价方式：${method} / 策略：${strategy}`,
         `分区：${partName}`
       ]
+      let formula = ''
       if (this.sim.type === '实单') {
         path.push(`运单号 ${this.sim.orderNo}，回写计费过程（预览）`)
+        formula = `运单号[${this.sim.orderNo}]匹配商家[${merchant}](自动获取)；分区[${partName}]，报价方式[${method}]/策略[${strategy}]，金额取整后输出总额[${total}]`
       } else {
-        path.push(`计费因子：重量 ${this.sim.weight || '-'}kg / 体积 ${this.sim.volume || '-'}m³ / 业务量 ${this.sim.businessVolume || '-'}`)
-        path.push(`区间 ${this.currentDetail.intervalType || '-'}，金额取整后输出总额 36.80`)
+        const w = this.sim.weight || '-'
+        const v = this.sim.volume || '-'
+        const bv = this.sim.businessVolume || '-'
+        path.push(`计费因子：重量 ${w}kg / 体积 ${v}m³ / 业务量 ${bv}`)
+        path.push(`区间 ${interval}，金额取整后输出总额 ${total}`)
+        formula = `计费重量=max(重量[${w}],体积[${v}]/轻抛系数[${lightThrow}])；统计业务量[${bv}]；匹配分区[${partName}]，区间[${interval}]，金额取整后输出总额[${total}]`
       }
-      this.sim.result = { total: '36.80', path }
-      this.simResultVisible = true
+      this.sim.result = { total, path, formula }
     },
     submitQuote() {
       for (let s = 0; s <= 1; s += 1) {
         const msg = this.validateStep(s)
         if (msg) {
+          this.markStepFieldErrors(s)
           this.$message.warning(msg)
           this.step = s
           return
@@ -2480,6 +2727,19 @@ export default {
   min-width: 0 !important;
   max-width: 100%;
   box-sizing: border-box;
+}
+.detail-table-wrap .detail-first-continue .el-input,
+.detail-table-wrap .detail-first-continue .el-input .el-input__inner {
+  width: 100% !important;
+  min-width: 72px !important;
+  max-width: none !important;
+}
+.detail-table-wrap .detail-value-cell {
+  width: 160px;
+  max-width: 160px;
+}
+.detail-table-wrap .detail-value-cell .el-input {
+  max-width: none;
 }
 .quoting-data-table >>> .el-table__header-wrapper {
   border-radius: 8px 8px 0 0;
@@ -3012,35 +3272,95 @@ export default {
 .sim-card .section-title {
   margin: 0 0 12px;
 }
-.sim-result-dialog .sim-result-dialog__body {
-  padding-top: 4px;
+/* 图1：测算参数表单横向居中；开始测算跟在选择项后一列 */
+.sim-card .sim-param-config-form.lui-form-grid.el-form {
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
 }
-.sim-result-dialog .sim-result-dialog__total {
-  margin: 0 0 16px;
-  color: #23252b;
+.sim-card .sim-run-item {
+  margin-bottom: 0 !important;
+}
+.sim-card .sim-run-item >>> .el-form-item__label {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.sim-card .sim-run-item >>> .el-form-item__content {
+  margin-left: 0 !important;
+  display: flex !important;
+  justify-content: flex-start;
+  align-items: center;
+  line-height: 32px;
+  min-height: 32px;
+}
+.sim-detail-pager {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--lui-table-divider, #f1f2f4);
+}
+/* 图3：蓝色结果卡 + 图4 式计算过程 */
+.sim-result {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: rgba(60, 110, 240, 0.08);
+  border: 1px solid rgba(60, 110, 240, 0.28);
+  box-sizing: border-box;
+}
+.sim-result__head {
+  margin-bottom: 12px;
+}
+.sim-result__title {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #3c6ef0;
+}
+.sim-result__amount-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-bottom: 12px;
   font-family: var(--lui-font-number);
   line-height: 36px;
 }
-.sim-result-dialog .sim-result-dialog__currency {
-  margin-right: 4px;
+.sim-result__amount-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #23252b;
+  font-family: var(--lui-font-sans);
+  line-height: 22px;
+}
+.sim-result__currency {
+  margin-right: 2px;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 500;
+  color: #3c6ef0;
 }
-.sim-result-dialog .sim-result-dialog__amount {
+.sim-result__amount {
   font-size: 28px;
+  font-weight: 500;
+  color: #3c6ef0;
+}
+.sim-result__process {
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #e4e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #23252b;
+  word-break: break-word;
+}
+.sim-result__process-label {
+  font-weight: 500;
+}
+.sim-result__process-text {
   font-weight: 400;
-}
-.sim-result-dialog .sim-result-dialog__timeline.el-timeline {
-  padding-left: 0;
-}
-.sim-result-dialog .sim-result-dialog__timeline >>> .el-timeline-item {
-  padding-bottom: 12px;
-}
-.sim-result-dialog .sim-result-dialog__timeline >>> .el-timeline-item:last-child {
-  padding-bottom: 0;
-}
-.sim-result-dialog .sim-result-dialog__timeline >>> .el-timeline-item__timestamp {
-  display: none;
+  color: #525765;
 }
 .section-title-with-tip {
   display: inline-flex !important;
@@ -3263,7 +3583,6 @@ export default {
   box-sizing: border-box;
   vertical-align: middle;
 }
-/* 明细含首续重双行网格：行高自适应 */
 .detail-stair-table >>> .el-table__body td.el-table__cell {
   padding-top: 8px !important;
   padding-bottom: 8px !important;
@@ -3291,15 +3610,14 @@ export default {
   /* 末行与表体底边对齐，避免操作列“掉底” */
   border-bottom: none !important;
 }
-/* 录入项铺满单元格（与分区表一致） */
-.detail-stair-table >>> .detail-stair-control,
-.detail-stair-table >>> .detail-stair-control.el-input,
-.detail-stair-table >>> .detail-stair-control.el-select,
-.detail-stair-table >>> .detail-stair-control .el-input__inner,
+/* 录入项铺满单元格（与分区表一致；首续重小框除外） */
+.detail-stair-table >>> .detail-stair-control:not(.detail-stair-control--sm),
+.detail-stair-table >>> .detail-stair-control:not(.detail-stair-control--sm).el-input,
+.detail-stair-table >>> .detail-stair-control:not(.detail-stair-control--sm).el-select,
+.detail-stair-table >>> .detail-stair-control:not(.detail-stair-control--sm) .el-input__inner,
 .detail-stair-table >>> .detail-value-cell .detail-stair-control,
 .detail-stair-table >>> .detail-value-cell .detail-stair-control.el-input,
 .detail-stair-table >>> .detail-value-cell .el-input__inner,
-.detail-stair-table >>> .el-input,
 .detail-stair-table >>> .el-select {
   width: 100% !important;
   max-width: 100%;
@@ -3431,7 +3749,9 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
+  /* 报价明细列因首续重加宽；折扣率/一口价仍按普通录入宽，不跟着拉长 */
+  width: 160px;
+  max-width: 160px;
   min-width: 0;
   box-sizing: border-box;
 }
@@ -3444,7 +3764,32 @@ export default {
   min-width: 0 !important;
   max-width: none !important;
 }
-/* 首续重录入：一行三列，间距 12px；宽度随均分后的单元格铺满 */
+/* 折扣率单位：框内右侧后缀（对齐 LUI 辅助元素 kg 样式） */
+.detail-value-cell--unit .el-input >>> .el-input__inner {
+  padding-right: 28px;
+}
+.detail-input-unit {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding-right: 4px;
+  color: var(--lui-text-secondary, #868d9f);
+  font-size: 14px;
+  line-height: 32px;
+  pointer-events: none;
+  user-select: none;
+}
+.detail-stair-control--unit >>> .el-input__suffix {
+  display: flex;
+  align-items: center;
+  right: 8px;
+}
+.detail-stair-control--unit >>> .el-input__suffix-inner {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+}
+/* 首续重录入：一行三列，间距 12px */
 .detail-first-continue {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3455,6 +3800,7 @@ export default {
 }
 .detail-first-continue__item {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   min-width: 0;
@@ -3468,19 +3814,13 @@ export default {
 }
 .detail-stair-table >>> .detail-first-continue .detail-stair-control--sm,
 .detail-stair-table >>> .detail-first-continue .detail-stair-control--sm.el-input,
-.detail-stair-table >>> .detail-first-continue .detail-stair-control--sm .el-input__inner {
+.detail-stair-table >>> .detail-first-continue .detail-stair-control--sm .el-input__inner,
+.detail-stair-table >>> .detail-first-continue .el-input,
+.detail-stair-table >>> .detail-first-continue .el-input .el-input__inner {
   width: 100% !important;
+  min-width: 72px !important;
   max-width: none !important;
-  min-width: 72px;
-  flex: 1 1 auto;
-}
-.detail-stair-table >>> .detail-first-continue .el-input {
-  flex: 1 1 auto;
-  min-width: 72px;
-  width: auto !important;
-}
-.detail-stair-table >>> .el-table__body td.el-table__cell .cell .detail-first-continue {
-  white-space: normal !important;
+  flex: 1 1 auto !important;
 }
 .detail-stair-table >>> .detail-stair-control--sm,
 .detail-stair-table >>> .detail-stair-control--sm.el-input,

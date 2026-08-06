@@ -218,6 +218,7 @@ import {
   getSubmenus,
   resolveSubmenuId
 } from './mock/workbenchNav'
+import { QUOTING_PREVIEW_SAMPLES } from './mock/quotingPreviewSamples'
 import { publicAsset } from './utils/publicAsset'
 
 export default {
@@ -252,6 +253,7 @@ export default {
         { id: 'P4', name: '生鲜特配场景价', mode: '场景定价', target: '生鲜特配', status: '已启用', creator: '张**', createdAt: '2026-07-20 10:20:00' }
       ],
       quotingList: [
+        ...QUOTING_PREVIEW_SAMPLES,
         {
           id: 'Q1',
           schemeCode: 'BJ-20260721-001',
@@ -1011,6 +1013,43 @@ export default {
 .pricing-view-dialog .table-card--view .el-button:not(.field-tip-btn) {
   display: none !important;
 }
+/* 报价明细：分区筛选需可交互，恢复下拉样式（箭头旋转与全局 el-select 一致） */
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__suffix {
+  display: block !important;
+  pointer-events: auto !important;
+  height: 100%;
+  right: 5px;
+  top: 0;
+  text-align: center;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__suffix-inner {
+  display: inline-block !important;
+  pointer-events: auto !important;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__prefix {
+  display: none !important;
+}
+/* 勿用 flex 破坏 caret 的 rotate；收起朝下 / 展开朝上，与 LUI 默认一致 */
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-select__caret.el-input__icon {
+  display: inline-block !important;
+  width: 25px;
+  height: 32px !important;
+  line-height: 32px !important;
+  text-align: center;
+  color: #868d9f !important;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.3s, color 0.15s;
+  transform: rotateZ(180deg) !important;
+  pointer-events: auto !important;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-select__caret.is-reverse {
+  transform: rotateZ(0deg) !important;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter:hover .el-select__caret.el-icon-arrow-up,
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-input.is-focus .el-select__caret.el-icon-arrow-up {
+  color: #3c6ef0 !important;
+}
 .pricing-view-dialog .table-card--view .el-input__inner,
 .pricing-view-dialog .table-card--view .el-textarea__inner,
 .pricing-view-dialog .table-card--view .el-range-editor.el-input__inner {
@@ -1024,6 +1063,18 @@ export default {
   height: auto !important;
   min-height: 22px;
   line-height: 22px !important;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__inner {
+  border: 1px solid #dcdfe6 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  padding-left: 12px !important;
+  padding-right: 30px !important;
+  cursor: pointer !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  line-height: 30px !important;
+  border-radius: 4px;
 }
 .pricing-view-dialog .table-card--view .el-range-editor {
   width: auto !important;
@@ -1089,7 +1140,7 @@ export default {
   line-height: 22px !important;
   font-weight: 500;
 }
-/* 预览表单：回退 LUI 右对齐 label120 + 双列 1fr */
+/* 预览表单：默认双列；定价规则 quote-form / cols-1 保持单列（勿与报价共用双列） */
 .pricing-view-dialog .table-card--view .lui-form-grid.el-form {
   --lui-form-label-width: 120px;
   --lui-form-item-gap: 12px;
@@ -1101,6 +1152,11 @@ export default {
   column-gap: 48px !important;
   row-gap: 12px !important;
   justify-content: stretch !important;
+}
+.pricing-view-dialog .table-card--view .lui-form-grid.lui-form-grid--cols-1.el-form,
+.pricing-view-dialog .table-card--view .quote-form.lui-form-grid.el-form:not(.ext-merge-fields) {
+  grid-template-columns: minmax(0, 1fr) !important;
+  column-gap: 0 !important;
 }
 .pricing-view-dialog .table-card--view .lui-form-grid .el-form-item {
   margin-bottom: 0 !important;
@@ -1132,6 +1188,25 @@ export default {
   line-height: 22px !important;
   min-height: 22px;
 }
+/* 定价规则：标签区可换行，别名/模式详情顶对齐 */
+.pricing-view-dialog .table-card--view .quote-form .el-form-item {
+  align-items: flex-start;
+  min-height: auto;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__label {
+  height: auto !important;
+  line-height: 22px !important;
+  overflow: visible !important;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item__content {
+  line-height: 22px !important;
+  min-height: 22px;
+  height: auto !important;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item.lui-form-item--top .el-form-item__label {
+  align-items: flex-start;
+  padding-top: 8px;
+}
 .pricing-view-dialog .table-card--view .complex-quote-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .quoting-base-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid.el-form,
@@ -1140,11 +1215,15 @@ export default {
   justify-content: stretch !important;
   width: 100% !important;
 }
-/* 预览：基础信息 / 复杂报价 / 明细元信息 / 拓展规则同轨三列 */
+/* 预览：报价模块三列；一站定价 quote-form 拓展除外 */
 .pricing-view-dialog .table-card--view .complex-quote-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .quoting-base-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid.el-form,
-.pricing-view-dialog .table-card--view .ext-rule-form.lui-form-grid.el-form {
+.pricing-view-dialog .table-card--view .ext-rule-form.lui-form-grid.el-form:not(.quote-form) {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  column-gap: 48px !important;
+}
+.pricing-view-dialog .table-card--view .ext-merge-fields.lui-form-grid.el-form {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   column-gap: 48px !important;
 }
@@ -1237,9 +1316,28 @@ export default {
 .pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid {
   margin: 0;
 }
+.pricing-view-dialog .table-card--view .detail-meta-form--view-filter.lui-form-grid.el-form {
+  grid-template-columns: minmax(240px, 360px) !important;
+  margin-bottom: 0;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter-item {
+  margin-bottom: 0 !important;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter-item .el-form-item__content {
+  min-height: 32px !important;
+  line-height: 32px !important;
+  overflow: visible !important;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter-item .el-form-item__label {
+  height: 32px !important;
+  line-height: 32px !important;
+}
+.pricing-view-dialog .table-card--view .detail-table-wrap--view {
+  margin-top: 16px;
+}
 .pricing-view-dialog .table-card--view .detail-stair-table {
-  margin-top: 24px;
-  margin-bottom: 24px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 .pricing-view-dialog .table-card--view .detail-stair-table + .section-title--module {
   margin-top: 0;
@@ -1284,24 +1382,94 @@ export default {
   height: auto !important;
   min-height: 22px;
 }
+.pricing-view-dialog .table-card--view .detail-partition-filter.el-select .el-input,
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-input {
+  height: 32px !important;
+}
+.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__inner {
+  height: 32px !important;
+  min-height: 32px !important;
+  line-height: 30px !important;
+}
 .pricing-view-dialog .table-card--view .table-h-scroll {
   pointer-events: auto;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   max-width: 100%;
 }
-.pricing-view-dialog .table-card--view .table-h-scroll .el-table {
-  width: max-content !important;
-  min-width: 100%;
+/* 一站定价：表体横滑（与 5fe21bb 弹窗一致）；勿改成 overflow:visible 导致右侧被弹窗裁切 */
+.pricing-view-dialog .table-card--view .table-h-scroll .el-table__header-wrapper {
+  overflow: hidden !important;
 }
-.pricing-view-dialog .table-card--view .table-h-scroll .el-table__header-wrapper,
 .pricing-view-dialog .table-card--view .table-h-scroll .el-table__body-wrapper {
-  overflow: visible !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
 }
-.pricing-view-dialog .table-card--view .table-h-scroll::-webkit-scrollbar {
+.pricing-view-dialog .table-card--view .table-h-scroll .el-table__body-wrapper::-webkit-scrollbar {
+  width: 48px;
+  height: 4px;
+}
+.pricing-view-dialog .table-card--view .table-h-scroll .el-table__body-wrapper::-webkit-scrollbar-thumb {
+  min-width: 48px;
+  background: #f1f2f4;
+  border-radius: 2px;
+}
+/* 以下仅报价分区/明细表，勿影响一站定价预览的 quote-form / dimension-alias / 计费场景表 */
+.pricing-view-dialog .table-card--view .partition-table-wrap.table-h-scroll,
+.pricing-view-dialog .table-card--view .detail-table-wrap.table-h-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #c0c4cc transparent;
+}
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table.quoting-data-table,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table.quoting-data-table {
+  width: 100% !important;
+  border-radius: 8px;
+}
+.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header th.el-table__cell:first-child {
+  border-top-left-radius: 8px;
+}
+.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header th.el-table__cell:last-child {
+  border-top-right-radius: 8px;
+}
+.pricing-view-dialog .table-card--view .quoting-data-table .el-table__body tr:last-child td.el-table__cell:first-child {
+  border-bottom-left-radius: 8px;
+}
+.pricing-view-dialog .table-card--view .quoting-data-table .el-table__body tr:last-child td.el-table__cell:last-child {
+  border-bottom-right-radius: 8px;
+}
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__header-wrapper,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__header-wrapper {
+  overflow: hidden !important;
+}
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body-wrapper,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body-wrapper {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__header .el-table__cell .cell,
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body .el-table__cell .cell,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__header .el-table__cell .cell,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body .el-table__cell .cell,
+.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header .th-required,
+.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header th.el-table__cell .cell {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+.pricing-view-dialog .table-card--view .partition-table-wrap::-webkit-scrollbar,
+.pricing-view-dialog .table-card--view .detail-table-wrap::-webkit-scrollbar,
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body-wrapper::-webkit-scrollbar,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body-wrapper::-webkit-scrollbar {
   height: 8px;
 }
-.pricing-view-dialog .table-card--view .table-h-scroll::-webkit-scrollbar-thumb {
+.pricing-view-dialog .table-card--view .partition-table-wrap::-webkit-scrollbar-thumb,
+.pricing-view-dialog .table-card--view .detail-table-wrap::-webkit-scrollbar-thumb,
+.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body-wrapper::-webkit-scrollbar-thumb,
+.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body-wrapper::-webkit-scrollbar-thumb {
   min-width: 48px;
   background: #c0c4cc;
   border-radius: 4px;

@@ -281,14 +281,16 @@
               placement="top"
               content="在表格最后一行之后新增一条价格分区"
             >
-              <el-button size="small" @click="addPartition">添加</el-button>
+              <span class="partition-dims-actions__btn-wrap">
+                <el-button size="small" @click="addPartition">添加</el-button>
+              </span>
             </el-tooltip>
             <el-tooltip
               effect="dark"
               placement="top"
               content="仅支持删除表格最后一行；至少保留一条分区"
             >
-              <span class="partition-dims-actions__delete-wrap">
+              <span class="partition-dims-actions__btn-wrap">
                 <el-button
                   size="small"
                   :disabled="partitions.length <= 1"
@@ -306,19 +308,53 @@
           row-key="id"
           size="small"
           border
-          class="partition-table"
+          class="partition-table quoting-data-table"
         >
-          <el-table-column v-if="isStats" min-width="200">
+          <el-table-column min-width="160">
+            <template slot="header"><span class="th-required">价格分区名称</span></template>
+            <template slot-scope="{ row }">
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.name)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.name || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.name) }">{{ displayText(row.name) }}</span>
+              </el-tooltip>
+              <el-input v-else v-model="row.name" size="small" placeholder="请输入" />
+            </template>
+          </el-table-column>
+          <el-table-column v-if="isStats" min-width="120">
             <template slot="header"><span class="th-required">统计分组号</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.statGroup || '-' }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.statGroup)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.statGroup || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.statGroup) }">{{ displayText(row.statGroup) }}</span>
+              </el-tooltip>
               <el-input v-else v-model="row.statGroup" size="small" placeholder="请输入" />
             </template>
           </el-table-column>
-          <el-table-column v-if="isStats" min-width="200">
+          <el-table-column v-if="isStats" min-width="168">
             <template slot="header"><span class="th-required">计费和统计对象</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.statBillingObject || '-' }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.statBillingObject)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.statBillingObject || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.statBillingObject) }">{{ displayText(row.statBillingObject) }}</span>
+              </el-tooltip>
               <el-select v-else v-model="row.statBillingObject" size="small" clearable placeholder="请选择">
                 <el-option label="统计+计费" value="统计+计费" />
                 <el-option label="统计" value="统计" />
@@ -326,30 +362,53 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column min-width="200">
-            <template slot="header"><span class="th-required">价格分区名称</span></template>
-            <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.name || '-' }}</span>
-              <el-input v-else v-model="row.name" size="small" placeholder="如：华东一区" />
-            </template>
-          </el-table-column>
-          <el-table-column min-width="200">
+          <el-table-column min-width="160">
             <template slot="header"><span class="th-required">报价申请单号</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.applyNo || '-' }}</span>
-              <el-input v-else v-model="row.applyNo" size="small" placeholder="请输入单号" />
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.applyNo)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.applyNo || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.applyNo) }">{{ displayText(row.applyNo) }}</span>
+              </el-tooltip>
+              <el-input v-else v-model="row.applyNo" size="small" placeholder="请输入" />
             </template>
           </el-table-column>
-          <el-table-column min-width="200">
+          <el-table-column min-width="160">
             <template slot="header"><span class="th-required">合同编码</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.contractCode || '-' }}</span>
-              <el-input v-else v-model="row.contractCode" size="small" placeholder="请输入合同编码" />
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.contractCode)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.contractCode || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.contractCode) }">{{ displayText(row.contractCode) }}</span>
+              </el-tooltip>
+              <el-input v-else v-model="row.contractCode" size="small" placeholder="请输入" />
             </template>
           </el-table-column>
-          <el-table-column label="始发地" min-width="240">
+          <el-table-column label="始发地" min-width="200">
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="addr-view-text">{{ formatAddressView(row.fromAddress) }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(formatAddressLine(row.fromAddress))"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="formatAddressLine(row.fromAddress)"
+              >
+                <span
+                  class="addr-view-text cell-ellipsis"
+                  :class="{ 'is-truncated': needEllipsis(formatAddressLine(row.fromAddress)) }"
+                >{{ displayText(formatAddressLine(row.fromAddress)) }}</span>
+              </el-tooltip>
               <el-tooltip
                 v-else
                 effect="dark"
@@ -395,9 +454,21 @@
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column label="目的地" min-width="240">
+          <el-table-column label="目的地" min-width="200">
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="addr-view-text">{{ formatAddressView(row.toAddress) }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(formatAddressLine(row.toAddress))"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="formatAddressLine(row.toAddress)"
+              >
+                <span
+                  class="addr-view-text cell-ellipsis"
+                  :class="{ 'is-truncated': needEllipsis(formatAddressLine(row.toAddress)) }"
+                >{{ displayText(formatAddressLine(row.toAddress)) }}</span>
+              </el-tooltip>
               <el-tooltip
                 v-else
                 effect="dark"
@@ -443,10 +514,19 @@
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column v-if="selectedDims.includes('费用项')" min-width="200">
+          <el-table-column v-if="selectedDims.includes('费用项')" min-width="120">
             <template slot="header"><span class="th-required">费用项</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ feeItemLabel(row.feeItem) }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(feeItemLabel(row.feeItem))"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="feeItemLabel(row.feeItem)"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(feeItemLabel(row.feeItem)) }">{{ displayText(feeItemLabel(row.feeItem)) }}</span>
+              </el-tooltip>
               <el-select
                 v-else
                 v-model="row.feeItem"
@@ -465,27 +545,54 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column v-if="selectedDims.includes('商家订单类型')" label="商家订单类型" min-width="200">
+          <el-table-column v-if="selectedDims.includes('商家订单类型')" label="商家订单类型" min-width="140">
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.orderType || '-' }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.orderType)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.orderType || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.orderType) }">{{ displayText(row.orderType) }}</span>
+              </el-tooltip>
               <el-select v-else v-model="row.orderType" size="small" clearable placeholder="请选择">
                 <el-option label="普通订单" value="普通订单" />
                 <el-option label="特殊订单" value="特殊订单" />
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column v-if="selectedDims.includes('配送类型')" label="配送类型" min-width="160">
+          <el-table-column v-if="selectedDims.includes('配送类型')" label="配送类型" min-width="120">
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.deliveryType || '-' }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.deliveryType)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.deliveryType || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.deliveryType) }">{{ displayText(row.deliveryType) }}</span>
+              </el-tooltip>
               <el-select v-else v-model="row.deliveryType" size="small" clearable placeholder="请选择">
                 <el-option label="快递" value="快递" />
                 <el-option label="快运" value="快运" />
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column v-if="selectedDims.includes('正逆向')" label="正逆向" min-width="160">
+          <el-table-column v-if="selectedDims.includes('正逆向')" label="正逆向" min-width="100">
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.direction || '-' }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(row.direction)"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="String(row.direction || '-')"
+              >
+                <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.direction) }">{{ displayText(row.direction) }}</span>
+              </el-tooltip>
               <el-select v-else v-model="row.direction" size="small" clearable placeholder="请选择">
                 <el-option label="正向" value="正向" />
                 <el-option label="逆向" value="逆向" />
@@ -511,21 +618,24 @@
       <!-- Step 3 报价明细 -->
       <div v-show="showSection('detail', 2)" class="quoting-section">
         <h3 class="section-title">报价明细配置</h3>
-        <!-- 图3：一行三列；配置分区纳入栅格；图5：内容间距 24px -->
-        <div class="detail-meta-bar">
+        <!-- 编辑：参数表单；预览：仅分区筛选，其余字段并入表格 -->
+        <div class="detail-meta-bar" :class="{ 'detail-meta-bar--view-filter': isViewMode }">
           <el-form
             :model="currentDetail"
             class="lui-form-grid detail-meta-form"
+            :class="{ 'detail-meta-form--view-filter': isViewMode }"
             label-width="120px"
             size="small"
           >
             <el-form-item
-              v-if="partitions.length > 1"
+              v-if="isViewMode || partitions.length > 1"
               label="选择配置分区"
-              :required="!isViewMode"
+              :required="!isViewMode && partitions.length > 1"
+              :class="{ 'detail-partition-filter-item': isViewMode }"
             >
               <el-select
                 v-model="activePartitionId"
+                class="detail-partition-filter"
                 :clearable="!isViewMode"
                 placeholder="请选择分区"
               >
@@ -537,79 +647,69 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item v-else label="配置分区">
+            <el-form-item v-else-if="!isViewMode" label="配置分区">
               <span class="view-plain-text detail-meta-partition-text">{{ activePartitionName }}</span>
             </el-form-item>
-            <el-form-item v-if="showStatTarget" label="统计对象" required>
-              <span v-if="isViewMode" class="view-plain-text">{{ currentDetail.statTarget || '-' }}</span>
-              <el-select
-                v-else
-                v-model="currentDetail.statTarget"
-                clearable
-                placeholder="请选择"
-              >
-                <el-option label="月度单量" value="月度单量" />
-                <el-option label="月度金额" value="月度金额" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="单票阶梯模式" required>
-              <span v-if="isViewMode" class="view-plain-text">{{ currentDetail.stairMode || '-' }}</span>
-              <el-select
-                v-else
-                v-model="currentDetail.stairMode"
-                clearable
-                placeholder="请选择"
-              >
-                <el-option label="计费重量" value="计费重量" />
-                <el-option label="体积" value="体积" />
-                <el-option label="无" value="无" />
-              </el-select>
-            </el-form-item>
-            <el-form-item v-if="showStairColumns" label="阶梯累进" required>
-              <span v-if="isViewMode" class="view-plain-text">{{ currentDetail.stairProgress || '-' }}</span>
-              <el-select
-                v-else
-                v-model="currentDetail.stairProgress"
-                clearable
-                placeholder="请选择"
-              >
-                <el-option label="全量累进" value="全量累进" />
-                <el-option label="超量累进" value="超量累进" />
-              </el-select>
-            </el-form-item>
-            <el-form-item v-if="showStairColumns" label="区间开闭类型" required>
-              <span v-if="isViewMode" class="view-plain-text">{{ currentDetail.intervalType || '-' }}</span>
-              <el-select
-                v-else
-                v-model="currentDetail.intervalType"
-                clearable
-                placeholder="请选择"
-              >
-                <el-option label="前开后闭" value="前开后闭" />
-                <el-option label="前闭后开" value="前闭后开" />
-              </el-select>
-            </el-form-item>
-            <el-form-item v-if="showBusinessCarry" label="业务进位" required>
-              <span v-if="isViewMode" class="view-plain-text">{{ currentDetail.businessCarry || '-' }}</span>
-              <el-select
-                v-else
-                v-model="currentDetail.businessCarry"
-                clearable
-                placeholder="请选择"
-              >
-                <el-option label="0.5 进位" value="0.5 进位" />
-                <el-option label="四舍五入取整" value="四舍五入取整" />
-              </el-select>
-            </el-form-item>
-            <el-form-item v-if="currentDetail.stairMode === '计费重量'" label="轻抛系数" required>
-              <span v-if="isViewMode" class="view-plain-text">{{ currentDetail.lightThrow || '-' }}</span>
-              <el-input
-                v-else
-                :value="currentDetail.lightThrow"
-                placeholder="请输入"
-                @input="onDecimalInput(currentDetail, 'lightThrow', $event, 'lightThrowError')"
-              />
-            </el-form-item>
+            <template v-if="!isViewMode">
+              <el-form-item v-if="showStatTarget" label="统计对象" required>
+                <el-select
+                  v-model="currentDetail.statTarget"
+                  clearable
+                  placeholder="请选择"
+                >
+                  <el-option label="月度单量" value="月度单量" />
+                  <el-option label="月度金额" value="月度金额" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="单票阶梯模式" required>
+                <el-select
+                  v-model="currentDetail.stairMode"
+                  clearable
+                  placeholder="请选择"
+                >
+                  <el-option label="计费重量" value="计费重量" />
+                  <el-option label="体积" value="体积" />
+                  <el-option label="无" value="无" />
+                </el-select>
+              </el-form-item>
+              <el-form-item v-if="showStairColumns" label="阶梯累进" required>
+                <el-select
+                  v-model="currentDetail.stairProgress"
+                  clearable
+                  placeholder="请选择"
+                >
+                  <el-option label="全量累进" value="全量累进" />
+                  <el-option label="超量累进" value="超量累进" />
+                </el-select>
+              </el-form-item>
+              <el-form-item v-if="showStairColumns" label="区间开闭类型" required>
+                <el-select
+                  v-model="currentDetail.intervalType"
+                  clearable
+                  placeholder="请选择"
+                >
+                  <el-option label="前开后闭" value="前开后闭" />
+                  <el-option label="前闭后开" value="前闭后开" />
+                </el-select>
+              </el-form-item>
+              <el-form-item v-if="showBusinessCarry" label="业务进位" required>
+                <el-select
+                  v-model="currentDetail.businessCarry"
+                  clearable
+                  placeholder="请选择"
+                >
+                  <el-option label="0.5 进位" value="0.5 进位" />
+                  <el-option label="四舍五入取整" value="四舍五入取整" />
+                </el-select>
+              </el-form-item>
+              <el-form-item v-if="currentDetail.stairMode === '计费重量'" label="轻抛系数" required>
+                <el-input
+                  :value="currentDetail.lightThrow"
+                  placeholder="请输入"
+                  @input="onDecimalInput(currentDetail, 'lightThrow', $event, 'lightThrowError')"
+                />
+              </el-form-item>
+            </template>
           </el-form>
         </div>
         <div v-if="!isViewMode" class="detail-table-actions">
@@ -619,14 +719,16 @@
             placement="top"
             content="在表格最后一行之后新增一条明细"
           >
-            <el-button size="small" @click="addStairRow">添加</el-button>
+            <span class="detail-table-actions__btn-wrap">
+              <el-button size="small" @click="addStairRow">添加</el-button>
+            </span>
           </el-tooltip>
           <el-tooltip
             effect="dark"
             placement="top"
             content="仅支持删除表格最后一行；至少保留一条明细"
           >
-            <span class="detail-table-actions__delete-wrap">
+            <span class="detail-table-actions__btn-wrap">
               <el-button
                 size="small"
                 :disabled="currentDetail.rows.length <= 1"
@@ -635,21 +737,52 @@
             </span>
           </el-tooltip>
         </div>
-        <div class="table-h-scroll detail-table-wrap">
+        <div class="table-h-scroll detail-table-wrap" :class="{ 'detail-table-wrap--view': isViewMode }">
         <el-table
-          :key="'detail-stair-' + activePartitionId + '-' + detailTableKey"
+          :key="'detail-stair-' + activePartitionId + '-' + detailTableKey + (isViewMode ? '-view' : '')"
           ref="detailStairTable"
           :data="pagedDetailRows"
           row-key="id"
           size="small"
           border
-          max-height="480"
-          class="partition-table detail-stair-table"
+          :max-height="isViewMode ? null : 480"
+          class="partition-table detail-stair-table quoting-data-table"
         >
-          <el-table-column v-if="showStatColumns" min-width="200">
-            <template slot="header"><span class="th-required">统计最小值(不含)</span></template>
+          <!-- 预览：分区级参数并入表格，切换分区后随 currentDetail 刷新 -->
+          <el-table-column v-if="isViewMode && showStatTarget" label="统计对象" min-width="140">
+            <template slot-scope>
+              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.statTarget) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="isViewMode" label="单票阶梯模式" min-width="140">
+            <template slot-scope>
+              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.stairMode) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="isViewMode && showStairColumns" label="阶梯累进" min-width="120">
+            <template slot-scope>
+              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.stairProgress) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="isViewMode && showStairColumns" label="区间开闭类型" min-width="140">
+            <template slot-scope>
+              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.intervalType) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="isViewMode && showBusinessCarry" label="业务进位" min-width="140">
+            <template slot-scope>
+              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.businessCarry) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="isViewMode && currentDetail.stairMode === '计费重量'" label="轻抛系数" min-width="120">
+            <template slot-scope>
+              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.lightThrow) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="showStatColumns" min-width="168">
+            <template slot="header"><span :class="{ 'th-required': !isViewMode }">统计最小值(不含)</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.statMin || '-' }}</span>
+              <span v-if="isViewMode" class="view-plain-text">{{ row.statMin === 0 || row.statMin ? row.statMin : '-' }}</span>
               <el-input
                 v-else
                 :value="row.statMin"
@@ -659,10 +792,10 @@
               />
             </template>
           </el-table-column>
-          <el-table-column v-if="showStatColumns" min-width="200">
-            <template slot="header"><span class="th-required">统计最大值(含)</span></template>
+          <el-table-column v-if="showStatColumns" min-width="160">
+            <template slot="header"><span :class="{ 'th-required': !isViewMode }">统计最大值(含)</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.statMax || '-' }}</span>
+              <span v-if="isViewMode" class="view-plain-text">{{ row.statMax === 0 || row.statMax ? row.statMax : '-' }}</span>
               <el-input
                 v-else
                 :value="row.statMax"
@@ -673,9 +806,9 @@
             </template>
           </el-table-column>
           <el-table-column v-if="showStairColumns" min-width="200">
-            <template slot="header"><span class="th-required">单票阶梯最小值(不含)</span></template>
+            <template slot="header"><span :class="{ 'th-required': !isViewMode }">单票阶梯最小值(不含)</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.stairMin || '-' }}</span>
+              <span v-if="isViewMode" class="view-plain-text">{{ row.stairMin === 0 || row.stairMin ? row.stairMin : '-' }}</span>
               <el-input
                 v-else
                 :value="row.stairMin"
@@ -685,8 +818,8 @@
               />
             </template>
           </el-table-column>
-          <el-table-column v-if="showStairColumns" min-width="200">
-            <template slot="header"><span class="th-required">单票阶梯最大值(含)</span></template>
+          <el-table-column v-if="showStairColumns" min-width="190">
+            <template slot="header"><span :class="{ 'th-required': !isViewMode }">单票阶梯最大值(含)</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text">{{ row.stairMax || '-' }}</span>
               <el-input
@@ -698,10 +831,10 @@
               />
             </template>
           </el-table-column>
-          <el-table-column min-width="200">
-            <template slot="header"><span class="th-required">折扣模式</span></template>
+          <el-table-column min-width="120">
+            <template slot="header"><span :class="{ 'th-required': !isViewMode }">折扣模式</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ row.discountMode || '-' }}</span>
+              <span v-if="isViewMode" class="view-plain-text cell-ellipsis">{{ displayText(row.discountMode) }}</span>
               <el-select
                 v-else
                 v-model="row.discountMode"
@@ -716,10 +849,22 @@
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column min-width="420">
-            <template slot="header"><span class="th-required">报价明细</span></template>
+          <el-table-column min-width="220">
+            <template slot="header"><span :class="{ 'th-required': !isViewMode }">报价明细</span></template>
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">{{ formatDiscountDetailView(row) }}</span>
+              <el-tooltip
+                v-if="isViewMode"
+                :disabled="!needEllipsis(formatDiscountDetailView(row))"
+                placement="top"
+                effect="dark"
+                :open-delay="200"
+                :content="formatDiscountDetailView(row)"
+              >
+                <span
+                  class="view-plain-text cell-ellipsis"
+                  :class="{ 'is-truncated': needEllipsis(formatDiscountDetailView(row)) }"
+                >{{ displayText(formatDiscountDetailView(row)) }}</span>
+              </el-tooltip>
               <div v-else-if="row.discountMode === '首续重报价'" class="detail-first-continue">
                 <span>首重:</span>
                 <el-input
@@ -1120,9 +1265,9 @@ export default {
   },
   data() {
     const first = createPartition({
-      name: '默认分区',
-      applyNo: 'SQ-DEFAULT-001',
-      contractCode: 'HT-DEFAULT-001',
+      name: '',
+      applyNo: '',
+      contractCode: '',
       feeItem: '运费'
     })
     return {
@@ -1420,16 +1565,25 @@ export default {
       if (!list || !list.length) return ''
       return list.join('、')
     },
-    /** 预览态：全部地址展开，按每行最多 20 字换行 */
-    formatAddressView(list) {
+    /** 预览态：地址单行展示（截断由 displayText 处理） */
+    formatAddressLine(list) {
       if (!list || !list.length) return '-'
-      const text = list.map(item => this.shortAddressLabel(item)).join('、')
-      const chars = Array.from(text)
-      const lines = []
-      for (let i = 0; i < chars.length; i += 20) {
-        lines.push(chars.slice(i, i + 20).join(''))
-      }
-      return lines.join('\n')
+      return list.map(item => this.shortAddressLabel(item)).join('、')
+    },
+    /** @deprecated 使用 formatAddressLine + displayText */
+    formatAddressView(list) {
+      return this.displayText(this.formatAddressLine(list))
+    },
+    needEllipsis(text) {
+      const raw = text == null ? '' : String(text)
+      return Array.from(raw).length > 16
+    },
+    displayText(text) {
+      const raw = text == null || text === '' ? '' : String(text)
+      if (!raw) return '-'
+      const chars = Array.from(raw)
+      if (chars.length <= 16) return raw
+      return `${chars.slice(0, 16).join('')}...`
     },
     shortAddressLabel(value) {
       const s = String(value || '')
@@ -1865,16 +2019,16 @@ export default {
         })
       } else {
         const p = createPartition({
-          name: '默认分区',
-          applyNo: 'SQ-DEFAULT-001',
-          contractCode: 'HT-DEFAULT-001',
+          name: '',
+          applyNo: '',
+          contractCode: '',
           statGroup: isStats ? '1' : '',
           statBillingObject: isStats ? '统计+计费' : '',
-          fromAddress: ['上海市-上海市-徐汇区-斜土路街道', '上海市-上海市-徐汇区-徐家汇街道'],
-          toAddress: ['广东省-深圳市-南山区-粤海街道'],
+          fromAddress: [],
+          toAddress: [],
           feeItem: '运费',
-          orderType: '普通订单',
-          direction: '正向'
+          orderType: '',
+          direction: ''
         })
         this.partitions = [p]
       }
@@ -2221,61 +2375,92 @@ export default {
   justify-self: end;
   min-height: 32px;
   align-self: center;
-  gap: 0;
+  gap: 12px;
 }
-.partition-dims-actions > * + * {
-  margin-left: 12px;
+.partition-dims-actions > *,
+.partition-dims-actions .el-button,
+.partition-dims-actions .el-button + .el-button {
+  margin-left: 0 !important;
 }
+.partition-dims-actions__btn-wrap,
 .partition-dims-actions__delete-wrap {
   display: inline-flex;
-}
-.partition-dims-actions .el-button + .el-button,
-.partition-dims-actions .el-tooltip .el-button {
-  margin-left: 0;
 }
 .partition-pager,
 .detail-pager {
   margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--lui-table-divider, #f1f2f4);
+  box-sizing: border-box;
 }
-/* 分区表横滑：表宽按列 min-width 撑开，表头/表体同步横滑，预览可完整展示全部列 */
+/* 分区/明细表：宽度 100% 自适应（完整页/弹窗随内容区左右边距），列用 min-width；过多时横滑 */
 .table-h-scroll {
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-}
-.partition-table-wrap.table-h-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  position: relative;
-}
-.table-card--view .table-h-scroll {
-  pointer-events: auto;
-}
-.table-h-scroll >>> .el-table {
-  width: max-content !important;
-  min-width: 100%;
-}
-.table-h-scroll >>> .el-table__header-wrapper,
-.table-h-scroll >>> .el-table__body-wrapper {
-  overflow: visible !important;
-}
-.table-h-scroll >>> .el-table__body-wrapper {
   scrollbar-width: thin;
   scrollbar-color: #c0c4cc transparent;
 }
-.table-h-scroll::-webkit-scrollbar {
+.partition-table-wrap.table-h-scroll,
+.detail-table-wrap.table-h-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+  border-radius: 8px;
+}
+.table-card--view .table-h-scroll {
+  pointer-events: auto;
+  border-radius: 8px;
+}
+.table-h-scroll >>> .el-table.quoting-data-table {
+  width: 100% !important;
+  border-radius: 8px;
+}
+.quoting-data-table >>> .el-table__header-wrapper {
+  border-radius: 8px 8px 0 0;
+}
+.quoting-data-table >>> .el-table__header th.el-table__cell:first-child {
+  border-top-left-radius: 8px;
+}
+.quoting-data-table >>> .el-table__header th.el-table__cell:last-child {
+  border-top-right-radius: 8px;
+}
+.quoting-data-table >>> .el-table__body tr:last-child td.el-table__cell:first-child {
+  border-bottom-left-radius: 8px;
+}
+.quoting-data-table >>> .el-table__body tr:last-child td.el-table__cell:last-child {
+  border-bottom-right-radius: 8px;
+}
+.table-h-scroll >>> .el-table__header-wrapper {
+  overflow: hidden !important;
+}
+.table-h-scroll >>> .el-table__body-wrapper {
+  overflow-x: auto !important;
+}
+/* 编辑态明细有 max-height：表内纵向滚动；预览与分区表一致：自然撑高 */
+.table-card--wizard .detail-table-wrap >>> .el-table__body-wrapper {
+  overflow-y: auto !important;
+}
+.partition-table-wrap >>> .el-table__body-wrapper,
+.table-card--view .detail-table-wrap >>> .el-table__body-wrapper {
+  overflow-y: visible !important;
+}
+.table-h-scroll::-webkit-scrollbar,
+.table-h-scroll >>> .el-table__body-wrapper::-webkit-scrollbar {
   height: 8px;
 }
-.table-h-scroll::-webkit-scrollbar-track {
+.table-h-scroll::-webkit-scrollbar-track,
+.table-h-scroll >>> .el-table__body-wrapper::-webkit-scrollbar-track {
   background: transparent;
 }
-.table-h-scroll::-webkit-scrollbar-thumb {
+.table-h-scroll::-webkit-scrollbar-thumb,
+.table-h-scroll >>> .el-table__body-wrapper::-webkit-scrollbar-thumb {
   min-width: 48px;
   background: #c0c4cc;
   border-radius: 4px;
 }
-/* 固定列：抬离横滑条，且禁止行高被容器拉高（图2 底部错位） */
+/* 固定列：抬离横滑条，且禁止行高被容器拉高 */
 .partition-table-wrap >>> .el-table__fixed-right,
 .partition-table-wrap >>> .el-table__fixed {
   bottom: 8px !important;
@@ -2295,26 +2480,50 @@ export default {
   background: #fff;
 }
 .partition-table-wrap >>> .el-table__body td.el-table__cell,
-.partition-table-wrap >>> .el-table__fixed-right .el-table__body td.el-table__cell {
+.partition-table-wrap >>> .el-table__fixed-right .el-table__body td.el-table__cell,
+.detail-table-wrap >>> .el-table__body td.el-table__cell {
   vertical-align: middle;
 }
-/* 表头/表体左右预留；明细表列间距 32px（左右各 16） */
-.partition-table-wrap >>> .el-table__header .el-table__cell .cell,
-.partition-table-wrap >>> .el-table__body .el-table__cell .cell {
-  padding-left: 12px;
-  padding-right: 12px;
+/* 分区/明细：表头表体一律单行，禁止任何换行（含 th-required） */
+.quoting-data-table >>> .el-table__header th.el-table__cell,
+.quoting-data-table >>> .el-table__header th.el-table__cell .cell,
+.quoting-data-table >>> .el-table__header .th-required,
+.quoting-data-table >>> .el-table__body td.el-table__cell,
+.quoting-data-table >>> .el-table__body td.el-table__cell .cell,
+.partition-table >>> .el-table__header th.el-table__cell,
+.partition-table >>> .el-table__header th.el-table__cell .cell,
+.partition-table >>> .el-table__header .th-required,
+.partition-table >>> .el-table__body td.el-table__cell .cell,
+.detail-stair-table >>> .el-table__header th.el-table__cell,
+.detail-stair-table >>> .el-table__header th.el-table__cell .cell,
+.detail-stair-table >>> .el-table__header .th-required,
+.detail-stair-table >>> .el-table__body td.el-table__cell .cell {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
 }
+.partition-table-wrap >>> .el-table__header .el-table__cell .cell,
+.partition-table-wrap >>> .el-table__body .el-table__cell .cell,
 .detail-table-wrap >>> .el-table__header .el-table__cell .cell,
 .detail-table-wrap >>> .el-table__body .el-table__cell .cell {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  box-sizing: border-box;
+  white-space: nowrap !important;
 }
-/* 表内控件勿触发 cell 省略号（避免输入框后出现 ...） */
-.detail-table-wrap >>> .el-table__body td.el-table__cell .cell,
-.partition-table-wrap >>> .el-table__body td.el-table__cell .cell {
+/* 预览：正文单行；编辑：控件框完整显示，禁止 overflow 裁切边框 */
+.table-card--view .partition-table-wrap >>> .el-table__body td.el-table__cell .cell,
+.table-card--view .detail-table-wrap >>> .el-table__body td.el-table__cell .cell {
   text-overflow: clip !important;
-  white-space: normal !important;
-  overflow: hidden;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+.table-card--wizard .partition-table-wrap >>> .el-table__body td.el-table__cell .cell,
+.table-card--wizard .detail-table-wrap >>> .el-table__body td.el-table__cell .cell {
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  line-height: normal !important;
 }
 .partition-ops {
   display: inline-flex;
@@ -2341,8 +2550,11 @@ export default {
 .table-card--view .detail-stair-table >>> .th-required::before {
   display: none;
 }
-.partition-table {
+.partition-table,
+.detail-stair-table,
+.quoting-data-table {
   width: 100% !important;
+  border-radius: 8px;
 }
 .partition-table >>> .el-table__header th.el-table__cell {
   font-size: 14px;
@@ -2350,18 +2562,30 @@ export default {
   color: #525765 !important;
   background: #f5f7fa !important;
 }
-/* 表内文案：PC3.0 次文本 #525765（表单值仍用主文本） */
+/* 表内正文：PC3.0 次文本 #525765 */
+.partition-table >>> .el-table__body td.el-table__cell,
+.partition-table >>> .el-table__body td.el-table__cell .cell,
 .partition-table >>> .view-plain-text,
 .partition-table >>> .addr-view-text,
 .detail-stair-table >>> .view-plain-text {
   color: #525765 !important;
   font-size: 14px !important;
-  line-height: 16px !important;
   font-weight: 400 !important;
+}
+.partition-table >>> .view-plain-text,
+.partition-table >>> .addr-view-text,
+.detail-stair-table >>> .view-plain-text {
+  line-height: 16px !important;
+  white-space: nowrap;
 }
 .partition-table .el-input,
 .partition-table .el-select {
   width: 100%;
+}
+.partition-table .el-input >>> .el-input__inner,
+.partition-table .el-select >>> .el-input__inner {
+  height: 32px !important;
+  line-height: 30px !important;
 }
 .partition-table .addr-select {
   min-width: 200px;
@@ -2607,8 +2831,10 @@ export default {
 .table-card--view .table-h-scroll {
   width: 100%;
 }
-.table-card--view .partition-table {
+.table-card--view .partition-table,
+.table-card--view .quoting-data-table {
   width: 100% !important;
+  border-radius: 8px;
 }
 .ext-block__title {
   font-size: 14px;
@@ -2762,7 +2988,7 @@ export default {
   gap: 0;
   width: auto;
   max-width: 100%;
-  height: 32px;
+  height: 40px;
   padding: 4px;
   margin: 0 0 24px;
   box-sizing: border-box;
@@ -2779,11 +3005,11 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 24px;
+  height: 32px;
   min-width: 88px;
   padding: 0 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
   font-size: 14px;
@@ -2825,29 +3051,29 @@ export default {
 .detail-toolbar-actions {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 12px;
 }
-.detail-toolbar-actions > * + * {
-  margin-left: 12px;
+.detail-toolbar-actions > *,
+.detail-toolbar-actions .el-button {
+  margin-left: 0 !important;
 }
-/* 图2 对齐：明细表上方右侧操作，间距 12px */
+/* 明细表上方右侧操作，间距统一 12px */
 .detail-table-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0;
+  gap: 12px;
   margin: 24px 0 12px;
   min-height: 32px;
 }
-.detail-table-actions > * + * {
-  margin-left: 12px;
+.detail-table-actions > *,
+.detail-table-actions .el-button,
+.detail-table-actions .el-button + .el-button {
+  margin-left: 0 !important;
 }
+.detail-table-actions__btn-wrap,
 .detail-table-actions__delete-wrap {
   display: inline-flex;
-}
-.detail-table-actions .el-button + .el-button,
-.detail-table-actions .el-tooltip .el-button {
-  margin-left: 0;
 }
 .detail-table-actions + .detail-table-wrap {
   margin-top: 0;
@@ -2860,6 +3086,9 @@ export default {
   gap: 16px;
   margin: 0;
 }
+.detail-meta-bar--view-filter {
+  margin-bottom: 0;
+}
 .detail-meta-form.lui-form-grid.el-form {
   width: 100%;
   margin: 0;
@@ -2868,6 +3097,12 @@ export default {
   column-gap: 48px !important;
   row-gap: 16px !important;
   align-items: center;
+}
+/* 预览：仅分区筛选，单列布局 */
+.detail-meta-form--view-filter.lui-form-grid.el-form {
+  grid-template-columns: minmax(240px, 360px) !important;
+  column-gap: 0 !important;
+  row-gap: 0 !important;
 }
 .detail-meta-form >>> .el-form-item {
   align-items: center;
@@ -2880,19 +3115,49 @@ export default {
   color: #23252b !important;
   font-weight: 500;
 }
-.detail-stair-table {
-  width: 100% !important;
+.detail-partition-filter {
+  width: 100%;
 }
-.detail-table-wrap.table-h-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  position: relative;
+.detail-table-wrap--view {
+  margin-top: 16px;
 }
-.detail-stair-table >>> .el-table__body td.el-table__cell {
+.table-card--view .detail-table-wrap--view {
+  margin-top: 16px;
+}
+/*
+ * 分区/明细行高 48：
+ * - 表头仅文字：padding 14 + line 16
+ * - 表体含 32 高控件：padding 8 + 控件 32（14+32+14 会裁切边框，禁止）
+ */
+.quoting-data-table >>> .el-table__header th.el-table__cell,
+.partition-table >>> .el-table__header th.el-table__cell,
+.detail-stair-table >>> .el-table__header th.el-table__cell {
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+  height: 48px !important;
+  box-sizing: border-box;
   vertical-align: middle;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  height: auto;
+}
+.quoting-data-table >>> .el-table__body td.el-table__cell,
+.partition-table >>> .el-table__body td.el-table__cell,
+.detail-stair-table >>> .el-table__body td.el-table__cell {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  height: 48px !important;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+.quoting-data-table >>> .el-table__header th.el-table__cell .cell,
+.partition-table >>> .el-table__header th.el-table__cell .cell,
+.detail-stair-table >>> .el-table__header th.el-table__cell .cell {
+  line-height: 16px !important;
+  white-space: nowrap !important;
+}
+.quoting-data-table >>> .el-table__body td.el-table__cell .cell,
+.partition-table >>> .el-table__body td.el-table__cell .cell,
+.detail-stair-table >>> .el-table__body td.el-table__cell .cell {
+  white-space: nowrap !important;
+  line-height: normal !important;
 }
 .detail-stair-table >>> .el-table__body tr:last-child td.el-table__cell {
   /* 末行与表体底边对齐，避免操作列“掉底” */
@@ -2936,8 +3201,10 @@ export default {
   flex-wrap: nowrap;
   gap: 4px;
   width: 100%;
+  height: 32px;
   min-height: 32px;
-  padding: 2px 24px 2px 8px;
+  max-height: 32px;
+  padding: 0 24px 0 8px;
   box-sizing: border-box;
   border: 1px solid #e4e5e9;
   border-radius: 8px;
@@ -2945,16 +3212,33 @@ export default {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 .addr-view-text {
-  display: inline-block;
-  max-width: 20em;
+  display: inline;
+  max-width: none;
   font-size: 14px;
   line-height: 16px;
   color: #525765;
   font-weight: 400;
-  white-space: pre-wrap;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  vertical-align: bottom;
+}
+.cell-ellipsis {
+  display: inline;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+  vertical-align: bottom;
+  cursor: default;
+  color: #525765;
+}
+.cell-ellipsis.is-truncated,
+.addr-view-text.is-truncated {
+  cursor: pointer;
 }
 .addr-select:hover {
   border-color: #c0c4cc;

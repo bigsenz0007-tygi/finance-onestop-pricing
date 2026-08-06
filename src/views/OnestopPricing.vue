@@ -2005,7 +2005,8 @@ export default {
 .scene-rules-table >>> .el-table__body .cell {
   overflow: hidden;
 }
-.table-card--wizard .scene-rules-table >>> .el-table__body .cell {
+.table-card--wizard .scene-rules-table >>> .el-table__body .cell,
+.table-card--view .scene-rules-table >>> .el-table__body .cell {
   overflow: visible !important;
 }
 .scene-rules-table >>> .el-table__body td.el-table__cell {

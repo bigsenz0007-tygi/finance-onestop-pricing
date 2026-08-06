@@ -62,31 +62,155 @@
         <el-button type="primary" size="small" @click="$emit('create')">新建</el-button>
       </div>
       <el-table :data="pagedList" class="lui-table-fill quoting-list-table">
-        <el-table-column prop="name" label="报价方案名称" min-width="160" />
-        <el-table-column prop="schemeCode" label="方案编码" min-width="140" />
-        <el-table-column prop="merchantCode" label="商家编码" min-width="140" />
-        <el-table-column prop="merchantName" label="商家名称" min-width="140">
+        <el-table-column prop="name" label="报价方案名称" min-width="280">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.name)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.name || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.name) }"
+              >{{ displayText(row.name) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="schemeCode" label="方案编码" min-width="150">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.schemeCode)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.schemeCode || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.schemeCode) }"
+              >{{ displayText(row.schemeCode) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="merchantCode" label="商家编码" min-width="140">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.merchantCode)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.merchantCode || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.merchantCode) }"
+              >{{ displayText(row.merchantCode) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="merchantName" label="商家名称" min-width="160">
           <template slot-scope="{ row }">
             <el-tooltip
               :disabled="!needEllipsis(row.merchantName)"
               placement="top"
               effect="dark"
+              :open-delay="200"
               :content="String(row.merchantName || '')"
             >
-              <span class="cell-ellipsis">{{ displayText(row.merchantName) }}</span>
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.merchantName) }"
+              >{{ displayText(row.merchantName) }}</span>
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column prop="businessScenario" label="业务场景" min-width="120" />
-        <el-table-column prop="productType" label="产品类型" min-width="120" />
-        <el-table-column prop="strategy" label="计费策略" min-width="110" />
+        <el-table-column prop="businessScenario" label="业务场景" min-width="120">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.businessScenario)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.businessScenario || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.businessScenario) }"
+              >{{ displayText(row.businessScenario) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="productType" label="产品类型" min-width="120">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.productType)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.productType || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.productType) }"
+              >{{ displayText(row.productType) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="strategy" label="计费策略" min-width="110">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.strategy)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.strategy || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.strategy) }"
+              >{{ displayText(row.strategy) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" min-width="90">
           <template slot-scope="{ row }">
             <el-tag size="small" :type="statusTagType(row.status)">{{ row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="creator" label="创建人" min-width="80" />
-        <el-table-column prop="createdAt" label="创建时间" min-width="168" />
+        <el-table-column prop="creator" label="创建人" min-width="80">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.creator)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.creator || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.creator) }"
+              >{{ displayText(row.creator) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createdAt" label="创建时间" min-width="180">
+          <template slot-scope="{ row }">
+            <el-tooltip
+              :disabled="!needEllipsis(row.createdAt)"
+              placement="top"
+              effect="dark"
+              :open-delay="200"
+              :content="String(row.createdAt || '')"
+            >
+              <span
+                class="cell-ellipsis"
+                :class="{ 'is-truncated': needEllipsis(row.createdAt) }"
+              >{{ displayText(row.createdAt) }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" min-width="200" fixed="right">
           <template slot-scope="{ row }">
             <el-button type="text" @click="$emit('open', row, 'view')">查看</el-button>
@@ -173,12 +297,15 @@ export default {
   },
   methods: {
     needEllipsis(text) {
-      return String(text == null ? '' : text).length > ELLIPSIS_LIMIT
+      const raw = text == null ? '' : String(text)
+      return Array.from(raw).length > ELLIPSIS_LIMIT
     },
     displayText(text) {
-      const raw = String(text == null ? '' : text)
-      if (raw.length <= ELLIPSIS_LIMIT) return raw
-      return `${raw.slice(0, ELLIPSIS_LIMIT)}...`
+      const raw = text == null ? '' : String(text)
+      if (!raw) return ''
+      const chars = Array.from(raw)
+      if (chars.length <= ELLIPSIS_LIMIT) return raw
+      return `${chars.slice(0, ELLIPSIS_LIMIT).join('')}...`
     },
     statusTagType(status) {
       if (status === '已启用') return 'success'
@@ -208,17 +335,26 @@ export default {
 </script>
 
 <style scoped>
+.quoting-list-table >>> .el-table,
+.quoting-list-table >>> .el-table th.el-table__cell,
+.quoting-list-table >>> .el-table td.el-table__cell,
+.quoting-list-table >>> .el-table .cell {
+  color: #525765;
+}
+/* 禁止按列宽二次截断：仅由 displayText 按 16 字加 ... */
 .quoting-list-table >>> .el-table .cell {
   white-space: nowrap;
   line-height: 22px;
+  overflow: visible !important;
+  text-overflow: clip !important;
 }
 .cell-ellipsis {
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: inline;
   white-space: nowrap;
-  vertical-align: bottom;
+  color: #525765;
   cursor: default;
+}
+.cell-ellipsis.is-truncated {
+  cursor: pointer;
 }
 </style>

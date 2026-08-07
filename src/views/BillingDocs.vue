@@ -1028,6 +1028,8 @@ export default {
   line-height: 28px !important;
   font-size: 12px;
   color: #868d9f;
+  position: relative;
+  top: 1px; /* 图7：下箭头下移 1px */
 }
 .elements-pager__control >>> .el-pagination__jump {
   margin-left: 8px !important;

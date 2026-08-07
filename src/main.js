@@ -265,14 +265,33 @@ function setupMultiSelectHoverTip() {
   let tipEl = document.querySelector('.multi-select-hover-tip')
   if (!tipEl) {
     tipEl = document.createElement('div')
-    tipEl.className = 'multi-select-hover-tip is-hidden el-tooltip__popper is-dark addr-hover-tip'
+    tipEl.className = 'multi-select-hover-tip is-hidden el-tooltip__popper is-dark'
     tipEl.setAttribute('aria-hidden', 'true')
+    tipEl.setAttribute('x-placement', 'top')
+    tipEl.innerHTML =
+      '<div class="multi-select-hover-tip__content"></div><div class="popper__arrow" x-arrow></div>'
     document.body.appendChild(tipEl)
+  } else if (!tipEl.querySelector('.popper__arrow')) {
+    const text = tipEl.textContent || ''
+    tipEl.innerHTML =
+      '<div class="multi-select-hover-tip__content"></div><div class="popper__arrow" x-arrow></div>'
+    const content = tipEl.querySelector('.multi-select-hover-tip__content')
+    if (content) content.textContent = text
+    tipEl.classList.add('el-tooltip__popper', 'is-dark')
+    tipEl.setAttribute('x-placement', tipEl.getAttribute('x-placement') || 'top')
   }
+
+  const contentEl = () => tipEl.querySelector('.multi-select-hover-tip__content')
+  /** 当前热区锚点：气泡固定在进入时的位置，不跟随鼠标 */
+  let activeAnchor = null
+  let activeZone = null
 
   function hideTip() {
     tipEl.classList.add('is-hidden')
-    tipEl.textContent = ''
+    const c = contentEl()
+    if (c) c.textContent = ''
+    activeAnchor = null
+    activeZone = null
   }
 
   function showTip(text, x, y) {
@@ -280,62 +299,55 @@ function setupMultiSelectHoverTip() {
       hideTip()
       return
     }
-    tipEl.textContent = text
+    const c = contentEl()
+    if (c) c.textContent = text
     tipEl.classList.remove('is-hidden')
     const pad = 8
+    tipEl.style.left = `${x}px`
+    tipEl.style.top = `${y}px`
+    tipEl.style.transform = 'translate(-50%, calc(-100% - 10px))'
+    tipEl.setAttribute('x-placement', 'top')
     const rect = tipEl.getBoundingClientRect()
     let left = x
     let top = y
     if (left - rect.width / 2 < pad) left = pad + rect.width / 2
     if (left + rect.width / 2 > window.innerWidth - pad) left = window.innerWidth - pad - rect.width / 2
     if (top - rect.height - 10 < pad) {
+      tipEl.setAttribute('x-placement', 'bottom')
       tipEl.style.transform = 'translate(-50%, 12px)'
     } else {
+      tipEl.setAttribute('x-placement', 'top')
       tipEl.style.transform = 'translate(-50%, calc(-100% - 10px))'
     }
     tipEl.style.left = `${left}px`
     tipEl.style.top = `${top}px`
   }
 
-  function resolveHoverTarget(e) {
-    const t = e.target
-    if (!t || !t.closest) return null
-    // 首标签、+N（均为 .el-tag），或 tags 区域
-    const tag = t.closest('.el-select__tags .el-tag')
-    if (tag) return tag
-    const close = t.closest('.el-select__tags .el-tag__close')
-    if (close) return close.closest('.el-tag') || close
-    const tags = t.closest('.el-select__tags')
-    if (tags && tags.closest('.el-select')) return tags
-    return null
+  /** 热区：多选 tags 容器；移出即隐藏 */
+  function resolveHotZone(el) {
+    if (!el || !el.closest) return null
+    const tags = el.closest('.el-select__tags')
+    if (!tags || !tags.closest('.el-select')) return null
+    return tags
   }
 
-  document.addEventListener(
-    'mousemove',
-    (e) => {
-      const host = resolveHoverTarget(e)
-      if (!host) return
-      const selectRoot = host.closest('.el-select')
-      if (!selectRoot || !selectRoot.querySelector('.el-select__tags')) return
-      const vm = findElSelectVm(selectRoot)
-      if (!vm || !vm.multiple) return
-      const labels = getMultiSelectLabels(vm)
-      if (labels.length < 2) {
-        hideTip()
-        return
-      }
-      showTip(labels.join('、'), e.clientX, e.clientY)
-    },
-    true
-  )
+  /** 锚点：优先具体标签（首标签 / +N），否则整个 tags */
+  function resolveAnchor(el) {
+    if (!el || !el.closest) return null
+    const tag = el.closest('.el-select__tags .el-tag')
+    if (tag) return tag
+    const close = el.closest('.el-select__tags .el-tag__close')
+    if (close) return close.closest('.el-tag') || close
+    return resolveHotZone(el)
+  }
 
   document.addEventListener(
     'mouseover',
     (e) => {
-      const host = resolveHoverTarget(e)
-      if (!host) return
-      const selectRoot = host.closest('.el-select')
-      if (!selectRoot || !selectRoot.querySelector('.el-select__tags')) return
+      const zone = resolveHotZone(e.target)
+      if (!zone) return
+      const selectRoot = zone.closest('.el-select')
+      if (!selectRoot) return
       const vm = findElSelectVm(selectRoot)
       if (!vm || !vm.multiple) return
       const labels = getMultiSelectLabels(vm)
@@ -343,7 +355,13 @@ function setupMultiSelectHoverTip() {
         hideTip()
         return
       }
-      const r = host.getBoundingClientRect()
+      const anchor = resolveAnchor(e.target)
+      if (!anchor) return
+      // 同一锚点内移动：位置不变，不跟随鼠标
+      if (activeAnchor === anchor && activeZone === zone) return
+      activeAnchor = anchor
+      activeZone = zone
+      const r = anchor.getBoundingClientRect()
       showTip(labels.join('、'), r.left + r.width / 2, r.top)
     },
     true
@@ -352,8 +370,9 @@ function setupMultiSelectHoverTip() {
   document.addEventListener(
     'mouseout',
     (e) => {
+      if (!activeZone) return
       const to = e.relatedTarget
-      if (to && to.closest && to.closest('.el-select__tags')) return
+      if (to && activeZone.contains(to)) return
       if (to && to.closest && to.closest('.multi-select-hover-tip')) return
       hideTip()
     },

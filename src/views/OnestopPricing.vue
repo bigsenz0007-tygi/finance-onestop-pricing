@@ -585,7 +585,7 @@
         <fieldset class="pricing-fieldset">
         <div class="sim-card">
           <h4 class="section-title">测算参数配置</h4>
-          <el-form class="lui-form-grid sim-param-config-form" size="small">
+          <el-form class="lui-form-grid sim-param-form sim-param-config-form" size="small">
             <el-form-item label="测算类型" required>
               <el-radio-group v-model="scenario.sim.type" @change="onSimTypeChange">
                 <el-radio label="模拟">模拟测算</el-radio>
@@ -607,14 +607,11 @@
                 <el-input v-model="scenario.sim.orderNo" placeholder="输入真实运单号验证计费结果" />
               </el-form-item>
             </template>
-            <el-form-item class="sim-run-item">
-              <el-button type="primary" size="small" @click="runSim">开始测算</el-button>
-            </el-form-item>
           </el-form>
         </div>
         <div v-if="scenario.sim.type === '模拟' && scenario.sim.mode" class="sim-card">
           <h4 class="section-title">计费因子</h4>
-          <el-form class="lui-form-grid sim-param-form" size="small" label-width="160px">
+          <el-form class="lui-form-grid sim-param-form" size="small">
             <el-form-item
               v-for="item in currentSimConfig.factors"
               :key="item.key"
@@ -627,7 +624,7 @@
         </div>
         <div v-if="scenario.sim.type === '模拟' && scenario.sim.mode" class="sim-card">
           <h4 class="section-title">价格项</h4>
-          <el-form class="lui-form-grid sim-param-form" size="small" label-width="160px">
+          <el-form class="lui-form-grid sim-param-form" size="small">
             <el-form-item
               v-for="item in currentSimConfig.priceItems"
               :key="item.key"
@@ -638,18 +635,23 @@
             </el-form-item>
           </el-form>
         </div>
-        <div v-if="scenario.sim.result" class="sim-result">
-          <div class="sim-result__head">
-            <span class="sim-result__title">测算结果</span>
-          </div>
-          <div class="sim-result__amount-row">
-            <span class="sim-result__amount-label">预估总金额:</span>
-            <span class="sim-result__currency">¥</span>
-            <span class="sim-result__amount">{{ scenario.sim.result.total }}</span>
-          </div>
-          <div class="sim-result__process">
-            <span class="sim-result__process-label">计算过程：</span>
-            <span class="sim-result__process-text">{{ scenario.sim.result.formula }}</span>
+        <div class="sim-run-bar">
+          <el-button type="primary" plain size="small" class="sim-run-btn" @click="runSim">开始测算</el-button>
+        </div>
+        <div v-if="scenario.sim.result" ref="simResult" class="sim-result">
+          <h3 class="section-title sim-result__title">测算结果</h3>
+          <div class="sim-result__panel">
+            <div class="sim-result__row sim-result__row--amount">
+              <span class="sim-result__label">预估总金额</span>
+              <span class="sim-result__value">
+                <span class="sim-result__currency">¥</span>
+                <span class="sim-result__amount">{{ scenario.sim.result.total }}</span>
+              </span>
+            </div>
+            <div class="sim-result__row sim-result__row--formula">
+              <span class="sim-result__label">计算公式</span>
+              <span class="sim-result__formula">{{ scenario.sim.result.formula }}</span>
+            </div>
           </div>
         </div>
         </fieldset>
@@ -895,7 +897,6 @@
 </template>
 
 <script>
-import { PRODUCT_FEE_ROWS } from '../mock/data'
 import LuiArrowSteps from '../components/LuiArrowSteps.vue'
 import LuiFieldError from '../components/LuiFieldError.vue'
 import {
@@ -1078,7 +1079,7 @@ export default {
         multiCurrency: '是',
         desc: '25年8月价格调整'
       },
-      feeRows: PRODUCT_FEE_ROWS,
+
       sourceOptions: listSourceSystems(),
       scenario: {
         base: {
@@ -1473,22 +1474,6 @@ export default {
       }
       return `${dim} ${op} ${cond.inputValue || ''}`
     },
-    /** collapse-tags 多选：超过 1 项时 hover 横向展示全部 */
-    needMultiSelectTip(list) {
-      return Array.isArray(list) && list.length > 1
-    },
-    formatMultiSelectTip(list) {
-      if (!Array.isArray(list) || !list.length) return ''
-      return list.join('、')
-    },
-    conditionValueLabels(cond) {
-      if (!cond) return []
-      const opts = this.conditionValueOptions(cond.dimension)
-      return (cond.values || []).map(code => {
-        const hit = opts.find(o => o.code === code)
-        return (hit && hit.name) || code
-      })
-    },
     conditionValueOptions(dimension) {
       const dim = this.conditionDimOptions.find(d => d.code === dimension)
       return (dim && dim.options) || []
@@ -1724,6 +1709,15 @@ export default {
         return
       }
 
+      const scrollToResult = () => {
+        this.$nextTick(() => {
+          const el = this.$refs.simResult
+          if (el && typeof el.scrollIntoView === 'function') {
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+          }
+        })
+      }
+
       // 实单测算：对齐报价测算展示（路径时间线）
       if (this.scenario.sim.type === '实单') {
         if (!(this.scenario.sim.orderNo || '').trim()) {
@@ -1740,6 +1734,7 @@ export default {
           ],
           formula: `运单号[${this.scenario.sim.orderNo}]匹配场景[${this.scenario.base.scenario || '当前场景'}]；报价模式[${mode}]，金额取整后输出总额[36.80]`
         }
+        scrollToResult()
         return
       }
 
@@ -1816,6 +1811,12 @@ export default {
         path,
         formula
       }
+      this.$nextTick(() => {
+        const el = this.$refs.simResult
+        if (el && typeof el.scrollIntoView === 'function') {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
+      })
     }
   }
 }
@@ -1861,9 +1862,12 @@ export default {
   display: inline;
 }
 .section-title::before {
-  height: 16px;
+  width: 3px;
+  height: 14px;
   margin-right: 4px;
-  vertical-align: -3px;
+  vertical-align: middle;
+  border-radius: 8px;
+  background: #3c6ef0;
   flex-shrink: 0;
 }
 .section-title-with-tip {
@@ -2518,9 +2522,13 @@ export default {
   overflow: visible;
   text-overflow: clip;
 }
+/* 模拟测算：段落间距 24；一行三列栅格跨模块对齐 */
+.pricing-section > .pricing-fieldset > .sim-card:first-child {
+  margin-top: 24px;
+}
 .sim-card {
-  margin-bottom: 12px;
-  padding: 16px 0;
+  margin: 0 0 24px;
+  padding: 0;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -2528,10 +2536,20 @@ export default {
 .sim-card h4.section-title {
   margin: 0 0 12px;
 }
-.sim-param-form.lui-form-grid {
-  --lui-form-label-width: 160px;
+.sim-param-form.lui-form-grid.el-form,
+.sim-card .sim-param-config-form.lui-form-grid.el-form {
+  --lui-form-label-width: 120px;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  column-gap: var(--lui-form-col-gap, 48px);
+  row-gap: var(--lui-form-row-gap, 16px);
 }
 .sim-param-form >>> .el-form-item__label {
+  width: var(--lui-form-label-width) !important;
+  min-width: var(--lui-form-label-width) !important;
+  max-width: var(--lui-form-label-width) !important;
   overflow: visible !important;
   text-overflow: clip !important;
   white-space: nowrap;
@@ -2541,90 +2559,92 @@ export default {
   justify-content: flex-start;
   margin-top: 8px;
 }
-/* 图1：测算参数表单横向居中；开始测算跟在选择项后 */
-.sim-card .sim-param-config-form.lui-form-grid.el-form {
-  max-width: 980px;
-  margin-left: auto;
-  margin-right: auto;
-}
-.sim-card .sim-run-item {
-  margin-bottom: 0 !important;
-}
-.sim-card .sim-run-item >>> .el-form-item__label {
-  display: none !important;
-  width: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-.sim-card .sim-run-item >>> .el-form-item__content {
-  margin-left: 0 !important;
-  display: flex !important;
-  justify-content: flex-start;
+/* 开始测算：价格项下方 24px，右对齐 */
+.sim-run-bar {
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
-  line-height: 32px;
-  min-height: 32px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
-/* 图3：蓝色结果卡 + 计算过程 */
+/* 开始测算：浅底蓝字（图9） */
+.sim-run-btn.el-button--primary.is-plain {
+  color: #3c6ef0 !important;
+  background: #ecf1fe !important;
+  border-color: transparent !important;
+}
+.sim-run-btn.el-button--primary.is-plain:hover,
+.sim-run-btn.el-button--primary.is-plain:focus {
+  color: #3c6ef0 !important;
+  background: #dce6fd !important;
+  border-color: transparent !important;
+}
+/* 测算结果：Figma 163:4080 */
 .sim-result {
-  margin-top: 24px;
-  padding: 16px 20px;
-  border-radius: 8px;
-  background: rgba(60, 110, 240, 0.08);
-  border: 1px solid rgba(60, 110, 240, 0.28);
+  margin-top: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
   box-sizing: border-box;
 }
-.sim-result__head {
-  margin-bottom: 12px;
-}
 .sim-result__title {
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 22px;
-  color: #3c6ef0;
+  margin: 0 0 12px !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  line-height: normal !important;
+  color: #23252b !important;
 }
-.sim-result__amount-row {
+.sim-result__panel {
+  padding: 24px 12px;
+  border-radius: 8px;
+  background: rgba(60, 110, 240, 0.1);
+  box-sizing: border-box;
+}
+.sim-result__row {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  margin-bottom: 12px;
-  font-family: var(--lui-font-number);
-  line-height: 36px;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
 }
-.sim-result__amount-label {
+.sim-result__row--amount {
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+.sim-result__label {
+  flex: 0 0 auto;
+  color: #525765;
   font-size: 14px;
-  font-weight: 500;
-  color: #23252b;
-  font-family: var(--lui-font-sans);
-  line-height: 22px;
+  font-weight: 400;
+  line-height: normal;
+  white-space: nowrap;
+}
+.sim-result__value {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  color: #3c6ef0;
+  line-height: 1;
 }
 .sim-result__currency {
-  margin-right: 2px;
-  font-size: 20px;
-  font-weight: 500;
-  color: #3c6ef0;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--lui-font-sans);
+  line-height: 1;
 }
 .sim-result__amount {
-  font-size: 28px;
-  font-weight: 500;
-  color: #3c6ef0;
-}
-.sim-result__process {
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #e4e5e9;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 22px;
-  color: #23252b;
-  word-break: break-word;
-}
-.sim-result__process-label {
-  font-weight: 500;
-}
-.sim-result__process-text {
+  font-size: 24px;
   font-weight: 400;
+  font-family: var(--lui-font-number);
+  line-height: 1;
+}
+.sim-result__formula {
+  flex: 1 1 auto;
+  min-width: 0;
   color: #525765;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  word-break: break-word;
 }
 .condition-edit-row {
   display: flex;

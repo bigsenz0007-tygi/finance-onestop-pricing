@@ -980,7 +980,7 @@ body,
   font-size: 12px;
   line-height: 24px !important;
   position: relative;
-  top: 2px; /* 下箭头光学下移 2px */
+  top: 3px; /* 下箭头光学下移 3px（图7） */
 }
 
 .el-pagination__jump {
@@ -1310,17 +1310,22 @@ body,
   color: var(--lui-text-secondary);
 }
 
-/* LUI PC3.0 拖拽上传面板（弹窗内） */
+/* LUI PC3.0 拖拽上传面板（弹窗内，对齐 Figma 导入报价明细） */
 .lui-upload-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
   width: 100%;
 }
 
+/* display:contents 让拖拽区 / 说明行 / 文件列表按 Figma 顺序排布 */
 .lui-upload-drag {
   width: 100%;
-  display: block;
+  display: contents;
 }
 
-.lui-upload-drag .el-upload {
+.lui-upload-drag > .el-upload {
+  grid-row: 1;
   width: 100%;
   display: block;
 }
@@ -1330,13 +1335,14 @@ body,
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   width: 100%;
-  height: 180px;
+  height: 128px;
   padding: 24px 16px;
   box-sizing: border-box;
-  border: 1px dashed var(--lui-border);
-  border-radius: var(--lui-radius-base);
-  background: #fff;
+  border: 1px dashed #e4e5e9;
+  border-radius: 8px;
+  background: #fafafb;
   transition: border-color 0.2s, background-color 0.2s;
 }
 
@@ -1353,57 +1359,125 @@ body,
   display: block;
   width: 40px;
   height: 40px;
-  margin: 0 0 16px;
+  margin: 0;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .lui-upload-drag .el-upload__text {
   margin: 0;
-  color: var(--lui-text-regular);
-  font-size: 14px;
-  line-height: 22px;
+  color: #868d9f;
+  font-size: 16px;
+  line-height: 24px;
   text-align: center;
 }
 
 .lui-upload-drag .el-upload__text em {
-  color: var(--lui-primary);
+  color: #868d9f;
   font-style: normal;
 }
 
 .lui-upload-drag .el-upload__tip {
-  margin-top: 8px;
-  font-size: 12px;
+  display: none;
+}
+
+.lui-upload-drag__meta {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.lui-upload-drag__hint {
+  margin: 0;
+  color: #868d9f;
+  font-size: 14px;
   line-height: 20px;
-  color: var(--lui-text-secondary);
-  text-align: center;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .lui-upload-drag__extra {
-  margin-top: 12px;
-  text-align: left;
+  margin-top: 0;
+  flex: 0 0 auto;
+  text-align: right;
 }
 
 .lui-upload-drag__link.el-button--text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 0;
   height: auto;
   min-height: auto;
-  font-size: 14px;
-  line-height: 22px;
-  color: var(--lui-primary);
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: #3c6ef0 !important;
+}
+
+.lui-upload-drag__link-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .lui-upload-drag__link.el-button--text:hover,
 .lui-upload-drag__link.el-button--text:focus {
-  color: var(--lui-primary-hover);
+  color: var(--lui-primary-hover) !important;
+}
+
+.lui-upload-dialog {
+  width: 600px !important;
+}
+
+.lui-upload-dialog .el-dialog__header {
+  padding: 12px 24px 11px;
+  border-bottom: 1px solid #f1f2f4;
 }
 
 .lui-upload-dialog .el-dialog__body {
-  padding: 16px 24px;
+  padding: 24px 24px 8px;
+}
+
+.lui-upload-dialog .el-dialog__footer {
+  padding: 12px 24px;
+  border-top: 1px solid #f1f2f4;
+}
+
+.lui-upload-dialog .el-dialog__footer .dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .lui-upload-dialog .el-dialog__footer .el-button + .el-button {
   margin-left: 12px;
+}
+
+.lui-upload-drag > .el-upload-list {
+  grid-row: 3;
+  margin: 12px 0 0;
+}
+
+.lui-upload-drag .el-upload-list__item {
+  margin-top: 0;
+  padding: 5px 8px;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+}
+
+.lui-upload-drag .el-upload-list__item:hover {
+  background: #f5f5f6;
+}
+
+.lui-upload-drag .el-upload-list__item-name {
+  color: #23252b;
+  font-size: 14px;
+  line-height: 22px;
 }
 
 .addr-tip-popper {
@@ -1440,22 +1514,82 @@ body,
   margin-top: 4px;
 }
 
-/* 全局多选 hover 气泡（跟随标签 / +N） */
+/* 全局多选 hover 气泡（跟随标签 / +N，带箭头；对齐 LUI PC3.0 dark tip） */
+.el-tooltip__popper.is-dark.multi-select-hover-tip,
 .multi-select-hover-tip {
   position: fixed;
   z-index: 4000;
   max-width: 420px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  background: rgba(35, 37, 43, 0.9);
-  box-shadow: 0 4px 16px rgba(35, 37, 43, 0.1);
-  color: #fff;
-  font-size: 12px;
-  line-height: 18px;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  background: rgba(35, 37, 43, 0.9) !important;
+  box-shadow: 0 4px 16px rgba(35, 37, 43, 0.1) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  line-height: 18px !important;
   word-break: break-all;
   pointer-events: none;
   transform: translate(-50%, calc(-100% - 10px));
   white-space: normal;
+  overflow: visible !important;
+  border: none !important;
+}
+.multi-select-hover-tip__content {
+  position: relative;
+  z-index: 1;
+}
+.el-tooltip__popper.is-dark.multi-select-hover-tip .popper__arrow,
+.el-tooltip__popper.is-dark.multi-select-hover-tip .popper__arrow::after,
+.multi-select-hover-tip .popper__arrow,
+.multi-select-hover-tip .popper__arrow::after {
+  position: absolute;
+  display: block !important;
+  width: 0;
+  height: 0;
+  border-color: transparent !important;
+  border-style: solid;
+}
+.el-tooltip__popper.is-dark.multi-select-hover-tip[x-placement^='top'] .popper__arrow,
+.multi-select-hover-tip[x-placement^='top'] .popper__arrow {
+  bottom: -6px;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px 6px 0;
+  border-top-color: rgba(35, 37, 43, 0.9) !important;
+  border-bottom-width: 0 !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.el-tooltip__popper.is-dark.multi-select-hover-tip[x-placement^='top'] .popper__arrow::after,
+.multi-select-hover-tip[x-placement^='top'] .popper__arrow::after {
+  bottom: 1px;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px 6px 0;
+  border-top-color: rgba(35, 37, 43, 0.9) !important;
+  border-bottom-width: 0 !important;
+  content: ' ';
+}
+.el-tooltip__popper.is-dark.multi-select-hover-tip[x-placement^='bottom'] .popper__arrow,
+.multi-select-hover-tip[x-placement^='bottom'] .popper__arrow {
+  top: -6px;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 0 6px 6px;
+  border-bottom-color: rgba(35, 37, 43, 0.9) !important;
+  border-top-width: 0 !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.el-tooltip__popper.is-dark.multi-select-hover-tip[x-placement^='bottom'] .popper__arrow::after,
+.multi-select-hover-tip[x-placement^='bottom'] .popper__arrow::after {
+  top: 1px;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 0 6px 6px;
+  border-bottom-color: rgba(35, 37, 43, 0.9) !important;
+  border-top-width: 0 !important;
+  content: ' ';
 }
 .multi-select-hover-tip.is-hidden {
   display: none !important;
@@ -2202,12 +2336,12 @@ body,
 .table-toolbar .section-title::before {
   content: '';
   display: inline-block;
-  width: 4px;
+  width: 3px;
   height: 14px;
-  margin-right: 8px;
-  vertical-align: -2px;
-  border-radius: 1px;
-  background: var(--lui-primary);
+  margin-right: 4px;
+  vertical-align: middle;
+  border-radius: 8px;
+  background: #3c6ef0;
 }
 
 .pager {
@@ -2244,12 +2378,12 @@ body,
 .section-title::before {
   content: '';
   display: inline-block;
-  width: 4px;
+  width: 3px;
   height: 14px;
-  margin-right: 8px;
-  vertical-align: -2px;
-  border-radius: 1px;
-  background: var(--lui-primary);
+  margin-right: 4px;
+  vertical-align: middle;
+  border-radius: 8px;
+  background: #3c6ef0;
 }
 
 .entry-grid {

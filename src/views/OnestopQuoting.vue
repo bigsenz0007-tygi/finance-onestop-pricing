@@ -365,7 +365,7 @@
             </el-tooltip>
           </div>
         </el-form>
-        <div class="table-h-scroll partition-table-wrap">
+        <div class="table-h-scroll table-h-scroll--error-tip partition-table-wrap">
         <el-table
           :key="'partition-table-' + partitionTableKey"
           ref="partitionTable"
@@ -388,7 +388,16 @@
               >
                 <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.name) }">{{ displayText(row.name) }}</span>
               </el-tooltip>
-              <el-input v-else v-model="row.name" size="small" placeholder="请输入" />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'name') }">
+                <el-input
+                  v-model="row.name"
+                  size="small"
+                  placeholder="请输入"
+                  :class="{ 'is-error': rowFieldError(row, 'name') }"
+                  @input="clearRowFieldError(row, 'name')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'name')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="isStats" min-width="184">
@@ -404,7 +413,16 @@
               >
                 <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.statGroup) }">{{ displayText(row.statGroup) }}</span>
               </el-tooltip>
-              <el-input v-else v-model="row.statGroup" size="small" placeholder="请输入" />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'statGroup') }">
+                <el-input
+                  v-model="row.statGroup"
+                  size="small"
+                  placeholder="请输入"
+                  :class="{ 'is-error': rowFieldError(row, 'statGroup') }"
+                  @input="clearRowFieldError(row, 'statGroup')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'statGroup')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column v-if="isStats" min-width="184">
@@ -420,11 +438,21 @@
               >
                 <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.statBillingObject) }">{{ displayText(row.statBillingObject) }}</span>
               </el-tooltip>
-              <el-select v-else v-model="row.statBillingObject" size="small" clearable placeholder="请选择">
-                <el-option label="统计+计费" value="统计+计费" />
-                <el-option label="统计" value="统计" />
-                <el-option label="计费" value="计费" />
-              </el-select>
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'statBillingObject') }">
+                <el-select
+                  v-model="row.statBillingObject"
+                  size="small"
+                  clearable
+                  placeholder="请选择"
+                  :class="{ 'is-error': rowFieldError(row, 'statBillingObject') }"
+                  @change="clearRowFieldError(row, 'statBillingObject')"
+                >
+                  <el-option label="统计+计费" value="统计+计费" />
+                  <el-option label="统计" value="统计" />
+                  <el-option label="计费" value="计费" />
+                </el-select>
+                <lui-field-error overlay :message="rowFieldError(row, 'statBillingObject')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column min-width="184">
@@ -440,7 +468,16 @@
               >
                 <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.applyNo) }">{{ displayText(row.applyNo) }}</span>
               </el-tooltip>
-              <el-input v-else v-model="row.applyNo" size="small" placeholder="请输入" />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'applyNo') }">
+                <el-input
+                  v-model="row.applyNo"
+                  size="small"
+                  placeholder="请输入"
+                  :class="{ 'is-error': rowFieldError(row, 'applyNo') }"
+                  @input="clearRowFieldError(row, 'applyNo')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'applyNo')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column min-width="184">
@@ -456,7 +493,16 @@
               >
                 <span class="view-plain-text cell-ellipsis" :class="{ 'is-truncated': needEllipsis(row.contractCode) }">{{ displayText(row.contractCode) }}</span>
               </el-tooltip>
-              <el-input v-else v-model="row.contractCode" size="small" placeholder="请输入" />
+              <div v-else class="lui-field" :class="{ 'is-error': rowFieldError(row, 'contractCode') }">
+                <el-input
+                  v-model="row.contractCode"
+                  size="small"
+                  placeholder="请输入"
+                  :class="{ 'is-error': rowFieldError(row, 'contractCode') }"
+                  @input="clearRowFieldError(row, 'contractCode')"
+                />
+                <lui-field-error overlay :message="rowFieldError(row, 'contractCode')" />
+              </div>
             </template>
           </el-table-column>
           <el-table-column label="始发地" min-width="208">
@@ -827,7 +873,7 @@
             </template>
           </el-form>
         </div>
-        <div class="table-h-scroll detail-table-wrap" :class="{ 'detail-table-wrap--view': isViewMode }">
+        <div class="table-h-scroll table-h-scroll--error-tip detail-table-wrap" :class="{ 'detail-table-wrap--view': isViewMode }">
         <el-table
           :key="'detail-stair-' + activePartitionId + '-' + detailTableKey + (isViewMode ? '-view' : '')"
           ref="detailStairTable"
@@ -974,43 +1020,55 @@
               <div v-else-if="row.discountMode === '首续重报价'" class="detail-first-continue">
                 <div class="detail-first-continue__item">
                   <span class="detail-first-continue__label">首重:</span>
-                  <el-input
-                    :value="row.firstWeight"
-                    size="small"
-                    class="detail-stair-control detail-stair-control--sm"
-                    :class="{ 'is-error': rowFieldError(row, 'firstWeight') }"
-                    @input="onDecimalInput(row, 'firstWeight', $event); clearRowFieldError(row, 'firstWeight')"
-                  />
+                  <div class="lui-field" :class="{ 'is-error': rowFieldError(row, 'firstWeight') }">
+                    <el-input
+                      :value="row.firstWeight"
+                      size="small"
+                      class="detail-stair-control detail-stair-control--sm"
+                      :class="{ 'is-error': rowFieldError(row, 'firstWeight') }"
+                      @input="onDecimalInput(row, 'firstWeight', $event); clearRowFieldError(row, 'firstWeight')"
+                    />
+                    <lui-field-error overlay :message="rowFieldError(row, 'firstWeight')" />
+                  </div>
                 </div>
                 <div class="detail-first-continue__item">
                   <span class="detail-first-continue__label">首重价格:</span>
-                  <el-input
-                    :value="row.firstWeightPrice"
-                    size="small"
-                    class="detail-stair-control detail-stair-control--sm"
-                    :class="{ 'is-error': rowFieldError(row, 'firstWeightPrice') }"
-                    @input="onDecimalInput(row, 'firstWeightPrice', $event); clearRowFieldError(row, 'firstWeightPrice')"
-                  />
+                  <div class="lui-field" :class="{ 'is-error': rowFieldError(row, 'firstWeightPrice') }">
+                    <el-input
+                      :value="row.firstWeightPrice"
+                      size="small"
+                      class="detail-stair-control detail-stair-control--sm"
+                      :class="{ 'is-error': rowFieldError(row, 'firstWeightPrice') }"
+                      @input="onDecimalInput(row, 'firstWeightPrice', $event); clearRowFieldError(row, 'firstWeightPrice')"
+                    />
+                    <lui-field-error overlay :message="rowFieldError(row, 'firstWeightPrice')" />
+                  </div>
                 </div>
-                <div class="detail-first-continue__item">
+                <div class="detail-first-continue__item detail-first-continue__item--row2">
                   <span class="detail-first-continue__label">续重公斤:</span>
-                  <el-input
-                    :value="row.continueWeight"
-                    size="small"
-                    class="detail-stair-control detail-stair-control--sm"
-                    :class="{ 'is-error': rowFieldError(row, 'continueWeight') }"
-                    @input="onDecimalInput(row, 'continueWeight', $event); clearRowFieldError(row, 'continueWeight')"
-                  />
+                  <div class="lui-field" :class="{ 'is-error': rowFieldError(row, 'continueWeight') }">
+                    <el-input
+                      :value="row.continueWeight"
+                      size="small"
+                      class="detail-stair-control detail-stair-control--sm"
+                      :class="{ 'is-error': rowFieldError(row, 'continueWeight') }"
+                      @input="onDecimalInput(row, 'continueWeight', $event); clearRowFieldError(row, 'continueWeight')"
+                    />
+                    <lui-field-error overlay :message="rowFieldError(row, 'continueWeight')" />
+                  </div>
                 </div>
                 <div class="detail-first-continue__item">
                   <span class="detail-first-continue__label">续重价格:</span>
-                  <el-input
-                    :value="row.continueWeightPrice"
-                    size="small"
-                    class="detail-stair-control detail-stair-control--sm"
-                    :class="{ 'is-error': rowFieldError(row, 'continueWeightPrice') }"
-                    @input="onDecimalInput(row, 'continueWeightPrice', $event); clearRowFieldError(row, 'continueWeightPrice')"
-                  />
+                  <div class="lui-field" :class="{ 'is-error': rowFieldError(row, 'continueWeightPrice') }">
+                    <el-input
+                      :value="row.continueWeightPrice"
+                      size="small"
+                      class="detail-stair-control detail-stair-control--sm"
+                      :class="{ 'is-error': rowFieldError(row, 'continueWeightPrice') }"
+                      @input="onDecimalInput(row, 'continueWeightPrice', $event); clearRowFieldError(row, 'continueWeightPrice')"
+                    />
+                    <lui-field-error overlay :message="rowFieldError(row, 'continueWeightPrice')" />
+                  </div>
                 </div>
                 <div class="detail-first-continue__item">
                   <span class="detail-first-continue__label">轻抛系数:</span>
@@ -1200,8 +1258,8 @@
                 <el-input v-model="sim.businessVolume" placeholder="如月度单量" />
               </el-form-item>
             </template>
-            <el-form-item class="sim-run-item">
-              <el-button type="primary" size="small" @click="runSim">开始测算</el-button>
+            <el-form-item :class="simRunItemClass">
+              <el-button type="primary" plain size="small" class="sim-run-btn" @click="runSim">开始测算</el-button>
             </el-form-item>
           </el-form>
           <div v-if="sim.partitionId && simDetailPreview" class="sim-detail-preview">
@@ -1230,18 +1288,20 @@
               />
             </div>
           </div>
-          <div v-if="sim.result" class="sim-result">
-            <div class="sim-result__head">
-              <span class="sim-result__title">测算结果</span>
-            </div>
-            <div class="sim-result__amount-row">
-              <span class="sim-result__amount-label">预估总金额:</span>
-              <span class="sim-result__currency">¥</span>
-              <span class="sim-result__amount">{{ sim.result.total }}</span>
-            </div>
-            <div class="sim-result__process">
-              <span class="sim-result__process-label">计算过程：</span>
-              <span class="sim-result__process-text">{{ sim.result.formula }}</span>
+          <div v-if="sim.result" ref="simResult" class="sim-result">
+            <h3 class="section-title sim-result__title">测算结果</h3>
+            <div class="sim-result__panel">
+              <div class="sim-result__row sim-result__row--amount">
+                <span class="sim-result__label">预估总金额</span>
+                <span class="sim-result__value">
+                  <span class="sim-result__currency">¥</span>
+                  <span class="sim-result__amount">{{ sim.result.total }}</span>
+                </span>
+              </div>
+              <div class="sim-result__row sim-result__row--formula">
+                <span class="sim-result__label">计算公式</span>
+                <span class="sim-result__formula">{{ sim.result.formula }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1275,48 +1335,58 @@
     <el-dialog
       title="分区导入"
       :visible.sync="importVisible"
-      width="480px"
-      custom-class="lui-form-dialog lui-dialog--sm lui-upload-dialog"
+      width="600px"
+      custom-class="lui-form-dialog lui-upload-dialog"
       append-to-body
       :close-on-click-modal="false"
     >
       <div class="lui-upload-panel">
-        <el-upload drag action="#" :auto-upload="false" accept=".xlsx,.xls" class="lui-upload-drag">
+        <el-upload drag action="#" :auto-upload="false" accept=".xlsx,.xls" class="lui-upload-drag" :show-file-list="true">
           <img class="lui-upload-drag__icon" :src="uploadIcon" alt="" width="40" height="40">
-          <div class="el-upload__text">将 Excel 模板拖到此处，或<em>点击上传</em></div>
-          <div class="el-upload__tip">支持扩展名：.xlsx / .xls；单次建议不超过 10000 行</div>
+          <div class="el-upload__text">点击或者将文件拖拽到此处进行上传</div>
         </el-upload>
-        <div class="lui-upload-drag__extra">
-          <el-button type="text" class="lui-upload-drag__link" @click="downloadPartitionTemplate">下载导入模板</el-button>
+        <div class="lui-upload-drag__meta">
+          <p class="lui-upload-drag__hint">仅支持.xlsx/.xls格式，文件大小不能超过500KB</p>
+          <div class="lui-upload-drag__extra">
+            <el-button type="text" class="lui-upload-drag__link" @click="downloadPartitionTemplate">
+              <img class="lui-upload-drag__link-icon" :src="downloadIcon" alt="" width="16" height="16">
+              下载模版.xls
+            </el-button>
+          </div>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button size="small" @click="importVisible = false">取消</el-button>
-        <el-button type="primary" size="small" @click="mockImport">确认导入</el-button>
+        <el-button type="primary" size="small" @click="mockImport">确定</el-button>
       </div>
     </el-dialog>
 
     <el-dialog
       title="导入报价明细"
       :visible.sync="detailImportVisible"
-      width="480px"
-      custom-class="lui-form-dialog lui-dialog--sm lui-upload-dialog"
+      width="600px"
+      custom-class="lui-form-dialog lui-upload-dialog"
       append-to-body
       :close-on-click-modal="false"
     >
       <div class="lui-upload-panel">
-        <el-upload drag action="#" :auto-upload="false" accept=".xlsx,.xls" class="lui-upload-drag">
+        <el-upload drag action="#" :auto-upload="false" accept=".xlsx,.xls" class="lui-upload-drag" :show-file-list="true">
           <img class="lui-upload-drag__icon" :src="uploadIcon" alt="" width="40" height="40">
-          <div class="el-upload__text">将报价明细模板拖到此处，或<em>点击上传</em></div>
-          <div class="el-upload__tip">支持扩展名：.xlsx / .xls；请按模板列顺序填写后上传</div>
+          <div class="el-upload__text">点击或者将文件拖拽到此处进行上传</div>
         </el-upload>
-        <div class="lui-upload-drag__extra">
-          <el-button type="text" class="lui-upload-drag__link" @click="downloadDetailTemplate">下载导入模板</el-button>
+        <div class="lui-upload-drag__meta">
+          <p class="lui-upload-drag__hint">仅支持.xlsx/.xls格式，文件大小不能超过500KB</p>
+          <div class="lui-upload-drag__extra">
+            <el-button type="text" class="lui-upload-drag__link" @click="downloadDetailTemplate">
+              <img class="lui-upload-drag__link-icon" :src="downloadIcon" alt="" width="16" height="16">
+              下载模版.xls
+            </el-button>
+          </div>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button size="small" @click="detailImportVisible = false">取消</el-button>
-        <el-button type="primary" size="small" @click="detailImportVisible = false; $message.success('明细导入成功（预览）')">确认导入</el-button>
+        <el-button type="primary" size="small" @click="detailImportVisible = false; $message.success('明细导入成功（预览）')">确定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -1618,7 +1688,16 @@ export default {
       return rows.slice(start, start + size)
     },
     uploadIcon() {
-      return publicAsset('d2c-assets/icon-upload.svg')
+      return publicAsset('d2c-assets/icon-upload-figma.svg')
+    },
+    downloadIcon() {
+      return publicAsset('d2c-assets/icon-download-figma.svg')
+    },
+    /** 一行不足 3 列按钮补位；满 3 列则换行右对齐 */
+    simRunItemClass() {
+      const fieldCount = this.sim.type === '实单' ? 3 : 5
+      const rem = fieldCount % 3
+      return rem === 0 ? 'sim-run-item sim-run-item--wrap' : 'sim-run-item sim-run-item--fill'
     },
     activePartitionName() {
       const p = this.partitions.find(i => String(i.id) === String(this.activePartitionId))
@@ -2406,6 +2485,12 @@ export default {
         formula = `计费重量=max(重量[${w}],体积[${v}]/轻抛系数[${lightThrow}])；统计业务量[${bv}]；匹配分区[${partName}]，区间[${interval}]，金额取整后输出总额[${total}]`
       }
       this.sim.result = { total, path, formula }
+      this.$nextTick(() => {
+        const el = this.$refs.simResult
+        if (el && typeof el.scrollIntoView === 'function') {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }
+      })
     },
     submitQuote() {
       for (let s = 0; s <= 1; s += 1) {
@@ -2522,9 +2607,12 @@ export default {
   margin-bottom: 12px;
 }
 .section-title::before {
-  height: 16px;
+  width: 3px;
+  height: 14px;
   margin-right: 4px;
-  vertical-align: -3px;
+  vertical-align: middle;
+  border-radius: 8px;
+  background: #3c6ef0;
   flex-shrink: 0;
 }
 .quoting-section + .quoting-section {
@@ -2683,6 +2771,20 @@ export default {
   scrollbar-color: #c0c4cc transparent;
   box-sizing: border-box;
 }
+.table-h-scroll--error-tip {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 20px;
+  margin-bottom: -8px;
+}
+.table-h-scroll--error-tip >>> .el-table__body-wrapper {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+.table-h-scroll--error-tip >>> .partition-table,
+.table-h-scroll--error-tip >>> .detail-stair-table {
+  overflow: visible !important;
+}
 .partition-table-wrap.table-h-scroll,
 .detail-table-wrap.table-h-scroll {
   width: 100%;
@@ -2692,6 +2794,10 @@ export default {
   position: relative;
   border-radius: 8px;
   box-sizing: border-box;
+}
+.partition-table-wrap.table-h-scroll.table-h-scroll--error-tip,
+.detail-table-wrap.table-h-scroll.table-h-scroll--error-tip {
+  overflow-y: visible;
 }
 .table-card--view .table-h-scroll {
   pointer-events: auto;
@@ -3272,14 +3378,21 @@ export default {
 .sim-card .section-title {
   margin: 0 0 12px;
 }
-/* 图1：测算参数表单横向居中；开始测算跟在选择项后一列 */
+/* 测算参数：LUI 一行三列；不足三列按钮补位，满三列换行右对齐 */
 .sim-card .sim-param-config-form.lui-form-grid.el-form {
-  max-width: 980px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
 .sim-card .sim-run-item {
   margin-bottom: 0 !important;
+}
+.sim-card .sim-run-item--wrap {
+  grid-column: 1 / -1;
+}
+.sim-card .sim-run-item--fill {
+  grid-column: auto;
 }
 .sim-card .sim-run-item >>> .el-form-item__label {
   display: none !important;
@@ -3290,77 +3403,94 @@ export default {
 .sim-card .sim-run-item >>> .el-form-item__content {
   margin-left: 0 !important;
   display: flex !important;
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: center;
   line-height: 32px;
   min-height: 32px;
+  width: 100%;
+}
+.sim-run-btn.el-button--primary.is-plain {
+  color: #3c6ef0 !important;
+  background: #ecf1fe !important;
+  border-color: transparent !important;
+}
+.sim-run-btn.el-button--primary.is-plain:hover,
+.sim-run-btn.el-button--primary.is-plain:focus {
+  color: #3c6ef0 !important;
+  background: #dce6fd !important;
+  border-color: transparent !important;
 }
 .sim-detail-pager {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--lui-table-divider, #f1f2f4);
 }
-/* 图3：蓝色结果卡 + 图4 式计算过程 */
+/* 测算结果：Figma 163:4080 */
 .sim-result {
   margin-top: 24px;
-  padding: 16px 20px;
-  border-radius: 8px;
-  background: rgba(60, 110, 240, 0.08);
-  border: 1px solid rgba(60, 110, 240, 0.28);
+  padding: 0;
+  background: transparent;
+  border: none;
   box-sizing: border-box;
 }
-.sim-result__head {
-  margin-bottom: 12px;
-}
 .sim-result__title {
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 22px;
-  color: #3c6ef0;
+  margin: 0 0 12px !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  line-height: normal !important;
+  color: #23252b !important;
 }
-.sim-result__amount-row {
+.sim-result__panel {
+  padding: 24px 12px;
+  border-radius: 8px;
+  background: rgba(60, 110, 240, 0.1);
+  box-sizing: border-box;
+}
+.sim-result__row {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  margin-bottom: 12px;
-  font-family: var(--lui-font-number);
-  line-height: 36px;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
 }
-.sim-result__amount-label {
+.sim-result__row--amount {
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+.sim-result__label {
+  flex: 0 0 auto;
+  color: #525765;
   font-size: 14px;
-  font-weight: 500;
-  color: #23252b;
-  font-family: var(--lui-font-sans);
-  line-height: 22px;
+  font-weight: 400;
+  line-height: normal;
+  white-space: nowrap;
+}
+.sim-result__value {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  color: #3c6ef0;
+  line-height: 1;
 }
 .sim-result__currency {
-  margin-right: 2px;
-  font-size: 20px;
-  font-weight: 500;
-  color: #3c6ef0;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--lui-font-sans);
+  line-height: 1;
 }
 .sim-result__amount {
-  font-size: 28px;
-  font-weight: 500;
-  color: #3c6ef0;
-}
-.sim-result__process {
-  padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #e4e5e9;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 22px;
-  color: #23252b;
-  word-break: break-word;
-}
-.sim-result__process-label {
-  font-weight: 500;
-}
-.sim-result__process-text {
+  font-size: 24px;
   font-weight: 400;
+  font-family: var(--lui-font-number);
+  line-height: 1;
+}
+.sim-result__formula {
+  flex: 1 1 auto;
+  min-width: 0;
   color: #525765;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  word-break: break-word;
 }
 .section-title-with-tip {
   display: inline-flex !important;
@@ -3789,7 +3919,7 @@ export default {
   align-items: center;
   height: 100%;
 }
-/* 首续重录入：一行三列，间距 12px */
+/* 首续重录入：一行三列，间距 12px；续重公斤落到第二行 */
 .detail-first-continue {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3803,6 +3933,13 @@ export default {
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+.detail-first-continue__item--row2 {
+  grid-column: 1;
+}
+.detail-first-continue__item .lui-field {
+  flex: 1 1 auto;
   min-width: 0;
 }
 .detail-first-continue__label {

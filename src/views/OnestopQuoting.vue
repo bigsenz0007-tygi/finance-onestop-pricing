@@ -321,23 +321,32 @@
               >{{ d }}</el-tag>
               <span v-if="!selectedDims.length" class="view-plain-text">-</span>
             </div>
-            <el-select
-              v-else
-              v-model="selectedDims"
-              multiple
-              filterable
-              clearable
-              collapse-tags
-              placeholder="请选择报价维度"
-              class="dims-select lui-select-no-tag-tip"
-            >
-              <el-option
-                v-for="d in dimOptions"
-                :key="d"
-                :label="d"
-                :value="d"
-              />
-            </el-select>
+            <div v-else class="dims-select-row">
+              <el-select
+                v-model="draftSelectedDims"
+                multiple
+                filterable
+                clearable
+                collapse-tags
+                placeholder="请选择报价维度"
+                class="dims-select lui-select-no-tag-tip"
+              >
+                <el-option
+                  v-for="d in dimOptions"
+                  :key="d"
+                  :label="d"
+                  :value="d"
+                />
+              </el-select>
+              <el-button
+                size="small"
+                type="primary"
+                plain
+                class="dims-confirm-btn"
+                :disabled="!isDimsDirty"
+                @click="confirmSelectedDims"
+              >确认</el-button>
+            </div>
           </el-form-item>
           <div v-if="!isViewMode" class="partition-dims-actions">
             <el-button size="small" type="primary" plain @click="importVisible = true">分区导入</el-button>
@@ -348,19 +357,6 @@
             >
               <span class="partition-dims-actions__btn-wrap">
                 <el-button size="small" @click="addPartition">添加</el-button>
-              </span>
-            </el-tooltip>
-            <el-tooltip
-              effect="dark"
-              placement="top"
-              content="仅支持删除表格最后一行；至少保留一条分区"
-            >
-              <span class="partition-dims-actions__btn-wrap">
-                <el-button
-                  size="small"
-                  :disabled="partitions.length <= 1"
-                  @click="removeLastPartition"
-                >删除</el-button>
               </span>
             </el-tooltip>
           </div>
@@ -505,126 +501,6 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="始发地" min-width="208">
-            <template slot-scope="{ row }">
-              <el-tooltip
-                v-if="isViewMode"
-                :disabled="!needEllipsis(formatAddressLine(row.fromAddress))"
-                placement="top"
-                effect="dark"
-                :open-delay="200"
-                :content="formatAddressLine(row.fromAddress)"
-              >
-                <span
-                  class="addr-view-text cell-ellipsis"
-                  :class="{ 'is-truncated': needEllipsis(formatAddressLine(row.fromAddress)) }"
-                >{{ displayText(formatAddressLine(row.fromAddress)) }}</span>
-              </el-tooltip>
-              <el-tooltip
-                v-else
-                effect="dark"
-                placement="top"
-                :disabled="!(row.fromAddress && row.fromAddress.length)"
-                :open-delay="200"
-                popper-class="addr-hover-tip"
-              >
-                <div slot="content" class="addr-hover-tip__list">
-                  <p
-                    v-for="(item, idx) in (row.fromAddress || [])"
-                    :key="'from-tip-' + idx"
-                    class="addr-hover-tip__item"
-                  >{{ fullAddressLabel(item) }}</p>
-                </div>
-                <div
-                  class="addr-select"
-                  :class="{ 'is-empty': !(row.fromAddress && row.fromAddress.length) }"
-                  @click="openAddressEditor(row, 'fromAddress')"
-                >
-                  <template v-if="row.fromAddress && row.fromAddress.length">
-                    <el-tag
-                      size="mini"
-                      type="info"
-                      effect="plain"
-                      disable-transitions
-                      class="addr-select__tag"
-                      closable
-                      @close.stop="removeAddressItem(row, 'fromAddress', 0)"
-                    >{{ shortAddressLabel(row.fromAddress[0]) }}</el-tag>
-                    <el-tag
-                      v-if="row.fromAddress.length > 1"
-                      size="mini"
-                      type="info"
-                      effect="plain"
-                      disable-transitions
-                      class="addr-select__more"
-                    >+ {{ row.fromAddress.length - 1 }}</el-tag>
-                  </template>
-                  <span v-else class="addr-select__placeholder">请点击选择始发地</span>
-                  <i class="el-icon-arrow-down addr-select__caret" />
-                </div>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-          <el-table-column label="目的地" min-width="208">
-            <template slot-scope="{ row }">
-              <el-tooltip
-                v-if="isViewMode"
-                :disabled="!needEllipsis(formatAddressLine(row.toAddress))"
-                placement="top"
-                effect="dark"
-                :open-delay="200"
-                :content="formatAddressLine(row.toAddress)"
-              >
-                <span
-                  class="addr-view-text cell-ellipsis"
-                  :class="{ 'is-truncated': needEllipsis(formatAddressLine(row.toAddress)) }"
-                >{{ displayText(formatAddressLine(row.toAddress)) }}</span>
-              </el-tooltip>
-              <el-tooltip
-                v-else
-                effect="dark"
-                placement="top"
-                :disabled="!(row.toAddress && row.toAddress.length)"
-                :open-delay="200"
-                popper-class="addr-hover-tip"
-              >
-                <div slot="content" class="addr-hover-tip__list">
-                  <p
-                    v-for="(item, idx) in (row.toAddress || [])"
-                    :key="'to-tip-' + idx"
-                    class="addr-hover-tip__item"
-                  >{{ fullAddressLabel(item) }}</p>
-                </div>
-                <div
-                  class="addr-select"
-                  :class="{ 'is-empty': !(row.toAddress && row.toAddress.length) }"
-                  @click="openAddressEditor(row, 'toAddress')"
-                >
-                  <template v-if="row.toAddress && row.toAddress.length">
-                    <el-tag
-                      size="mini"
-                      type="info"
-                      effect="plain"
-                      disable-transitions
-                      class="addr-select__tag"
-                      closable
-                      @close.stop="removeAddressItem(row, 'toAddress', 0)"
-                    >{{ shortAddressLabel(row.toAddress[0]) }}</el-tag>
-                    <el-tag
-                      v-if="row.toAddress.length > 1"
-                      size="mini"
-                      type="info"
-                      effect="plain"
-                      disable-transitions
-                      class="addr-select__more"
-                    >+ {{ row.toAddress.length - 1 }}</el-tag>
-                  </template>
-                  <span v-else class="addr-select__placeholder">请点击选择目的地</span>
-                  <i class="el-icon-arrow-down addr-select__caret" />
-                </div>
-              </el-tooltip>
-            </template>
-          </el-table-column>
           <el-table-column v-if="selectedDims.includes('费用项')" min-width="184">
             <template slot="header"><span class="th-required">费用项</span></template>
             <template slot-scope="{ row }">
@@ -712,6 +588,26 @@
                 <el-option label="正向" value="正向" />
                 <el-option label="逆向" value="逆向" />
               </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="168" fixed="right" align="left" header-align="left">
+            <template slot-scope="{ row }">
+              <span v-if="isViewMode" class="view-plain-text">
+                {{ addressRouteSummary(row) }}
+              </span>
+              <div v-else class="partition-ops">
+                <el-button
+                  type="text"
+                  class="partition-addr-action"
+                  @click="openAddressCombo(row)"
+                >添加地址</el-button>
+                <el-button
+                  type="text"
+                  class="partition-addr-action"
+                  :disabled="partitions.length <= 1"
+                  @click="removePartition(row.id)"
+                >删除</el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -845,7 +741,6 @@
               </el-form-item>
               <el-form-item class="detail-meta-actions-item">
                 <div class="detail-table-actions">
-                  <el-button size="small" type="primary" plain @click="detailImportVisible = true">导入报价明细</el-button>
                   <el-tooltip
                     effect="dark"
                     placement="top"
@@ -1232,7 +1127,7 @@
                 <el-radio label="实单">实单测算</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="报价分区" required>
+            <el-form-item v-if="sim.type !== '实单'" label="报价分区" required>
               <el-select v-model="sim.partitionId" clearable placeholder="选择价格分区后带出明细" @change="onSimPartitionChange">
                 <el-option
                   v-for="p in partitions"
@@ -1262,7 +1157,7 @@
               <el-button type="primary" plain size="small" class="sim-run-btn" @click="runSim">开始测算</el-button>
             </el-form-item>
           </el-form>
-          <div v-if="sim.partitionId && simDetailPreview" class="sim-detail-preview">
+          <div v-if="sim.type !== '实单' && sim.partitionId && simDetailPreview" class="sim-detail-preview">
             <div class="sim-detail-preview__meta">
               <span>当前分区：{{ simDetailPreview.name }}</span>
               <span v-if="showStatTarget">统计对象：{{ simDetailPreview.statTarget }}</span>
@@ -1314,22 +1209,20 @@
           <el-button size="small" type="primary" @click="$emit('back')">关闭</el-button>
         </template>
         <template v-else>
+          <el-button size="small" @click="saveDraft">暂存</el-button>
           <el-button size="small" :disabled="step === 0" @click="step -= 1">上一步</el-button>
           <el-button v-if="step < 3" type="primary" size="small" @click="nextStep">
             {{ step === 2 ? '下一步，报价测算' : '下一步' }}
           </el-button>
-          <template v-else>
-            <el-button type="primary" size="small" @click="submitQuote">完成并发布</el-button>
-          </template>
+          <el-button v-else type="primary" size="small" @click="submitQuote">完成并发布</el-button>
         </template>
       </div>
     </div>
 
-    <AddressEditorModal
-      :visible.sync="addressEditor.visible"
-      :title="addressEditor.title"
-      :value="addressEditor.value"
-      @confirm="onAddressConfirm"
+    <AddressComboModal
+      :visible.sync="addressCombo.visible"
+      :value="addressCombo.routes"
+      @confirm="onAddressComboConfirm"
     />
 
     <el-dialog
@@ -1360,42 +1253,13 @@
         <el-button type="primary" size="small" @click="mockImport">确定</el-button>
       </div>
     </el-dialog>
-
-    <el-dialog
-      title="导入报价明细"
-      :visible.sync="detailImportVisible"
-      width="600px"
-      custom-class="lui-form-dialog lui-upload-dialog"
-      append-to-body
-      :close-on-click-modal="false"
-    >
-      <div class="lui-upload-panel">
-        <el-upload drag action="#" :auto-upload="false" accept=".xlsx,.xls" class="lui-upload-drag" :show-file-list="true">
-          <img class="lui-upload-drag__icon" :src="uploadIcon" alt="" width="40" height="40">
-          <div class="el-upload__text">点击或者将文件拖拽到此处进行上传</div>
-        </el-upload>
-        <div class="lui-upload-drag__meta">
-          <p class="lui-upload-drag__hint">仅支持.xlsx/.xls格式，文件大小不能超过500KB</p>
-          <div class="lui-upload-drag__extra">
-            <el-button type="text" class="lui-upload-drag__link" @click="downloadDetailTemplate">
-              <img class="lui-upload-drag__link-icon" :src="downloadIcon" alt="" width="16" height="16">
-              下载模版.xls
-            </el-button>
-          </div>
-        </div>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button size="small" @click="detailImportVisible = false">取消</el-button>
-        <el-button type="primary" size="small" @click="detailImportVisible = false; $message.success('明细导入成功（预览）')">确定</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import LuiArrowSteps from '../components/LuiArrowSteps.vue'
 import LuiFieldError from '../components/LuiFieldError.vue'
-import AddressEditorModal from '../components/quoting/AddressEditorModal.vue'
+import AddressComboModal from '../components/quoting/AddressComboModal.vue'
 import { DISCOUNT_PRODUCT_SCENARIOS } from '../mock/cascade'
 import {
   SCENARIO_QUOTE_DIMS,
@@ -1423,6 +1287,7 @@ function createPartition(partial = {}) {
     statBillingObject: '',
     fromAddress: [],
     toAddress: [],
+    addressRoutes: [],
     feeItem: '',
     orderType: '',
     deliveryType: '',
@@ -1458,7 +1323,7 @@ function createDetail() {
 
 export default {
   name: 'OnestopQuoting',
-  components: { LuiArrowSteps, AddressEditorModal, LuiFieldError },
+  components: { LuiArrowSteps, AddressComboModal, LuiFieldError },
   props: {
     detailMode: {
       type: String,
@@ -1530,6 +1395,7 @@ export default {
       },
       dimOptions: SCENARIO_QUOTE_DIMS.slice(),
       selectedDims: [],
+      draftSelectedDims: [],
       partitions: [first],
       partitionPage: 1,
       partitionPageSize: 10,
@@ -1563,13 +1429,10 @@ export default {
       },
       simDetailPage: 1,
       importVisible: false,
-      detailImportVisible: false,
-      addressEditor: {
+      addressCombo: {
         visible: false,
-        title: '请选择地址',
-        field: 'fromAddress',
         partitionId: null,
-        value: []
+        routes: []
       }
     }
   },
@@ -1592,12 +1455,6 @@ export default {
       this.$nextTick(() => {
         if (val === 'partition') this.layoutPartitionTable()
         if (val === 'detail') this.layoutDetailStairTable()
-      })
-    },
-    selectedDims() {
-      this.partitionTableKey += 1
-      this.$nextTick(() => {
-        this.$nextTick(() => this.layoutPartitionTable())
       })
     },
     activePartitionId() {
@@ -1628,6 +1485,10 @@ export default {
     },
     isCash() {
       return ['寄付现结', '到付现结'].includes(this.base.settlementMethod)
+    },
+    isDimsDirty() {
+      const norm = (arr) => (arr || []).slice().sort().join('\u0001')
+      return norm(this.draftSelectedDims) !== norm(this.selectedDims)
     },
     isStats() {
       return ['统计考核', '统计+合单'].includes(this.base.billingStrategy)
@@ -1695,7 +1556,8 @@ export default {
     },
     /** 一行不足 3 列按钮补位；满 3 列则换行右对齐 */
     simRunItemClass() {
-      const fieldCount = this.sim.type === '实单' ? 3 : 5
+      // 实单：测算类型 + 运单号（不填报价分区）→ 2；虚单：类型+分区+重量+体积+业务量 → 5
+      const fieldCount = this.sim.type === '实单' ? 2 : 5
       const rem = fieldCount % 3
       return rem === 0 ? 'sim-run-item sim-run-item--wrap' : 'sim-run-item sim-run-item--fill'
     },
@@ -1830,6 +1692,13 @@ export default {
       const parts = s.split(/[-/]/).filter(Boolean)
       return parts.length ? parts.join('-') : s
     },
+    confirmSelectedDims() {
+      this.selectedDims = (this.draftSelectedDims || []).slice()
+      this.partitionTableKey += 1
+      this.$nextTick(() => {
+        this.$nextTick(() => this.layoutPartitionTable())
+      })
+    },
     removeAddressItem(partition, field, index) {
       const list = (partition[field] || []).slice()
       if (index < 0 || index >= list.length) return
@@ -1887,19 +1756,44 @@ export default {
       }
       this.onDecimalInput(row, 'stairMax', val)
     },
-    openAddressEditor(partition, field) {
-      this.addressEditor = {
+    openAddressCombo(partition) {
+      const routes = Array.isArray(partition.addressRoutes) && partition.addressRoutes.length
+        ? partition.addressRoutes
+        : ((partition.fromAddress && partition.fromAddress.length) || (partition.toAddress && partition.toAddress.length))
+          ? [{
+            id: `legacy-${partition.id}`,
+            fromAddress: (partition.fromAddress || []).slice(),
+            toAddress: (partition.toAddress || []).slice()
+          }]
+          : []
+      this.addressCombo = {
         visible: true,
-        title: field === 'fromAddress' ? '请选择始发地' : '请选择目的地',
-        field,
         partitionId: partition.id,
-        value: (partition[field] || []).slice()
+        routes: JSON.parse(JSON.stringify(routes))
       }
     },
-    onAddressConfirm(list) {
-      const p = this.partitions.find(i => i.id === this.addressEditor.partitionId)
+    onAddressComboConfirm(routes) {
+      const p = this.partitions.find(i => i.id === this.addressCombo.partitionId)
       if (!p) return
-      this.$set(p, this.addressEditor.field, list.slice())
+      const list = Array.isArray(routes) ? routes : []
+      this.$set(p, 'addressRoutes', list)
+      // 兼容旧字段：扁平汇总，便于预览摘要
+      const from = []
+      const to = []
+      list.forEach(r => {
+        ;(r.fromAddress || []).forEach(a => { if (!from.includes(a)) from.push(a) })
+        ;(r.toAddress || []).forEach(a => { if (!to.includes(a)) to.push(a) })
+      })
+      this.$set(p, 'fromAddress', from)
+      this.$set(p, 'toAddress', to)
+    },
+    addressRouteSummary(row) {
+      const n = (row.addressRoutes && row.addressRoutes.length) || 0
+      if (n) return `已添加 ${n} 条流向`
+      if ((row.fromAddress && row.fromAddress.length) || (row.toAddress && row.toAddress.length)) {
+        return '已配置地址'
+      }
+      return '-'
     },
     switchQuoteMode(type) {
       // 产品报价本期不做，强制场景报价
@@ -1908,6 +1802,7 @@ export default {
       this.base.quotationMethod = type
       this.base.businessScenario = ''
       this.selectedDims = []
+      this.draftSelectedDims = []
       this.base.settlementMethod = '月结'
       this.base.billingStrategy = '统计考核'
       this.base.statisticsMethod = ''
@@ -1976,7 +1871,15 @@ export default {
     },
     onSimTypeChange() {
       this.sim.result = null
-      if (this.sim.type === '虚单') this.sim.orderNo = ''
+      if (this.sim.type === '实单') {
+        this.sim.orderNo = this.sim.orderNo || ''
+        this.sim.partitionId = ''
+        this.sim.weight = ''
+        this.sim.volume = ''
+        this.sim.businessVolume = ''
+      } else {
+        this.sim.orderNo = ''
+      }
     },
     onSimPartitionChange() {
       this.sim.result = null
@@ -2179,19 +2082,16 @@ export default {
       this.$nextTick(() => this.layoutPartitionTable())
     },
     removePartition(id) {
-      if (this.partitions.length <= 1) return
-      this.partitions = this.partitions.filter(p => p.id !== id)
-      this.activePartitionId = String(this.partitions[0].id)
-      this.clampPartitionPage()
-      this.$nextTick(() => this.layoutPartitionTable())
-    },
-    removeLastPartition() {
       if (this.partitions.length <= 1) {
         this.$message.warning('至少保留一条价格分区')
         return
       }
-      const last = this.partitions[this.partitions.length - 1]
-      this.removePartition(last.id)
+      this.partitions = this.partitions.filter(p => p.id !== id)
+      if (!this.partitions.some(p => String(p.id) === String(this.activePartitionId))) {
+        this.activePartitionId = String(this.partitions[0].id)
+      }
+      this.clampPartitionPage()
+      this.$nextTick(() => this.layoutPartitionTable())
     },
     layoutPartitionTable() {
       const t = this.$refs.partitionTable
@@ -2203,7 +2103,12 @@ export default {
         applyNo: 'SQ-IMPORT-001',
         contractCode: 'HT-IMPORT-001',
         fromAddress: ['斜土路街道'],
-        toAddress: ['深圳市']
+        toAddress: ['深圳市'],
+        addressRoutes: [{
+          id: 'import-1',
+          fromAddress: ['斜土路街道'],
+          toAddress: ['深圳市']
+        }]
       }))
       this.partitionPage = Math.ceil(this.partitions.length / this.partitionPageSize) || 1
       this.importVisible = false
@@ -2212,9 +2117,6 @@ export default {
     },
     downloadPartitionTemplate() {
       this.$message.info('已开始下载分区导入模板（预览）')
-    },
-    downloadDetailTemplate() {
-      this.$message.info('已开始下载报价明细导入模板（预览）')
     },
     addStairRow() {
       this.currentDetail.rows.push({
@@ -2337,6 +2239,7 @@ export default {
         // 无快照时与默认分区字段对齐，避免预览勾选全部维度却无对应列数据
         this.selectedDims = ['费用项', '商家订单类型', '正逆向']
       }
+      this.draftSelectedDims = this.selectedDims.slice()
 
       if (Array.isArray(src.partitions) && src.partitions.length) {
         this.partitions = src.partitions.map((p, idx) => {
@@ -2446,18 +2349,20 @@ export default {
       }
     },
     runSim() {
-      if (!this.sim.partitionId) {
-        this.$message.warning('请选择报价分区')
-        return
-      }
       if (this.sim.type === '实单') {
         if (!this.sim.orderNo) {
           this.$message.warning('请输入运单号')
           return
         }
-      } else if (!this.sim.weight && !this.sim.volume && !this.sim.businessVolume) {
-        this.$message.warning('请至少录入一项计费因子')
-        return
+      } else {
+        if (!this.sim.partitionId) {
+          this.$message.warning('请选择报价分区')
+          return
+        }
+        if (!this.sim.weight && !this.sim.volume && !this.sim.businessVolume) {
+          this.$message.warning('请至少录入一项计费因子')
+          return
+        }
       }
       const partName = (this.simDetailPreview && this.simDetailPreview.name) || this.activePartitionName
       const merchant = this.base.merchantName || this.base.merchantCode || '-'
@@ -2469,14 +2374,14 @@ export default {
       const path = [
         `测算类型：${this.sim.type === '实单' ? '实单测算' : '虚单测算'}`,
         `匹配商家 ${merchant}`,
-        `报价方式：${method} / 策略：${strategy}`,
-        `分区：${partName}`
+        `报价方式：${method} / 策略：${strategy}`
       ]
       let formula = ''
       if (this.sim.type === '实单') {
         path.push(`运单号 ${this.sim.orderNo}，回写计费过程（预览）`)
-        formula = `运单号[${this.sim.orderNo}]匹配商家[${merchant}](自动获取)；分区[${partName}]，报价方式[${method}]/策略[${strategy}]，金额取整后输出总额[${total}]`
+        formula = `运单号[${this.sim.orderNo}]匹配商家[${merchant}](自动获取)；报价方式[${method}]/策略[${strategy}]，金额取整后输出总额[${total}]`
       } else {
+        path.push(`分区：${partName}`)
         const w = this.sim.weight || '-'
         const v = this.sim.volume || '-'
         const bv = this.sim.businessVolume || '-'
@@ -2522,17 +2427,41 @@ export default {
           this.$emit('published', this.buildPublishPayload(createdAt))
         })
         .catch(() => {})
+    },
+    /** 暂存草稿：不强制校验，生成草稿记录并回首页 */
+    saveDraft() {
+      const d = new Date()
+      const p = n => String(n).padStart(2, '0')
+      const createdAt = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
+      const payload = this.buildPublishPayload(createdAt)
+      payload.status = '草稿'
+      if (!this.editingId) {
+        payload.id = `Q-DRAFT-${Date.now()}`
+      }
+      this.$emit('draft', payload)
     }
   }
 }
 </script>
 
 <style scoped>
-.quoting-fieldset {
-  border: 0;
-  margin: 0;
-  padding: 0;
-  min-width: 0;
+.partition-ops {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 24px;
+}
+.partition-ops .el-button + .el-button {
+  margin-left: 0 !important;
+}
+.partition-addr-action {
+  padding: 0 !important;
+  color: #3c6ef0 !important;
+  font-size: 14px;
+}
+.partition-addr-action.is-disabled,
+.partition-addr-action.is-disabled:hover {
+  color: #c0c4cc !important;
 }
 .quoting-fieldset--view {
   /* 预览态允许切换分区查看完整明细；表单控件本身已用 isViewMode 切只读文案 */
@@ -2712,8 +2641,20 @@ export default {
   gap: 8px;
 }
 /* 可选报价维度：占栅格一列；右侧操作区右对齐（一行三列） */
-.dims-select {
+.dims-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
+  min-width: 0;
+}
+.dims-select {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+.dims-confirm-btn {
+  flex: 0 0 auto;
 }
 .dims-select >>> .el-input__inner {
   min-height: 32px;

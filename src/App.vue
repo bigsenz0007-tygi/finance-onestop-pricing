@@ -137,6 +137,7 @@
           <OnestopPricing
             :detail-mode="pricingDetailMode"
             @published="onPricingPublished"
+            @draft="onPricingDraft"
             @back="navigate('onestop-pricing-home')"
           />
         </div>
@@ -154,6 +155,7 @@
             :detail-mode="quotingDetailMode"
             :source-row="quotingSourceRow"
             @published="onQuotingPublished"
+            @draft="onQuotingDraft"
             @back="navigate('onestop-quoting-home')"
           />
         </div>
@@ -598,6 +600,12 @@ export default {
       this.navigate('onestop-pricing-home')
       this.$message.success('发布成功')
     },
+    onPricingDraft(row) {
+      if (!row) return
+      this.pricingList.unshift(row)
+      this.$message.success('已暂存该配置。')
+      this.navigate('onestop-pricing-home')
+    },
     onQuotingPublished(row) {
       const idx = this.quotingList.findIndex(item => item.id === row.id)
       if (idx >= 0) {
@@ -609,6 +617,18 @@ export default {
       this.quotingSourceRow = null
       this.navigate('onestop-quoting-home')
       this.$message.success(idx >= 0 ? '保存成功' : '发布成功')
+    },
+    onQuotingDraft(row) {
+      if (!row) return
+      const idx = this.quotingList.findIndex(item => item.id === row.id)
+      if (idx >= 0) {
+        this.$set(this.quotingList, idx, { ...row, status: '草稿' })
+      } else {
+        this.quotingList.unshift({ ...row, status: '草稿' })
+      }
+      this.quotingSourceRow = null
+      this.$message.success('已暂存该配置。')
+      this.navigate('onestop-quoting-home')
     }
   }
 }
@@ -1138,9 +1158,30 @@ export default {
   margin-top: 24px;
 }
 .pricing-view-dialog .table-card--view .section-title {
+  display: flex !important;
+  align-items: center !important;
   font-size: 16px !important;
   line-height: 22px !important;
   font-weight: 500;
+}
+.pricing-view-dialog .table-card--view .section-title::before {
+  display: block !important;
+  width: 3px;
+  height: 14px;
+  margin-right: 4px;
+  align-self: center;
+  flex-shrink: 0;
+}
+.pricing-view-dialog .table-card--view .section-title-with-tip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px;
+}
+.pricing-view-dialog .table-card--view .section-title-with-tip::before {
+  margin-right: 0;
+}
+.pricing-view-dialog .table-card--view .section-title__text {
+  line-height: 22px;
 }
 /* 预览表单：默认双列；定价规则 quote-form / cols-1 保持单列（勿与报价共用双列） */
 .pricing-view-dialog .table-card--view .lui-form-grid.el-form {
@@ -1190,24 +1231,51 @@ export default {
   line-height: 22px !important;
   min-height: 22px;
 }
-/* 定价规则：标签区可换行，别名/模式详情顶对齐 */
+/* 定价规则：默认标签与内容横向（垂直）居中；表格类顶对齐到表头 */
 .pricing-view-dialog .table-card--view .quote-form .el-form-item {
-  align-items: flex-start;
-  min-height: auto;
+  align-items: center;
+  min-height: 22px;
 }
 .pricing-view-dialog .table-card--view .quote-form .el-form-item__label {
-  height: auto !important;
+  height: 22px !important;
   line-height: 22px !important;
   overflow: visible !important;
+  display: flex !important;
+  align-items: center !important;
 }
 .pricing-view-dialog .table-card--view .quote-form .el-form-item__content {
   line-height: 22px !important;
   min-height: 22px;
   height: auto !important;
+  display: flex;
+  align-items: center;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item.lui-form-item--top {
+  align-items: flex-start;
 }
 .pricing-view-dialog .table-card--view .quote-form .el-form-item.lui-form-item--top .el-form-item__label {
-  align-items: flex-start;
-  padding-top: 8px;
+  height: auto !important;
+  line-height: 40px !important;
+  padding-top: 0 !important;
+  align-items: center !important;
+}
+.pricing-view-dialog .table-card--view .quote-form .el-form-item.lui-form-item--top .el-form-item__content {
+  display: block;
+  align-items: stretch;
+  min-height: auto;
+  line-height: normal !important;
+}
+.pricing-view-dialog .table-card--view .ext-rule-form .el-form-item {
+  align-items: center !important;
+}
+.pricing-view-dialog .table-card--view .ext-rule-form .el-form-item__content {
+  display: flex !important;
+  align-items: center !important;
+}
+.pricing-view-dialog .table-card--view .ext-block__switch {
+  height: 22px;
+  min-height: 22px;
+  line-height: 22px;
 }
 .pricing-view-dialog .table-card--view .complex-quote-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .quoting-base-form.lui-form-grid.el-form,
@@ -1535,7 +1603,9 @@ export default {
   width: 100%;
   justify-content: flex-end;
 }
-.pricing-view-dialog .table-card--view .ext-rule-form__label,
+.pricing-view-dialog .table-card--view .ext-rule-form__label {
+  color: #525765;
+}
 .pricing-view-dialog .table-card--view .ext-block__status {
   color: #23252b;
 }

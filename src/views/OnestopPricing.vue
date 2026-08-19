@@ -290,13 +290,18 @@
           <el-table-column
             v-if="!isViewMode"
             label="操作"
-            width="88"
+            width="120"
             align="left"
             header-align="left"
             fixed="right"
           >
             <template slot-scope="{ row }">
               <div class="scene-ops">
+                <el-button
+                  type="text"
+                  class="element-ops__link element-ops__link--primary"
+                  @click="copyBillingRule(row.id)"
+                >复制</el-button>
                 <el-button
                   type="text"
                   class="element-ops__link element-ops__link--delete table-ops__link--delete"
@@ -375,27 +380,26 @@
               label="维度别名"
               class="lui-form-item--top"
             >
-              <div class="dimension-alias-grid">
+              <div class="table-h-scroll">
                 <el-table
-                  v-for="row in dimensionAliasRows"
-                  :key="'dim-alias-' + row.name"
-                  :data="[row]"
+                  :data="dimensionAliasRows"
                   size="small"
                   border
-                  class="dimension-alias-table elements-table"
+                  class="quote-sub-table quote-sub-table--full dimension-alias-table"
                 >
-                  <el-table-column label="维度名称" min-width="100">
-                    <template slot-scope="{ row: item }">
-                      <span>{{ item.name }}</span>
+                  <el-table-column prop="name" label="维度名称" min-width="160">
+                    <template slot-scope="{ row }">
+                      <span class="table-cell-full">{{ row.name }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column label="别名" min-width="120">
-                    <template slot-scope="{ row: item }">
+                  <el-table-column label="别名" min-width="200">
+                    <template slot-scope="{ row }">
                       <el-input
-                        v-model="scenario.quotation.dimensionAliases[item.name]"
+                        v-model="scenario.quotation.dimensionAliases[row.name]"
                         size="small"
                         class="lui-control"
-                        placeholder="别名"
+                        placeholder="请输入"
+                        :disabled="isViewMode"
                       />
                     </template>
                   </el-table-column>
@@ -435,16 +439,6 @@
               <div class="table-h-scroll">
               <el-table :data="modeDetailRows" size="small" border class="quote-sub-table quote-sub-table--full">
                 <el-table-column prop="mode" label="报价模式" min-width="120" />
-                <el-table-column label="别名" min-width="120">
-                  <template slot-scope="{ row }">
-                    <el-input
-                      v-model="scenario.quotation.modeAliases[row.mode]"
-                      size="small"
-                      class="lui-control"
-                      placeholder="别名"
-                    />
-                  </template>
-                </el-table-column>
                 <el-table-column prop="formula" label="对应公式" min-width="300">
                   <template slot-scope="{ row }">
                     <span class="table-cell-full">{{ row.formula }}</span>
@@ -460,9 +454,9 @@
                     <span class="table-cell-full">{{ row.priceItems }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column v-if="!isViewMode" label="操作" width="100" align="center">
+                <el-table-column label="操作" width="88" align="left" header-align="left">
                   <template slot-scope="{ row }">
-                    <el-button type="text" @click="openAppControl(row.mode)">应用管控</el-button>
+                    <el-button type="text" class="element-ops__link element-ops__link--primary" @click="openAppControl(row.mode)">别名</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -518,7 +512,7 @@
           >
             <el-form-item>
               <span slot="label" class="field-label-with-tip">
-                <span class="ext-rule-form__label">合单规则</span>
+                <span>合单规则</span>
                 <el-tooltip
                   placement="top"
                   effect="dark"
@@ -538,7 +532,7 @@
             v-if="scenario.extension.enableMerge"
             class="lui-form-grid quote-form ext-merge-fields"
             size="small"
-            label-width="112px"
+            label-width="120px"
           >
             <el-form-item label="可用合单维度">
               <el-select
@@ -663,11 +657,10 @@
           <el-button size="small" @click="$emit('back')">返回</el-button>
         </template>
         <template v-else>
+          <el-button size="small" @click="saveDraft">暂存</el-button>
           <el-button size="small" :disabled="step === 0" @click="goPrevStep">上一步</el-button>
           <el-button v-if="step < 2" type="primary" size="small" @click="goNextStep">下一步</el-button>
-          <template v-else>
-            <el-button type="primary" size="small" @click="publishPricing">发布</el-button>
-          </template>
+          <el-button v-else type="primary" size="small" @click="publishPricing">发布</el-button>
         </template>
       </div>
     </div>
@@ -685,7 +678,7 @@
         <el-select
           v-model="cond.dimension"
           size="small"
-          placeholder="维度"
+          placeholder="请选择"
           class="condition-edit-row__dim"
           @change="onTempDimChange(cond)"
         >
@@ -694,7 +687,8 @@
         <el-select
           v-model="cond.operator"
           size="small"
-          placeholder="比较符"
+          clearable
+          placeholder="请选择"
           class="condition-edit-row__op"
         >
           <el-option
@@ -710,7 +704,7 @@
           size="small"
           multiple
           collapse-tags
-          placeholder="条件值"
+          placeholder="请选择"
           class="condition-edit-row__value lui-select-no-tag-tip"
         >
           <el-option
@@ -724,7 +718,7 @@
           v-else
           v-model="cond.inputValue"
           size="small"
-          placeholder="请直接输入"
+          placeholder="请输入"
           class="condition-edit-row__value"
         />
         <div v-if="!isViewMode" class="condition-edit-row__actions">
@@ -863,34 +857,54 @@
     </el-dialog>
 
     <el-dialog
-      :title="'应用管控 - ' + (appControlMode || '')"
+      title="别名编辑"
       :visible.sync="appControlVisible"
       width="640px"
-      custom-class="lui-form-dialog lui-dialog--md"
+      custom-class="lui-form-dialog lui-dialog--md app-control-dialog"
       append-to-body
       :close-on-click-modal="false"
     >
-      <h3 class="section-title">定价维度</h3>
-      <el-table :data="appControlDims" size="small">
-        <el-table-column prop="name" label="维度名称" min-width="160" />
+      <el-table :data="appControlModeRows" size="small" class="app-control-table">
+        <el-table-column prop="name" label="报价模式" min-width="160">
+          <template slot-scope="{ row }">
+            <span>{{ row.name }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="别名" min-width="140">
           <template slot-scope="{ row }">
-            <el-input v-model="row.alias" size="small" placeholder="别名" />
+            <el-input
+              v-model="scenario.quotation.modeAliases[row.name]"
+              size="small"
+              placeholder="请输入"
+              :disabled="isViewMode"
+            />
           </template>
         </el-table-column>
       </el-table>
-      <h3 class="section-title" style="margin-top: 16px">价格项</h3>
-      <el-table :data="appControlPrices" size="small">
+      <h3 class="section-title">定价维度</h3>
+      <el-table :data="appControlDims" size="small" class="app-control-table">
+        <el-table-column prop="name" label="维度名称" min-width="160" />
+        <el-table-column label="别名" min-width="140">
+          <template slot-scope="{ row }">
+            <el-input v-model="row.alias" size="small" placeholder="请输入" :disabled="isViewMode" />
+          </template>
+        </el-table-column>
+      </el-table>
+      <h3 class="section-title app-control-section-title">价格项</h3>
+      <el-table :data="appControlPrices" size="small" class="app-control-table">
         <el-table-column prop="name" label="价格项" min-width="160" />
         <el-table-column label="别名" min-width="140">
           <template slot-scope="{ row }">
-            <el-input v-model="row.alias" size="small" placeholder="输入别名" />
+            <el-input v-model="row.alias" size="small" placeholder="请输入" :disabled="isViewMode" />
           </template>
         </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button size="small" @click="appControlVisible = false">取消</el-button>
-        <el-button type="primary" size="small" @click="saveAppControl">保存</el-button>
+        <el-button v-if="isViewMode" size="small" type="primary" @click="appControlVisible = false">关闭</el-button>
+        <template v-else>
+          <el-button size="small" @click="appControlVisible = false">取消</el-button>
+          <el-button type="primary" size="small" @click="saveAppControl">保存</el-button>
+        </template>
       </div>
     </el-dialog>
   </div>
@@ -1157,6 +1171,9 @@ export default {
     },
     dimensionAliasRows() {
       return (this.scenario.quotation.dimensions || []).map(name => ({ name }))
+    },
+    appControlModeRows() {
+      return this.appControlMode ? [{ name: this.appControlMode }] : []
     },
     modeDetailRows() {
       return (this.scenario.quotation.modes || []).map(mode => {
@@ -1433,6 +1450,26 @@ export default {
       this.scenario.billing.rules.push(rule)
       this.activeBillingRuleId = rule.id
     },
+    copyBillingRule(id) {
+      const rules = this.scenario.billing.rules
+      const idx = rules.findIndex(r => r.id === id)
+      if (idx < 0) return
+      const source = rules[idx]
+      const copied = createBillingRule({
+        name: source.name,
+        isBase: false,
+        billingType: source.billingType,
+        sourceSystem: source.sourceSystem,
+        docType: source.docType,
+        tradeType: source.tradeType,
+        items: source.items,
+        nodes: Array.isArray(source.nodes) ? source.nodes.slice() : [],
+        conditions: JSON.parse(JSON.stringify(source.conditions || [])),
+        _validateError: false
+      })
+      rules.splice(idx + 1, 0, copied)
+      this.activeBillingRuleId = copied.id
+    },
     removeBillingRule(id) {
       const rules = this.scenario.billing.rules
       const idx = rules.findIndex(r => r.id === id)
@@ -1463,16 +1500,16 @@ export default {
     formatCondition(cond) {
       if (typeof cond === 'string') return cond
       const dim = (this.conditionDimOptions.find(d => d.code === cond.dimension) || {}).name || cond.dimension
-      const op = (this.conditionOperatorOptions.find(o => o.value === (cond.operator || '=')) || {}).label || cond.operator || '等于'
+      const op = (this.conditionOperatorOptions.find(o => o.value === cond.operator) || {}).label || cond.operator || ''
       const opts = this.conditionValueOptions(cond.dimension)
       if (opts.length) {
         const labels = (cond.values || []).map(code => {
           const hit = opts.find(o => o.code === code)
           return hit ? hit.name : code
         })
-        return `${dim} ${op} ${labels.join(',')}`
+        return `${dim} ${op} ${labels.join(',')}`.replace(/\s+/g, ' ').trim()
       }
-      return `${dim} ${op} ${cond.inputValue || ''}`
+      return `${dim} ${op} ${cond.inputValue || ''}`.replace(/\s+/g, ' ').trim()
     },
     conditionValueOptions(dimension) {
       const dim = this.conditionDimOptions.find(d => d.code === dimension)
@@ -1487,18 +1524,18 @@ export default {
         ? list.map((c, i) => ({
           id: `c-${i}`,
           dimension: c.dimension || '',
-          operator: c.operator || '=',
+          operator: c.operator || '',
           values: (c.values || []).slice(),
           inputValue: c.inputValue || ''
         }))
-        : [{ id: 'c-0', dimension: '', operator: '=', values: [], inputValue: '' }]
+        : [{ id: 'c-0', dimension: '', operator: '', values: [], inputValue: '' }]
       this.conditionVisible = true
     },
     addTempCondition() {
       this.tempConditions.push({
         id: `c-${Date.now()}`,
         dimension: '',
-        operator: '=',
+        operator: '',
         values: [],
         inputValue: ''
       })
@@ -1506,7 +1543,6 @@ export default {
     onTempDimChange(cond) {
       cond.values = []
       cond.inputValue = ''
-      if (!cond.operator) cond.operator = '='
     },
     saveConditions() {
       if (!this.activeBillingRule) return
@@ -1522,7 +1558,7 @@ export default {
       }
       this.activeBillingRule.conditions = this.tempConditions.map(c => ({
         dimension: c.dimension,
-        operator: c.operator || '=',
+        operator: c.operator,
         values: (c.values || []).slice(),
         inputValue: c.inputValue || ''
       }))
@@ -1576,6 +1612,9 @@ export default {
     },
     openAppControl(mode) {
       this.appControlMode = mode
+      if (this.scenario.quotation.modeAliases[mode] === undefined) {
+        this.$set(this.scenario.quotation.modeAliases, mode, '')
+      }
       const detail = this.modeDetailMap[mode] || {}
       this.appControlDims = (detail.dim || '-')
         .split(';')
@@ -1598,7 +1637,7 @@ export default {
       this.appControlVisible = true
     },
     saveAppControl() {
-      this.$message.success('应用管控已保存（预览）')
+      this.$message.success('别名已保存（预览）')
       this.appControlVisible = false
     },
     onSimTypeChange() {
@@ -1687,6 +1726,19 @@ export default {
           })
         })
         .catch(() => {})
+    },
+    /** 暂存草稿：不强制校验，生成草稿记录并回首页 */
+    saveDraft() {
+      const scenarioName = (this.scenario.base && this.scenario.base.scenario) || '未命名场景'
+      this.$emit('draft', {
+        id: `P-DRAFT-${Date.now()}`,
+        name: `${scenarioName}-场景价`,
+        mode: '场景定价',
+        target: scenarioName,
+        status: '草稿',
+        creator: '预览用户',
+        createdAt: this.formatNow()
+      })
     },
     onSimModeChange() {
       this.scenario.sim.factors = {}
@@ -1830,6 +1882,8 @@ export default {
   min-width: 0;
 }
 .section-title {
+  display: flex;
+  align-items: center;
   font-size: 16px !important;
   line-height: 22px !important;
   font-weight: 500;
@@ -1862,10 +1916,11 @@ export default {
   display: inline;
 }
 .section-title::before {
+  content: '';
+  display: block;
   width: 3px;
   height: 14px;
   margin-right: 4px;
-  vertical-align: middle;
   border-radius: 8px;
   background: #3c6ef0;
   flex-shrink: 0;
@@ -2275,7 +2330,6 @@ export default {
   flex: 1 1 0%;
 }
 /* 报价维度 / 维度别名 / 报价模式 / 模式详情 / 阶梯：内容左缘对齐 */
-.quote-form >>> .el-form-item__content > .dimension-alias-grid,
 .quote-form >>> .el-form-item__content > .mode-row,
 .quote-form >>> .el-form-item__content > .table-h-scroll,
 .quote-form >>> .el-form-item__content > .el-select {
@@ -2284,11 +2338,9 @@ export default {
   padding: 0;
   box-sizing: border-box;
 }
-.quote-form .dimension-alias-table,
 .quote-form .quote-sub-table {
   margin: 0;
 }
-.quote-form .dimension-alias-table >>> .el-table .cell,
 .quote-form .quote-sub-table >>> .el-table .cell {
   padding-left: 12px;
   padding-right: 12px;
@@ -2403,16 +2455,14 @@ export default {
 .field-tip-icon:hover {
   color: #525765;
 }
-.dimension-alias-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px 24px;
+.quote-sub-table {
   width: 100%;
-}
-.dimension-alias-table {
-  width: 100%;
-  min-width: 0;
   background: #fff;
+}
+.quote-sub-table >>> .el-input.lui-control,
+.quote-sub-table >>> .lui-control {
+  width: 160px;
+  max-width: 100%;
 }
 .dimension-alias-table >>> .el-table__header th.el-table__cell {
   font-size: 14px;
@@ -2423,19 +2473,10 @@ export default {
 .dimension-alias-table >>> .el-table__body td.el-table__cell {
   vertical-align: middle;
 }
-.dimension-alias-table >>> .el-input.lui-control,
-.dimension-alias-table >>> .lui-control {
+.dimension-alias-table.quote-sub-table >>> .el-input.lui-control,
+.dimension-alias-table.quote-sub-table >>> .lui-control {
   width: 100%;
-  max-width: 100%;
-}
-.quote-sub-table {
-  width: 100%;
-  background: #fff;
-}
-.quote-sub-table >>> .el-input.lui-control,
-.quote-sub-table >>> .lui-control {
-  width: 160px;
-  max-width: 100%;
+  max-width: 360px;
 }
 .quote-sub-table--full >>> .el-table__body .cell {
   overflow: visible;
@@ -2486,7 +2527,7 @@ export default {
   --lui-form-label-width: 120px;
 }
 .ext-merge-fields.lui-form-grid {
-  --lui-form-label-width: 112px;
+  --lui-form-label-width: 120px;
   margin-top: 12px;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
@@ -2495,7 +2536,12 @@ export default {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
-.ext-rule-form__label,
+.ext-rule-form__label {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
 .ext-block__status {
   color: #23252b;
   font-size: 14px;
@@ -2510,6 +2556,37 @@ export default {
   font-size: 14px;
   line-height: 22px;
   height: 32px;
+}
+.table-card--view .ext-block__switch {
+  height: 22px;
+  min-height: 22px;
+}
+.table-card--view .quote-form >>> .el-form-item {
+  align-items: center;
+}
+.table-card--view .quote-form >>> .el-form-item.lui-form-item--top {
+  align-items: flex-start;
+}
+.table-card--view .quote-form >>> .el-form-item.lui-form-item--top .el-form-item__label {
+  line-height: 40px;
+  padding-top: 0;
+}
+.table-card--view .ext-rule-form >>> .el-form-item {
+  align-items: center;
+}
+.table-card--view .section-title,
+.table-card--view .section-title-with-tip {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+.table-card--view .section-title::before {
+  align-self: center;
+}
+.ext-rule-form.quote-form >>> .el-form-item__label,
+.ext-merge-fields.quote-form >>> .el-form-item__label {
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
 }
 .table-card--view .ext-rule-form >>> .el-select__tags,
 .table-card--view .ext-merge-fields >>> .el-select__tags {
@@ -2653,6 +2730,21 @@ export default {
   gap: 12px;
   margin-bottom: 10px;
   width: 100%;
+}
+.condition-edit-row >>> .el-input,
+.condition-edit-row >>> .el-input--small {
+  font-size: 14px;
+}
+.condition-edit-row >>> .el-input__inner {
+  font-size: 14px;
+  line-height: var(--lui-control-height, 32px);
+}
+.condition-edit-row >>> .el-input__inner::placeholder,
+.condition-edit-row >>> .el-input__inner::-webkit-input-placeholder {
+  color: #babec7;
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 1;
 }
 .condition-edit-row__dim {
   width: 140px;
@@ -2829,6 +2921,27 @@ export default {
 }
 .quote-tip-popper[x-placement^='bottom'] .popper__arrow::after {
   border-bottom-color: rgba(35, 37, 43, 0.9) !important;
+}
+.app-control-dialog .section-title {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 12px;
+  line-height: 22px;
+}
+.app-control-dialog .section-title::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 14px;
+  margin-right: 4px;
+  align-self: center;
+  flex-shrink: 0;
+}
+.app-control-dialog .app-control-table + .section-title {
+  margin-top: 16px;
+}
+.app-control-dialog .app-control-table {
+  width: 100%;
 }
 
 </style>

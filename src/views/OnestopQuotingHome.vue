@@ -215,7 +215,11 @@
           <template slot-scope="{ row }">
             <el-button type="text" @click="$emit('open', row, 'view')">查看</el-button>
             <el-button type="text" @click="$emit('open', row, 'edit')">编辑</el-button>
-            <el-button type="text" @click="toggleStatus(row)">{{ row.status === '已启用' ? '停用' : '启用' }}</el-button>
+            <el-button
+              v-if="canToggleStatus(row)"
+              type="text"
+              @click="toggleStatus(row)"
+            >{{ row.status === '已启用' ? '停用' : '启用' }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -312,6 +316,9 @@ export default {
       if (status === '已停用') return 'danger'
       return 'info'
     },
+    canToggleStatus(row) {
+      return row && (row.status === '已启用' || row.status === '已停用')
+    },
     resetQuery() {
       this.query = emptyQuery()
       this.applied = {}
@@ -322,6 +329,7 @@ export default {
       this.page = 1
     },
     toggleStatus(row) {
+      if (!this.canToggleStatus(row)) return
       const next = row.status === '已启用' ? '已停用' : '已启用'
       this.$confirm(`确认${next === '已启用' ? '启用' : '停用'}该报价？`, '二次确认', { type: 'warning' })
         .then(() => {

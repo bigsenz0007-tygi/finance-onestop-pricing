@@ -10,27 +10,23 @@
   >
     <el-tabs v-model="activeTab">
       <el-tab-pane label="国内" name="domestic" />
-      <el-tab-pane label="跨境" name="crossborder" />
+      <el-tab-pane label="国际" name="crossborder" />
     </el-tabs>
 
     <div v-if="activeTab === 'domestic'" class="addr-regions">
-      <el-checkbox
-        :indeterminate="regionIndeterminate"
-        :value="allRegionsChecked"
-        @change="toggleAllRegions"
-      >全选大区</el-checkbox>
+      <span class="addr-regions__label">地址标签：</span>
       <el-checkbox-group v-model="selectedRegions" class="addr-regions__group" @change="onRegionChange">
         <el-checkbox v-for="r in regions" :key="r" :label="r">{{ r }}</el-checkbox>
       </el-checkbox-group>
     </div>
-    <div v-else class="field-tip">跨境地址预览占位：可选国家/口岸（本期保留页签）。</div>
+    <div v-else class="field-tip">国际地址预览占位：可选国家/口岸（本期保留页签）。</div>
 
     <el-input
       v-model="searchText"
       type="textarea"
       :rows="2"
       class="addr-search"
-      placeholder="请输入省份/城市/区县，多个用逗号、顿号或换行分隔；上限300"
+      placeholder="请输入省份/城市/县区搜索，多个用逗号、顿号或换行分隔；上限300"
       @input="onSearchInput"
     />
     <div v-if="searchOverflow" class="field-tip field-tip--warn">已超过 300 条上限，仅保留前 300 条。</div>
@@ -111,7 +107,33 @@
 </template>
 
 <script>
-const REGIONS = ['西北', '西南', '华北', '华南', '华中', '华东', '东北']
+const REGIONS = [
+  '东北 (含蒙东)',
+  '东北 (无蒙东)',
+  '全国 (无港澳台钓)',
+  '内陆 (无新疆)',
+  '华东',
+  '华中',
+  '华北 (含内蒙)',
+  '华北 (含蒙西)',
+  '华南',
+  '西北',
+  '西南'
+]
+/** 标签展示名 → 树内大区 key（预览 mock） */
+const REGION_ALIAS = {
+  '东北 (含蒙东)': '东北',
+  '东北 (无蒙东)': '东北',
+  '全国 (无港澳台钓)': '华东',
+  '内陆 (无新疆)': '华中',
+  华东: '华东',
+  华中: '华中',
+  '华北 (含内蒙)': '华北',
+  '华北 (含蒙西)': '华北',
+  华南: '华南',
+  西北: '西北',
+  西南: '西南'
+}
 
 /** 大区 → 省 → 市 → 区 → 街道（预览 mock） */
 const ADDRESS_TREE = {
@@ -207,6 +229,20 @@ const ADDRESS_TREE = {
       }
     }
   }
+}
+
+function resolveTreeRegions(selectedLabels) {
+  const labels = selectedLabels && selectedLabels.length ? selectedLabels : REGIONS
+  const set = new Set()
+  labels.forEach(label => {
+    set.add(REGION_ALIAS[label] || label)
+  })
+  return Array.from(set)
+}
+
+function labelForTreeRegion(treeKey) {
+  const hit = REGIONS.find(label => (REGION_ALIAS[label] || label) === treeKey)
+  return hit || treeKey
 }
 
 function parseSearchTokens(text) {
@@ -318,10 +354,11 @@ export default {
       set(v) { this.$emit('update:visible', v) }
     },
     primaryRegion() {
-      return this.selectedRegions[0] || '华东'
+      const keys = resolveTreeRegions(this.selectedRegions)
+      return keys[0] || '华东'
     },
     provinceOptions() {
-      const keys = this.selectedRegions.length ? this.selectedRegions : REGIONS
+      const keys = resolveTreeRegions(this.selectedRegions)
       const set = new Set()
       keys.forEach(r => {
         Object.keys(ADDRESS_TREE[r] || {}).forEach(p => set.add(p))
@@ -331,8 +368,7 @@ export default {
     cityOptions() {
       if (!this.cascade.province) return []
       const set = new Set()
-      const regions = this.selectedRegions.length ? this.selectedRegions : REGIONS
-      regions.forEach(r => {
+      resolveTreeRegions(this.selectedRegions).forEach(r => {
         const cities = (ADDRESS_TREE[r] || {})[this.cascade.province]
         if (cities) Object.keys(cities).forEach(c => set.add(c))
       })
@@ -341,8 +377,7 @@ export default {
     districtOptions() {
       if (!this.cascade.province || !this.cascade.city) return []
       const set = new Set()
-      const regions = this.selectedRegions.length ? this.selectedRegions : REGIONS
-      regions.forEach(r => {
+      resolveTreeRegions(this.selectedRegions).forEach(r => {
         const districts = ((ADDRESS_TREE[r] || {})[this.cascade.province] || {})[this.cascade.city]
         if (districts) Object.keys(districts).forEach(d => set.add(d))
       })
@@ -357,7 +392,7 @@ export default {
     },
     leafOptions() {
       if (!this.cascade.province || !this.cascade.city || !this.cascade.district) return []
-      const regions = this.selectedRegions.length ? this.selectedRegions : [this.primaryRegion]
+      const regions = resolveTreeRegions(this.selectedRegions)
       const map = new Map()
       regions.forEach(r => {
         leavesFromDistrict(r, this.cascade.province, this.cascade.city, this.cascade.district)
@@ -448,7 +483,7 @@ export default {
     applyMatch(hit) {
       if (!hit) return
       this.syncingFromSearch = true
-      this.selectedRegions = [hit.region]
+      this.selectedRegions = [labelForTreeRegion(hit.region)]
       this.cascade = {
         province: hit.province || '',
         city: hit.city || '',
@@ -542,11 +577,18 @@ export default {
 .addr-regions {
   margin-bottom: 12px;
 }
+.addr-regions__label {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #525765;
+  font-size: 14px;
+  line-height: 22px;
+}
 .addr-regions__group {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 12px;
-  margin-top: 8px;
+  margin-top: 0;
 }
 .addr-search {
   margin-bottom: 8px;

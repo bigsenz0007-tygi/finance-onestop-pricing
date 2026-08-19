@@ -248,6 +248,57 @@ function findElSelectVm(node) {
   return null
 }
 
+function findAnySelectVm(node) {
+  let cur = node
+  while (cur) {
+    let vm = cur.__vue__
+    while (vm) {
+      const name = vm.$options && vm.$options.name
+      if (name === 'ElSelect' || name === 'LuiSelect') return vm
+      vm = vm.$parent
+    }
+    cur = cur.parentElement
+  }
+  return null
+}
+
+/**
+ * 滚动时关闭已打开的 Select / DatePicker 浮层。
+ * append-to-body 的下拉在嵌套滚动容器中不会跟随锚点，会出现「悬空滑动」。
+ */
+function closeFloatingPoppersOnScroll(e) {
+  const t = e && e.target
+  if (t && t.nodeType === 1 && typeof t.closest === 'function') {
+    if (
+      t.closest('.el-select-dropdown') ||
+      t.closest('.el-picker-panel') ||
+      t.closest('.el-cascader__dropdown') ||
+      t.closest('.el-autocomplete-suggestion') ||
+      t.closest('.el-time-panel')
+    ) {
+      return
+    }
+  }
+
+  document.querySelectorAll('.el-select').forEach((el) => {
+    const vm = findAnySelectVm(el)
+    if (!vm || !vm.visible) return
+    if (typeof vm.handleClose === 'function') vm.handleClose()
+    else vm.visible = false
+  })
+
+  document.querySelectorAll('.el-date-editor').forEach((el) => {
+    let vm = el.__vue__
+    while (vm) {
+      if (vm.pickerVisible) {
+        vm.pickerVisible = false
+        break
+      }
+      vm = vm.$parent
+    }
+  })
+}
+
 function getMultiSelectLabels(selectVm) {
   if (!selectVm) return []
   const selected = selectVm.selected
@@ -396,6 +447,7 @@ if (typeof window !== 'undefined') {
     },
     true
   )
+  document.addEventListener('scroll', closeFloatingPoppersOnScroll, true)
   setupMultiSelectHoverTip()
 }
 

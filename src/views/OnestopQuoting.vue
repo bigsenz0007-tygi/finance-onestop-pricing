@@ -32,36 +32,12 @@
         >场景报价</button>
       </div>
 
-      <div v-if="isViewMode && !embedded" class="table-toolbar">
-        <h3>报价方案详情</h3>
-      </div>
-
       <LuiArrowSteps
         v-if="!isViewMode"
         :steps="quoteSteps"
         :active="step"
         @change="onStepChange"
       />
-
-      <div
-        v-if="isViewMode"
-        class="lui-pill-tabs quoting-view-tabs"
-        role="tablist"
-      >
-        <button
-          v-for="(tab, idx) in viewTabs"
-          :key="tab.key"
-          type="button"
-          role="tab"
-          class="lui-pill-tabs__item"
-          :class="{
-            'is-active': viewTab === tab.key,
-            'has-divider': idx > 0
-          }"
-          :aria-selected="viewTab === tab.key ? 'true' : 'false'"
-          @click="onViewTabChange(tab.key)"
-        >{{ tab.title }}</button>
-      </div>
 
       <div class="wizard-body">
       <!-- 预览态勿用 fieldset disabled：会禁用分区切换等只读交互，导致明细无法完整查看 -->
@@ -304,7 +280,21 @@
 
       <!-- Step 2 价格分区 -->
       <div v-show="showSection('partition', 1)" class="quoting-section">
-        <h3 class="section-title">价格分区配置</h3>
+        <h3
+          class="section-title"
+          :class="{ 'section-title-with-tip': isViewMode }"
+        >
+          <span class="section-title__text">价格分区配置</span>
+          <el-tooltip
+            v-if="isViewMode"
+            placement="top"
+            effect="dark"
+            popper-class="quote-tip-popper"
+            content="可筛选价格分区或地址查看对应的数据内容和报价明细"
+          >
+            <span class="field-tip-trigger" tabindex="0" aria-label="说明">?</span>
+          </el-tooltip>
+        </h3>
         <el-form class="lui-form-grid partition-dims-form" size="small" label-width="120px">
           <el-form-item
             :label="isViewMode ? '已选报价维度' : '可选报价维度'"
@@ -361,6 +351,49 @@
             </el-tooltip>
           </div>
         </el-form>
+        <div v-if="isViewMode" class="partition-view-filter">
+          <el-form
+            :model="partitionFilter"
+            class="lui-form-grid partition-view-filter-form"
+            size="small"
+            label-width="120px"
+          >
+            <el-form-item label="价格分区">
+              <el-select v-model="partitionFilter.name" clearable filterable placeholder="请选择">
+                <el-option
+                  v-for="p in partitionNameOptions"
+                  :key="'part-name-' + p"
+                  :label="p"
+                  :value="p"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="始发城市">
+              <el-select v-model="partitionFilter.fromCity" clearable filterable placeholder="请选择">
+                <el-option
+                  v-for="c in partitionFromCityOptions"
+                  :key="'from-city-' + c"
+                  :label="c"
+                  :value="c"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="目的地城市">
+              <el-select v-model="partitionFilter.toCity" clearable filterable placeholder="请选择">
+                <el-option
+                  v-for="c in partitionToCityOptions"
+                  :key="'to-city-' + c"
+                  :label="c"
+                  :value="c"
+                />
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <div class="partition-view-filter__actions">
+            <el-button size="small" @click="resetPartitionFilter">重置</el-button>
+            <el-button type="primary" size="small" @click="applyPartitionFilter">查询</el-button>
+          </div>
+        </div>
         <div class="table-h-scroll table-h-scroll--error-tip partition-table-wrap">
         <el-table
           :key="'partition-table-' + partitionTableKey"
@@ -592,9 +625,13 @@
           </el-table-column>
           <el-table-column label="操作" width="168" fixed="right" align="left" header-align="left">
             <template slot-scope="{ row }">
-              <span v-if="isViewMode" class="view-plain-text">
-                {{ addressRouteSummary(row) }}
-              </span>
+              <div v-if="isViewMode" class="partition-ops">
+                <el-button
+                  type="text"
+                  class="partition-addr-action"
+                  @click="openAddressCombo(row)"
+                >查看地址</el-button>
+              </div>
               <div v-else class="partition-ops">
                 <el-button
                   type="text"
@@ -613,10 +650,10 @@
         </el-table>
         </div>
         <div class="pager partition-pager">
-          <span>共 {{ partitions.length }} 条</span>
+          <span>共 {{ partitionListTotal }} 条</span>
           <el-pagination
             layout="prev, pager, next, sizes, jumper"
-            :total="partitions.length"
+            :total="partitionListTotal"
             :current-page="partitionPage"
             :page-size="partitionPageSize"
             :page-sizes="[10, 20, 50]"
@@ -628,26 +665,24 @@
 
       <!-- Step 3 报价明细 -->
       <div v-show="showSection('detail', 2)" class="quoting-section">
-        <h3 class="section-title">报价明细配置</h3>
-        <!-- 编辑：参数表单；预览：仅分区筛选，其余字段并入表格 -->
-        <div class="detail-meta-bar" :class="{ 'detail-meta-bar--view-filter': isViewMode }">
+        <h3 class="section-title">{{ isViewMode ? '报价明细' : '报价明细配置' }}</h3>
+        <!-- 编辑：参数表单；预览：分区筛选在价格分区区，明细随筛选联动 -->
+        <div v-if="!isViewMode" class="detail-meta-bar">
           <el-form
             :model="currentDetail"
             class="lui-form-grid detail-meta-form"
-            :class="{ 'detail-meta-form--view-filter': isViewMode }"
             label-width="120px"
             size="small"
           >
             <el-form-item
-              v-if="isViewMode || partitions.length > 1"
+              v-if="partitions.length > 1"
               label="选择配置分区"
-              :required="!isViewMode && partitions.length > 1"
-              :class="{ 'detail-partition-filter-item': isViewMode }"
+              :required="partitions.length > 1"
             >
               <el-select
                 v-model="activePartitionId"
                 class="detail-partition-filter"
-                :clearable="!isViewMode"
+                clearable
                 placeholder="请选择分区"
                 :class="{ 'is-error': detailFieldErrors.activePartitionId }"
                 @change="clearDetailFieldError('activePartitionId')"
@@ -660,10 +695,10 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item v-else-if="!isViewMode" label="配置分区">
+            <el-form-item v-else label="配置分区">
               <span class="view-plain-text detail-meta-partition-text">{{ activePartitionName }}</span>
             </el-form-item>
-            <template v-if="!isViewMode">
+            <template>
               <el-form-item v-if="showStatTarget" label="统计对象" required :class="{ 'is-error': detailFieldErrors.statTarget }">
                 <el-select
                   v-model="currentDetail.statTarget"
@@ -750,19 +785,6 @@
                       <el-button size="small" @click="addStairRow">添加</el-button>
                     </span>
                   </el-tooltip>
-                  <el-tooltip
-                    effect="dark"
-                    placement="top"
-                    content="仅支持删除表格最后一行；至少保留一条明细"
-                  >
-                    <span class="detail-table-actions__btn-wrap">
-                      <el-button
-                        size="small"
-                        :disabled="currentDetail.rows.length <= 1"
-                        @click="removeLastStairRow"
-                      >删除</el-button>
-                    </span>
-                  </el-tooltip>
                 </div>
               </el-form-item>
             </template>
@@ -773,41 +795,41 @@
           :key="'detail-stair-' + activePartitionId + '-' + detailTableKey + (isViewMode ? '-view' : '')"
           ref="detailStairTable"
           :data="pagedDetailRows"
-          row-key="id"
+          :row-key="isViewMode ? '_rowKey' : 'id'"
           size="small"
           border
           :max-height="isViewMode ? null : 480"
           class="partition-table detail-stair-table quoting-data-table quoting-editable-table"
         >
-          <!-- 预览：分区级参数并入表格，切换分区后随 currentDetail 刷新 -->
+          <!-- 预览：分区级参数并入表格行（多分区扁平后按行展示） -->
           <el-table-column v-if="isViewMode && showStatTarget" label="统计对象" min-width="184">
-            <template slot-scope>
-              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.statTarget) }}</span>
+            <template slot-scope="{ row }">
+              <span class="view-plain-text cell-ellipsis">{{ displayText(row.statTarget) }}</span>
             </template>
           </el-table-column>
           <el-table-column v-if="isViewMode" label="单票阶梯模式" min-width="184">
-            <template slot-scope>
-              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.stairMode) }}</span>
+            <template slot-scope="{ row }">
+              <span class="view-plain-text cell-ellipsis">{{ displayText(row.stairMode) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="isViewMode && showStairColumns" label="阶梯累进" min-width="184">
-            <template slot-scope>
-              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.stairProgress) }}</span>
+          <el-table-column v-if="isViewMode" label="阶梯累进" min-width="184">
+            <template slot-scope="{ row }">
+              <span class="view-plain-text cell-ellipsis">{{ displayText(row.stairProgress) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="isViewMode && showStairColumns" label="区间开闭类型" min-width="184">
-            <template slot-scope>
-              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.intervalType) }}</span>
+          <el-table-column v-if="isViewMode" label="区间开闭类型" min-width="184">
+            <template slot-scope="{ row }">
+              <span class="view-plain-text cell-ellipsis">{{ displayText(row.intervalType) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="isViewMode && showBusinessCarry" label="业务进位" min-width="184">
-            <template slot-scope>
-              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.businessCarry) }}</span>
+          <el-table-column v-if="isViewMode" label="业务进位" min-width="184">
+            <template slot-scope="{ row }">
+              <span class="view-plain-text cell-ellipsis">{{ displayText(row.businessCarry) }}</span>
             </template>
           </el-table-column>
-          <el-table-column v-if="isViewMode && currentDetail.stairMode === '计费重量'" label="轻抛系数" min-width="184">
-            <template slot-scope>
-              <span class="view-plain-text cell-ellipsis">{{ displayText(currentDetail.lightThrow) }}</span>
+          <el-table-column v-if="isViewMode" label="轻抛系数" min-width="184">
+            <template slot-scope="{ row }">
+              <span class="view-plain-text cell-ellipsis">{{ displayText(row.lightThrow) }}</span>
             </template>
           </el-table-column>
           <el-table-column v-if="showStatColumns" min-width="184">
@@ -842,7 +864,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-if="showStairColumns" min-width="184">
+          <el-table-column v-if="isViewMode || showStairColumns" min-width="184">
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">单票阶梯最小值(不含)</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text">{{ row.stairMin === 0 || row.stairMin ? row.stairMin : '-' }}</span>
@@ -858,7 +880,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-if="showStairColumns" min-width="184">
+          <el-table-column v-if="isViewMode || showStairColumns" min-width="184">
             <template slot="header"><span :class="{ 'th-required': !isViewMode }">单票阶梯最大值(含)</span></template>
             <template slot-scope="{ row }">
               <span v-if="isViewMode" class="view-plain-text">{{ row.stairMax || '-' }}</span>
@@ -1002,13 +1024,32 @@
               </div>
             </template>
           </el-table-column>
+          <el-table-column
+            v-if="!isViewMode"
+            label="操作"
+            width="88"
+            fixed="right"
+            align="left"
+            header-align="left"
+          >
+            <template slot-scope="{ row }">
+              <div class="detail-stair-ops">
+                <el-button
+                  type="text"
+                  class="detail-stair-action"
+                  :disabled="!canRemoveDetailRow(row)"
+                  @click="removeStairRowById(row.id)"
+                >删除</el-button>
+              </div>
+            </template>
+          </el-table-column>
         </el-table>
         </div>
         <div class="pager detail-pager">
-          <span>共 {{ currentDetail.rows.length }} 条</span>
+          <span>共 {{ detailListTotal }} 条</span>
           <el-pagination
             layout="prev, pager, next, sizes, jumper"
-            :total="currentDetail.rows.length"
+            :total="detailListTotal"
             :current-page="detailPage"
             :page-size="detailPageSize"
             :page-sizes="[10, 20, 50]"
@@ -1018,7 +1059,7 @@
         </div>
       </div>
 
-      <!-- 报价拓展规则：向导跟明细同一步；预览独立 Tab -->
+      <!-- 报价拓展规则：向导跟明细同一步；预览顺序展示 -->
       <div v-show="showSection('extension', 2)" class="quoting-section">
         <h3
           class="section-title"
@@ -1206,14 +1247,12 @@
 
       <div v-if="!(isViewMode && embedded)" class="wizard-footer">
         <template v-if="isViewMode">
-          <el-button size="small" type="primary" @click="$emit('back')">关闭</el-button>
+          <el-button size="small" type="primary" @click="$emit('back')">返回</el-button>
         </template>
         <template v-else>
           <el-button size="small" @click="saveDraft">暂存</el-button>
           <el-button size="small" :disabled="step === 0" @click="step -= 1">上一步</el-button>
-          <el-button v-if="step < 3" type="primary" size="small" @click="nextStep">
-            {{ step === 2 ? '下一步，报价测算' : '下一步' }}
-          </el-button>
+          <el-button v-if="step < 3" type="primary" size="small" @click="nextStep">下一步</el-button>
           <el-button v-else type="primary" size="small" @click="submitQuote">完成并发布</el-button>
         </template>
       </div>
@@ -1222,6 +1261,7 @@
     <AddressComboModal
       :visible.sync="addressCombo.visible"
       :value="addressCombo.routes"
+      :readonly="isViewMode"
       @confirm="onAddressComboConfirm"
     />
 
@@ -1360,13 +1400,16 @@ export default {
         { title: '报价明细' },
         { title: '报价测算' }
       ],
-      viewTabs: [
-        { key: 'base', title: '基础信息' },
-        { key: 'partition', title: '价格分区' },
-        { key: 'detail', title: '报价明细' },
-        { key: 'extension', title: '报价拓展规则' }
-      ],
-      viewTab: 'base',
+      partitionFilter: {
+        name: '',
+        fromCity: '',
+        toCity: ''
+      },
+      partitionFilterApplied: {
+        name: '',
+        fromCity: '',
+        toCity: ''
+      },
       base: {
         quotationName: '',
         merchantCode: '',
@@ -1441,6 +1484,14 @@ export default {
       this.hydrateFromRecord(this.sourceRow)
     }
   },
+  mounted() {
+    if (this.isViewMode) {
+      this.$nextTick(() => {
+        this.layoutPartitionTable()
+        this.layoutDetailStairTable()
+      })
+    }
+  },
   watch: {
     step(val) {
       if (val === 1 || this.isViewMode) {
@@ -1449,13 +1500,6 @@ export default {
       if (val === 2 || this.isViewMode) {
         this.$nextTick(() => this.layoutDetailStairTable())
       }
-    },
-    viewTab(val) {
-      if (!this.isViewMode) return
-      this.$nextTick(() => {
-        if (val === 'partition') this.layoutPartitionTable()
-        if (val === 'detail') this.layoutDetailStairTable()
-      })
     },
     activePartitionId() {
       this.detailPage = 1
@@ -1468,7 +1512,13 @@ export default {
       },
       deep: false
     },
+    filteredPartitions() {
+      if (!this.isViewMode) return
+      this.clampPartitionPage()
+      this.clampDetailPage()
+    },
     'currentDetail.rows.length'() {
+      if (this.isViewMode) return
       this.clampDetailPage()
     },
     'currentDetail.stairMode'() {
@@ -1574,8 +1624,75 @@ export default {
         return this.detailMap[id]
       }
     },
-    pagedPartitions() {
+    partitionNameOptions() {
+      const names = []
+      ;(this.partitions || []).forEach(p => {
+        const name = String((p && p.name) || '').trim()
+        if (name && !names.includes(name)) names.push(name)
+      })
+      return names
+    },
+    partitionFromCityOptions() {
+      return this.collectPartitionCities('from')
+    },
+    partitionToCityOptions() {
+      return this.collectPartitionCities('to')
+    },
+    filteredPartitions() {
       const list = Array.isArray(this.partitions) ? this.partitions : []
+      if (!this.isViewMode) return list
+      const f = this.partitionFilterApplied || {}
+      const nameKw = String(f.name || '').trim()
+      const fromCity = String(f.fromCity || '').trim()
+      const toCity = String(f.toCity || '').trim()
+      if (!nameKw && !fromCity && !toCity) return list
+      return list.filter(p => {
+        if (nameKw && String(p.name || '').trim() !== nameKw) return false
+        if (fromCity) {
+          const cities = this.getPartitionCities(p, 'from')
+          if (!cities.includes(fromCity)) return false
+        }
+        if (toCity) {
+          const cities = this.getPartitionCities(p, 'to')
+          if (!cities.includes(toCity)) return false
+        }
+        return true
+      })
+    },
+    partitionListTotal() {
+      return this.isViewMode ? this.filteredPartitions.length : (this.partitions || []).length
+    },
+    viewDetailFlatRows() {
+      if (!this.isViewMode) return []
+      const rows = []
+      ;(this.filteredPartitions || []).forEach(p => {
+        const id = String(p.id)
+        const detail = this.detailMap[id] || createDetail()
+        ;(detail.rows || []).forEach((r, idx) => {
+          rows.push({
+            ...r,
+            _rowKey: `${id}-${r && r.id != null ? r.id : idx}`,
+            _partitionId: id,
+            _partitionName: (p && p.name) || '未命名分区',
+            statTarget: detail.statTarget,
+            stairMode: detail.stairMode,
+            stairProgress: detail.stairProgress,
+            intervalType: detail.intervalType,
+            businessCarry: detail.businessCarry,
+            lightThrow: detail.lightThrow
+          })
+        })
+      })
+      return rows
+    },
+    detailListTotal() {
+      if (this.isViewMode) return this.viewDetailFlatRows.length
+      return ((this.currentDetail && this.currentDetail.rows) || []).length
+    },
+    pagedPartitions() {
+      const list = this.isViewMode
+        ? (Array.isArray(this.filteredPartitions) ? this.filteredPartitions : [])
+        : (Array.isArray(this.partitions) ? this.partitions : [])
       if (!list.length) return []
       const size = Math.max(1, Number(this.partitionPageSize) || 10)
       const maxPage = Math.max(1, Math.ceil(list.length / size))
@@ -1586,9 +1703,11 @@ export default {
       return rows.length ? rows : list.slice(0, size)
     },
     pagedDetailRows() {
-      const rows = (this.currentDetail && Array.isArray(this.currentDetail.rows))
-        ? this.currentDetail.rows
-        : []
+      const rows = this.isViewMode
+        ? this.viewDetailFlatRows
+        : ((this.currentDetail && Array.isArray(this.currentDetail.rows))
+          ? this.currentDetail.rows
+          : [])
       if (!rows.length) return []
       const size = Math.max(1, Number(this.detailPageSize) || 10)
       const maxPage = Math.max(1, Math.ceil(rows.length / size))
@@ -1600,31 +1719,82 @@ export default {
   },
   methods: {
     showSection(tabKey, stepIndex) {
-      if (this.isViewMode) return this.viewTab === tabKey
+      if (this.isViewMode) {
+        return ['base', 'partition', 'detail', 'extension'].includes(tabKey)
+      }
       return this.step === stepIndex
     },
-    onViewTabChange(key) {
-      this.viewTab = key
+    extractCityFromAddress(value) {
+      const s = String(value || '').trim()
+      if (!s) return ''
+      const parts = s.split(/[-/]/).filter(Boolean)
+      if (parts.length >= 2) return parts[1]
+      return parts[0] || ''
     },
-    isLastPartitionRow(row) {
-      const last = this.partitions[this.partitions.length - 1]
-      return !!(last && row && last.id === row.id)
+    getPartitionCities(partition, side) {
+      const cities = []
+      const pushCity = (addr) => {
+        const city = this.extractCityFromAddress(addr)
+        if (city && !cities.includes(city)) cities.push(city)
+      }
+      const listKey = side === 'to' ? 'toAddress' : 'fromAddress'
+      ;((partition && partition[listKey]) || []).forEach(pushCity)
+      ;((partition && partition.addressRoutes) || []).forEach(route => {
+        ;((route && route[listKey]) || []).forEach(pushCity)
+      })
+      return cities
     },
-    isLastDetailRow(row) {
+    collectPartitionCities(side) {
+      const cities = []
+      ;(this.partitions || []).forEach(p => {
+        this.getPartitionCities(p, side).forEach(c => {
+          if (c && !cities.includes(c)) cities.push(c)
+        })
+      })
+      return cities
+    },
+    applyPartitionFilter() {
+      this.partitionFilterApplied = {
+        name: String((this.partitionFilter && this.partitionFilter.name) || '').trim(),
+        fromCity: String((this.partitionFilter && this.partitionFilter.fromCity) || '').trim(),
+        toCity: String((this.partitionFilter && this.partitionFilter.toCity) || '').trim()
+      }
+      this.partitionPage = 1
+      this.detailPage = 1
+      this.detailTableKey += 1
+      this.$nextTick(() => {
+        this.layoutPartitionTable()
+        this.layoutDetailStairTable()
+      })
+    },
+    resetPartitionFilter() {
+      this.partitionFilter = { name: '', fromCity: '', toCity: '' }
+      this.partitionFilterApplied = { name: '', fromCity: '', toCity: '' }
+      this.partitionPage = 1
+      this.detailPage = 1
+      this.detailTableKey += 1
+      this.$nextTick(() => {
+        this.layoutPartitionTable()
+        this.layoutDetailStairTable()
+      })
+    },
+    canRemoveDetailRow(row) {
       const rows = (this.currentDetail && this.currentDetail.rows) || []
-      const last = rows[rows.length - 1]
-      return !!(last && row && last.id === row.id)
+      return rows.length > 1 && !!row
     },
     clampPartitionPage() {
+      const list = this.isViewMode ? (this.filteredPartitions || []) : (this.partitions || [])
       const size = Math.max(1, Number(this.partitionPageSize) || 10)
-      const maxPage = Math.max(1, Math.ceil((this.partitions || []).length / size) || 1)
+      const maxPage = Math.max(1, Math.ceil(list.length / size) || 1)
       const page = Math.max(1, Number(this.partitionPage) || 1)
       if (page !== this.partitionPage) this.partitionPage = page
       if (this.partitionPage > maxPage) this.partitionPage = maxPage
       if (Number(this.partitionPageSize) !== size) this.partitionPageSize = size
     },
     clampDetailPage() {
-      const total = ((this.currentDetail && this.currentDetail.rows) || []).length
+      const total = this.isViewMode
+        ? this.viewDetailFlatRows.length
+        : ((this.currentDetail && this.currentDetail.rows) || []).length
       const size = Math.max(1, Number(this.detailPageSize) || 10)
       const maxPage = Math.max(1, Math.ceil(total / size) || 1)
       const page = Math.max(1, Number(this.detailPage) || 1)
@@ -1786,14 +1956,6 @@ export default {
       })
       this.$set(p, 'fromAddress', from)
       this.$set(p, 'toAddress', to)
-    },
-    addressRouteSummary(row) {
-      const n = (row.addressRoutes && row.addressRoutes.length) || 0
-      if (n) return `已添加 ${n} 条流向`
-      if ((row.fromAddress && row.fromAddress.length) || (row.toAddress && row.toAddress.length)) {
-        return '已配置地址'
-      }
-      return '-'
     },
     switchQuoteMode(type) {
       // 产品报价本期不做，强制场景报价
@@ -2152,10 +2314,12 @@ export default {
       return row.discountMode === '折扣率' ? `${row.discountDetail}%` : String(row.discountDetail)
     },
     removeStairRow(index) {
-      if (index !== this.currentDetail.rows.length - 1) {
-        this.$message.warning('请从后往前删除阶梯，避免留空档')
+      const rows = (this.currentDetail && this.currentDetail.rows) || []
+      if (rows.length <= 1) {
+        this.$message.warning('至少保留一条报价明细')
         return
       }
+      if (index < 0 || index >= rows.length) return
       this.currentDetail.rows.splice(index, 1)
       this.clampDetailPage()
       this.$nextTick(() => this.layoutDetailStairTable())
@@ -2164,14 +2328,6 @@ export default {
       const index = this.currentDetail.rows.findIndex(r => r.id === id)
       if (index < 0) return
       this.removeStairRow(index)
-    },
-    removeLastStairRow() {
-      const rows = (this.currentDetail && this.currentDetail.rows) || []
-      if (rows.length <= 1) {
-        this.$message.warning('至少保留一条报价明细')
-        return
-      }
-      this.removeStairRow(rows.length - 1)
     },
     layoutDetailStairTable() {
       const t = this.$refs.detailStairTable
@@ -2302,7 +2458,8 @@ export default {
         }
       }
       this.sim.partitionId = String(this.partitions[0].id)
-      this.viewTab = 'base'
+      this.partitionFilter = { name: '', fromCity: '', toCity: '' }
+      this.partitionFilterApplied = { name: '', fromCity: '', toCity: '' }
       this.step = 0
       this.detailPage = 1
       this.partitionTableKey += 1
@@ -2428,15 +2585,15 @@ export default {
         })
         .catch(() => {})
     },
-    /** 暂存草稿：不强制校验，生成草稿记录并回首页 */
+    /** 暂存：不强制校验，生成暂存记录并回首页 */
     saveDraft() {
       const d = new Date()
       const p = n => String(n).padStart(2, '0')
       const createdAt = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
       const payload = this.buildPublishPayload(createdAt)
-      payload.status = '草稿'
+      payload.status = '暂存'
       if (!this.editingId) {
-        payload.id = `Q-DRAFT-${Date.now()}`
+        payload.id = `Q-TEMP-${Date.now()}`
       }
       this.$emit('draft', payload)
     }
@@ -2555,37 +2712,55 @@ export default {
   padding-top: 0;
   border-top: none;
 }
-/* 预览：模块间距 24，去掉多余分割横线（图1）；Tab 切换时隐藏块仍占兄弟选择器，清零相邻间距 */
+/* 预览：模块间距 24px（顺序展示四块，不再清零） */
 .table-card--view .quoting-section + .quoting-section {
-  margin-top: 0;
+  margin-top: 24px;
   padding-top: 0;
   border-top: none;
 }
 .table-card--view .quoting-section {
   margin-top: 0;
 }
-/* 模块间距固定 24px：上一模块内容 → 下一模块小标题（同定价 pricing-section__sub） */
+/* 模块内二级标题（如复杂报价）距上 24 */
 .table-card--view .section-title--module,
 .table-card--wizard .section-title--module,
 .section-title--module {
   margin-top: 24px;
   margin-bottom: 12px;
 }
-/* 表格距上下各 24px */
+/* 表格距上 24px；预览分页区承担表下间距，避免与下一段落叠成 48 */
 .table-card--view .partition-table-wrap,
 .table-card--wizard .partition-table-wrap,
 .table-card--view .detail-table-wrap,
 .table-card--wizard .detail-table-wrap {
   margin-top: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 .table-card--view .detail-stair-table + .section-title--module,
 .detail-table-wrap + .section-title--module {
   margin-top: 0;
 }
-/* 预览：分区表已是 section 末项，下一块 quoting-section 的 24 即表下间距，去掉表自身 margin-bottom 避免 48 */
-.table-card--view .quoting-section > .partition-table-wrap:last-child {
+.table-card--view .quoting-section > .partition-table-wrap:last-child,
+.table-card--view .quoting-section > .detail-table-wrap:last-child {
   margin-bottom: 0;
+}
+.table-card--view .partition-pager,
+.table-card--view .detail-pager {
+  margin-top: 0 !important;
+  margin-bottom: 0;
+  padding-top: 8px !important;
+  border-top: none;
+}
+/* 预览无行内校验气泡，去掉表下为错误提示预留的空白，避免表与翻页器空一行 */
+.table-card--view .table-h-scroll--error-tip,
+.table-card--view .partition-table-wrap.table-h-scroll--error-tip,
+.table-card--view .detail-table-wrap.table-h-scroll--error-tip {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+.table-card--view .partition-ops,
+.table-card--view .partition-addr-action {
+  pointer-events: auto;
 }
 /* 小标题下的内容区不再叠额外上边距，避免模块间距被撑大 */
 .table-card--view .ext-block--plain,
@@ -2839,6 +3014,23 @@ export default {
 .partition-table-wrap >>> .el-table__fixed-right,
 .partition-table-wrap >>> .el-table__fixed {
   bottom: 8px !important;
+}
+/* 预览态：去掉表底为滚动条预留的空白，表与翻页器贴齐 */
+.table-card--view .partition-table-wrap >>> .el-table__fixed-right,
+.table-card--view .partition-table-wrap >>> .el-table__fixed,
+.table-card--view .detail-table-wrap >>> .el-table__fixed-right,
+.table-card--view .detail-table-wrap >>> .el-table__fixed {
+  bottom: 0 !important;
+}
+.table-card--view .partition-table-wrap.table-h-scroll,
+.table-card--view .detail-table-wrap.table-h-scroll {
+  overflow-y: hidden !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+.table-card--view .partition-table-wrap >>> .el-table__body-wrapper,
+.table-card--view .detail-table-wrap >>> .el-table__body-wrapper {
+  margin-bottom: 0 !important;
 }
 .partition-table-wrap >>> .el-table__fixed-right .el-table__fixed-body-wrapper,
 .partition-table-wrap >>> .el-table__fixed .el-table__fixed-body-wrapper {
@@ -3130,6 +3322,11 @@ export default {
   column-gap: 48px !important;
   row-gap: 12px !important;
   justify-content: stretch !important;
+}
+/* 预览只读：隐藏必填星号，避免与纯文案抢视觉 */
+.table-card--view >>> .el-form-item.is-required:not(.is-no-asterisk) > .el-form-item__label:before,
+.table-card--view >>> .el-form-item.is-required:not(.is-no-asterisk) .el-form-item__label-wrap > .el-form-item__label:before {
+  display: none !important;
 }
 .table-card--view .lui-form-grid >>> .el-form-item {
   align-items: center;
@@ -3456,72 +3653,6 @@ export default {
 .ext-block__switch--row {
   margin-bottom: 12px;
 }
-.quoting-view-tabs.lui-pill-tabs {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  width: auto;
-  max-width: 100%;
-  height: 40px;
-  padding: 4px;
-  margin: 0 0 24px;
-  box-sizing: border-box;
-  border-radius: 8px;
-  background: #f0f1f5;
-  flex-shrink: 0;
-  border-bottom: none;
-}
-.table-card--view .quoting-view-tabs {
-  margin-top: 0;
-}
-.lui-pill-tabs__item {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  min-width: 88px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  color: #23252b;
-  outline: none;
-  white-space: nowrap;
-  transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-}
-.lui-pill-tabs__item.has-divider::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1px;
-  height: 14px;
-  margin-top: -7px;
-  background: #e4e5e9;
-}
-.lui-pill-tabs__item.is-active.has-divider::before,
-.lui-pill-tabs__item.is-active + .lui-pill-tabs__item.has-divider::before {
-  display: none;
-}
-.lui-pill-tabs__item.is-active {
-  background: #fff;
-  color: #3c6ef0;
-  font-weight: 500;
-  box-shadow: 0 1px 2px rgba(35, 37, 43, 0.06);
-}
-.lui-pill-tabs__item:hover:not(.is-active) {
-  color: #3c6ef0;
-}
-.lui-pill-tabs__item:disabled,
-.lui-pill-tabs__item.is-disabled {
-  color: #babec7;
-  cursor: not-allowed;
-}
 .detail-toolbar-actions {
   display: inline-flex;
   align-items: center;
@@ -3594,8 +3725,162 @@ export default {
   gap: 16px;
   margin: 0;
 }
-.detail-meta-bar--view-filter {
-  margin-bottom: 0;
+.partition-view-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  margin: 24px 0 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* 与上方「已选报价维度」同轨：label120 / 列距48 / 一行三列，控件左缘竖线对齐 */
+.partition-view-filter-form.lui-form-grid.el-form,
+.table-card--view .partition-view-filter-form.lui-form-grid.el-form {
+  flex: none;
+  min-width: 0;
+  --lui-form-label-width: 120px;
+  --lui-form-item-gap: 12px;
+  --lui-form-col-gap: 48px;
+  --lui-form-row-gap: 16px;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  column-gap: 48px !important;
+  row-gap: 16px !important;
+  align-items: center !important;
+}
+.partition-view-filter__actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+}
+.table-card--view .partition-view-filter >>> .el-form-item {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  margin-bottom: 0 !important;
+  min-height: 32px;
+  width: 100%;
+}
+.table-card--view .partition-view-filter >>> .el-form-item__label {
+  flex: 0 0 120px !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  padding: 0 12px 0 0 !important;
+  margin: 0 !important;
+  text-align: right !important;
+  justify-content: flex-end !important;
+  color: #525765 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  box-sizing: border-box;
+}
+.table-card--view .partition-view-filter >>> .el-form-item__content {
+  flex: 1 1 0% !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  min-width: 0;
+  line-height: 32px !important;
+  min-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.table-card--view .partition-view-filter >>> .el-select {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+.table-card--view .partition-view-filter >>> .el-select .el-input {
+  width: 100% !important;
+}
+/* LUI PC3.0 选择器变量：边框 #E4E5E9、圆角 8、高 32、占位 #BABEC7 */
+.table-card--view .partition-view-filter >>> .el-input__inner,
+.table-card--view .partition-view-filter >>> .el-select .el-input__inner {
+  border: 1px solid var(--lui-border, #e4e5e9) !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  padding-left: 12px !important;
+  padding-right: 30px !important;
+  cursor: pointer !important;
+  height: var(--lui-control-height, 32px) !important;
+  min-height: var(--lui-control-height, 32px) !important;
+  line-height: var(--lui-control-height, 32px) !important;
+  border-radius: var(--lui-radius-base, 8px) !important;
+  color: var(--lui-text-main, #23252b) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+.table-card--view .partition-view-filter >>> .el-input__inner::placeholder,
+.table-card--view .partition-view-filter >>> .el-select .el-input__inner::placeholder {
+  color: var(--lui-text-disabled, #babec7) !important;
+  font-size: 14px !important;
+  opacity: 1;
+}
+.table-card--view .partition-view-filter >>> .el-select:hover .el-input__inner,
+.table-card--view .partition-view-filter >>> .el-input:hover .el-input__inner {
+  border-color: var(--lui-primary, #3c6ef0) !important;
+}
+.table-card--view .partition-view-filter >>> .el-select .el-input.is-focus .el-input__inner,
+.table-card--view .partition-view-filter >>> .el-select .el-input__inner:focus {
+  border-color: var(--lui-primary, #3c6ef0) !important;
+}
+.table-card--view .partition-view-filter >>> .el-input__suffix,
+.table-card--view .partition-view-filter >>> .el-input__prefix,
+.table-card--view .partition-view-filter >>> .el-select .el-input__suffix,
+.table-card--view .partition-view-filter >>> .el-input__icon {
+  display: block !important;
+  color: #c0c4cc;
+}
+.table-card--view .partition-view-filter >>> .el-select .el-input__suffix {
+  right: 5px;
+  height: 100%;
+  pointer-events: auto;
+}
+.table-card--view .partition-view-filter >>> .el-select .el-select__caret {
+  display: inline-block !important;
+  color: #c0c4cc !important;
+  font-size: 14px;
+  transition: transform 0.3s;
+  transform: rotate(180deg);
+  cursor: pointer;
+  line-height: 32px !important;
+  height: 32px !important;
+}
+.table-card--view .partition-view-filter >>> .el-select .el-select__caret.is-reverse {
+  transform: rotate(0deg);
+}
+.table-card--view .partition-view-filter >>> .el-button,
+.table-card--view .partition-view-filter__actions >>> .el-button {
+  display: inline-flex !important;
+  height: 32px !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+}
+.table-card--view .partition-view-filter__actions >>> .el-button--default {
+  border: 1px solid var(--lui-border, #e4e5e9) !important;
+  background: #fff !important;
+  color: var(--lui-text-main, #23252b) !important;
+}
+.table-card--view .partition-view-filter__actions >>> .el-button--primary {
+  border-color: var(--lui-primary, #3c6ef0) !important;
+  background: var(--lui-primary, #3c6ef0) !important;
+  color: #fff !important;
+}
+.table-card--view .partition-pager,
+.table-card--view .detail-pager {
+  pointer-events: auto;
 }
 .detail-meta-form.lui-form-grid.el-form {
   width: 100%;
@@ -3605,12 +3890,6 @@ export default {
   column-gap: 24px !important;
   row-gap: 16px !important;
   align-items: center;
-}
-/* 预览：仅分区筛选，单列布局 */
-.detail-meta-form--view-filter.lui-form-grid.el-form {
-  grid-template-columns: minmax(240px, 360px) !important;
-  column-gap: 0 !important;
-  row-gap: 0 !important;
 }
 .detail-meta-form >>> .el-form-item {
   align-items: center;
@@ -3627,10 +3906,10 @@ export default {
   width: 100%;
 }
 .detail-table-wrap--view {
-  margin-top: 16px;
+  margin-top: 24px;
 }
 .table-card--view .detail-table-wrap--view {
-  margin-top: 16px;
+  margin-top: 24px;
 }
 /*
  * 分区/明细行高 48：
@@ -3702,11 +3981,18 @@ export default {
   gap: 24px;
   white-space: nowrap;
 }
-.detail-stair-ops .el-button {
-  margin: 0;
-  padding: 0;
-  height: auto;
-  line-height: 22px;
+.detail-stair-ops .el-button,
+.detail-stair-action {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  line-height: 22px !important;
+  font-size: 14px !important;
+  color: #3c6ef0 !important;
+}
+.detail-stair-action.is-disabled,
+.detail-stair-action.is-disabled:hover {
+  color: #c0c4cc !important;
 }
 .addr-select {
   display: flex;

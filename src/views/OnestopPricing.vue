@@ -378,7 +378,7 @@
             <el-form-item
               v-if="scenario.quotation.dimensions.length"
               label="维度别名"
-              class="lui-form-item--top"
+              class="lui-form-item--top dimension-alias-item"
             >
               <div class="table-h-scroll">
                 <el-table
@@ -390,6 +390,11 @@
                   <el-table-column prop="name" label="维度名称" min-width="160">
                     <template slot-scope="{ row }">
                       <span class="table-cell-full">{{ row.name }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="code" label="维度编码" min-width="160">
+                    <template slot-scope="{ row }">
+                      <span class="table-cell-full">{{ row.code || '-' }}</span>
                     </template>
                   </el-table-column>
                   <el-table-column label="别名" min-width="200">
@@ -586,7 +591,7 @@
                 <el-radio label="实单">实单测算</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="报价模式" required>
+            <el-form-item v-if="scenario.sim.type === '模拟'" label="报价模式" required>
               <el-select v-model="scenario.sim.mode" clearable placeholder="请选择" @change="onSimModeChange">
                 <el-option
                   v-for="item in simModeOptions"
@@ -1027,6 +1032,13 @@ export default {
       feeItemOptions: ['运费', '保价费', '出库费', '包装费', '装卸费', '上楼费', '快递运费', '快运运费'],
       billingNodeOptions: ['揽收', '妥投', '出库', '入库', '中转'],
       quoteDimensionOptions: ['始发城市', '目的城市', '商家业务类型', '配送区域', '时效等级'],
+      quoteDimensionCodeMap: {
+        始发城市: 'START_CITY',
+        目的城市: 'DEST_CITY',
+        商家业务类型: 'MERCHANT_BIZ_TYPE',
+        配送区域: 'DELIVERY_AREA',
+        时效等级: 'AGING_LEVEL'
+      },
       quoteModeOptions: ['首续重计费', '按件型', '按方', '一口价', '百分比提成'],
       ladderOptions: ['重量', '件数', '体积', '金额', '距离'],
       mergeDimOptions: ['商家订单号', '运单号', '收件人手机号'],
@@ -1170,7 +1182,11 @@ export default {
       return Object.keys(counts).filter(type => counts[type] >= 2)
     },
     dimensionAliasRows() {
-      return (this.scenario.quotation.dimensions || []).map(name => ({ name }))
+      const codeMap = this.quoteDimensionCodeMap || {}
+      return (this.scenario.quotation.dimensions || []).map(name => ({
+        name,
+        code: codeMap[name] || '-'
+      }))
     },
     appControlModeRows() {
       return this.appControlMode ? [{ name: this.appControlMode }] : []
@@ -1727,15 +1743,15 @@ export default {
         })
         .catch(() => {})
     },
-    /** 暂存草稿：不强制校验，生成草稿记录并回首页 */
+    /** 暂存：不强制校验，生成暂存记录并回首页 */
     saveDraft() {
       const scenarioName = (this.scenario.base && this.scenario.base.scenario) || '未命名场景'
       this.$emit('draft', {
-        id: `P-DRAFT-${Date.now()}`,
+        id: `P-TEMP-${Date.now()}`,
         name: `${scenarioName}-场景价`,
         mode: '场景定价',
         target: scenarioName,
-        status: '草稿',
+        status: '暂存',
         creator: '预览用户',
         createdAt: this.formatNow()
       })
@@ -1755,12 +1771,6 @@ export default {
       }
     },
     runSim() {
-      const mode = this.scenario.sim.mode
-      if (!mode) {
-        this.$message.warning('请选择报价模式')
-        return
-      }
-
       const scrollToResult = () => {
         this.$nextTick(() => {
           const el = this.$refs.simResult
@@ -1770,7 +1780,7 @@ export default {
         })
       }
 
-      // 实单测算：对齐报价测算展示（路径时间线）
+      // 实单测算：按运单号回写计费过程，无需选择报价模式
       if (this.scenario.sim.type === '实单') {
         if (!(this.scenario.sim.orderNo || '').trim()) {
           this.$message.warning('请输入运单号')
@@ -1780,13 +1790,18 @@ export default {
           total: '36.80',
           path: [
             `匹配场景 ${this.scenario.base.scenario || '当前场景'}`,
-            `报价模式：${mode}`,
             `运单号 ${this.scenario.sim.orderNo}`,
             '金额取整后输出总额 36.80'
           ],
-          formula: `运单号[${this.scenario.sim.orderNo}]匹配场景[${this.scenario.base.scenario || '当前场景'}]；报价模式[${mode}]，金额取整后输出总额[36.80]`
+          formula: `运单号[${this.scenario.sim.orderNo}]匹配场景[${this.scenario.base.scenario || '当前场景'}](自动获取)；金额取整后输出总额[36.80]`
         }
         scrollToResult()
+        return
+      }
+
+      const mode = this.scenario.sim.mode
+      if (!mode) {
+        this.$message.warning('请选择报价模式')
         return
       }
 
@@ -2349,6 +2364,12 @@ export default {
   width: 100%;
   justify-content: flex-end;
 }
+/* 维度别名：标签相对表头下移 10px，贴近表体首行 */
+.quote-form >>> .el-form-item.dimension-alias-item .el-form-item__label {
+  padding-top: 10px !important;
+  line-height: 22px !important;
+  height: auto !important;
+}
 /* 查看态：多选标签改为文档流排布，与表格左缘对齐 */
 .table-card--view .quote-form >>> .el-select {
   display: block;
@@ -2570,6 +2591,10 @@ export default {
 .table-card--view .quote-form >>> .el-form-item.lui-form-item--top .el-form-item__label {
   line-height: 40px;
   padding-top: 0;
+}
+.table-card--view .quote-form >>> .el-form-item.dimension-alias-item .el-form-item__label {
+  padding-top: 10px !important;
+  line-height: 22px !important;
 }
 .table-card--view .ext-rule-form >>> .el-form-item {
   align-items: center;

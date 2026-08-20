@@ -1,14 +1,14 @@
 <template>
   <el-dialog
-    title="地址配置"
+    :title="readonly ? '已选地址' : '地址配置'"
     :visible.sync="dialogVisible"
     width="800px"
-    custom-class="lui-form-dialog lui-dialog--lg address-combo-dialog"
+    :custom-class="'lui-form-dialog lui-dialog--lg address-combo-dialog' + (readonly ? ' is-readonly' : '')"
     append-to-body
     :close-on-click-modal="false"
     @open="onOpen"
   >
-    <div class="combo-form">
+    <div v-if="!readonly" class="combo-form">
       <div class="combo-form__row">
         <label class="combo-form__label">始发地</label>
         <div class="combo-form__field" :class="{ 'is-error': fieldErrors.from }">
@@ -49,16 +49,22 @@
           <span class="combo-table__cell">{{ formatLine(row.toAddress) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="96" align="left" header-align="left">
+      <el-table-column v-if="!readonly" label="操作" width="96" align="left" header-align="left">
         <template slot-scope="{ $index }">
           <el-button type="text" class="combo-table__del" @click="removeRoute($index)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
+    <div v-if="readonly && !routes.length" class="combo-empty">暂无已选地址</div>
 
     <div slot="footer" class="dialog-footer">
-      <el-button size="small" @click="dialogVisible = false">取消</el-button>
-      <el-button type="primary" size="small" @click="confirm">确定</el-button>
+      <template v-if="readonly">
+        <el-button type="primary" size="small" @click="dialogVisible = false">关闭</el-button>
+      </template>
+      <template v-else>
+        <el-button size="small" @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" size="small" @click="confirm">确定</el-button>
+      </template>
     </div>
   </el-dialog>
 </template>
@@ -75,7 +81,8 @@ export default {
   components: { AddressSearchMultiSelect },
   props: {
     visible: { type: Boolean, default: false },
-    value: { type: Array, default: () => [] }
+    value: { type: Array, default: () => [] },
+    readonly: { type: Boolean, default: false }
   },
   data() {
     return {
@@ -118,6 +125,7 @@ export default {
       this.fieldErrors = { from: '', to: '' }
     },
     addRoute() {
+      if (this.readonly) return
       const fromAddress = (this.draftFrom || []).filter(Boolean)
       const toAddress = (this.draftTo || []).filter(Boolean)
       const errors = { from: '', to: '' }
@@ -136,9 +144,14 @@ export default {
       this.fieldErrors = { from: '', to: '' }
     },
     removeRoute(index) {
+      if (this.readonly) return
       this.routes.splice(index, 1)
     },
     confirm() {
+      if (this.readonly) {
+        this.dialogVisible = false
+        return
+      }
       this.$emit(
         'confirm',
         this.routes.map(r => ({
@@ -215,6 +228,13 @@ export default {
   justify-content: flex-start;
   text-align: left;
 }
+.combo-empty {
+  margin-top: 12px;
+  color: #868d9f;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+}
 </style>
 
 <style>
@@ -235,6 +255,10 @@ export default {
   overflow: hidden;
   border: none;
   box-shadow: 0 8px 24px rgba(35, 37, 43, 0.12) !important;
+}
+.address-combo-dialog.el-dialog.is-readonly {
+  min-height: auto;
+  max-height: 800px;
 }
 .address-combo-dialog .el-dialog__header {
   flex: 0 0 auto;

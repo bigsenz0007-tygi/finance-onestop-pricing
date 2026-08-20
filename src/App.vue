@@ -184,25 +184,6 @@
             @back="pricingViewVisible = false"
           />
         </el-dialog>
-
-        <el-dialog
-          title="报价方案详情"
-          :visible.sync="quotingViewVisible"
-          width="1080px"
-          top="4vh"
-          custom-class="lui-form-dialog pricing-view-dialog"
-          append-to-body
-          :close-on-click-modal="false"
-          destroy-on-close
-        >
-          <OnestopQuoting
-            v-if="quotingViewVisible"
-            detail-mode="view"
-            embedded
-            :source-row="quotingSourceRow"
-            @back="quotingViewVisible = false"
-          />
-        </el-dialog>
       </main>
     </div>
   </div>
@@ -247,12 +228,11 @@ export default {
       pricingDetailMode: 'create',
       pricingViewVisible: false,
       quotingDetailMode: 'create',
-      quotingViewVisible: false,
       quotingSourceRow: null,
       pricingList: [
-        { id: 'P2', name: '大促活动场景价', mode: '场景定价', target: '大促活动', status: '草稿', creator: '李**', createdAt: '2026-07-22 14:10:00' },
-        { id: 'P3', name: '冷链退供场景价', mode: '场景定价', target: '冷链B仓退供出库', status: '已停用', creator: '王**', createdAt: '2026-07-18 09:00:00' },
-        { id: 'P4', name: '生鲜特配场景价', mode: '场景定价', target: '生鲜特配', status: '已启用', creator: '张**', createdAt: '2026-07-20 10:20:00' }
+        { id: 'P2', name: '大促活动场景价', mode: '场景定价', target: '大促活动', status: '暂存', creator: '李明', createdAt: '2026-07-22 14:10:00' },
+        { id: 'P3', name: '冷链退供场景价', mode: '场景定价', target: '冷链B仓退供出库', status: '已停用', creator: '王芳', createdAt: '2026-07-18 09:00:00' },
+        { id: 'P4', name: '生鲜特配场景价', mode: '场景定价', target: '生鲜特配', status: '已启用', creator: '张伟', createdAt: '2026-07-20 10:20:00' }
       ],
       quotingList: [
         ...QUOTING_PREVIEW_SAMPLES,
@@ -268,7 +248,7 @@ export default {
           discountProduct: '重货标快',
           strategy: '统计考核',
           status: '已启用',
-          creator: '张**',
+          creator: '张伟',
           createdAt: '2026-07-21 11:00:00',
           signRegion: '华东',
           effectiveRange: ['2026-07-01', '2026-12-31'],
@@ -351,8 +331,8 @@ export default {
           productType: '京东标快',
           discountProduct: '京东标快',
           strategy: '统计+合单',
-          status: '草稿',
-          creator: '李**',
+          status: '暂存',
+          creator: '李明',
           createdAt: '2026-07-25 16:30:00',
           selectedDims: ['费用项', '配送类型'],
           partitions: [{
@@ -413,7 +393,7 @@ export default {
           discountProduct: '京东特快',
           strategy: '普通',
           status: '已停用',
-          creator: '王**',
+          creator: '王芳',
           createdAt: '2026-07-15 08:40:00',
           selectedDims: ['费用项', '正逆向'],
           partitions: [{
@@ -583,7 +563,7 @@ export default {
       if (mode === 'view') {
         this.quotingSourceRow = row || null
         this.quotingDetailMode = 'view'
-        this.quotingViewVisible = true
+        this.navigate('onestop-quoting')
         return
       }
       if (row) {
@@ -622,9 +602,9 @@ export default {
       if (!row) return
       const idx = this.quotingList.findIndex(item => item.id === row.id)
       if (idx >= 0) {
-        this.$set(this.quotingList, idx, { ...row, status: '草稿' })
+        this.$set(this.quotingList, idx, { ...row, status: '暂存' })
       } else {
-        this.quotingList.unshift({ ...row, status: '草稿' })
+        this.quotingList.unshift({ ...row, status: '暂存' })
       }
       this.quotingSourceRow = null
       this.$message.success('已暂存该配置。')
@@ -993,10 +973,6 @@ export default {
   min-height: 0;
   overflow: auto;
 }
-.pricing-view-dialog .pricing-view-embed .quoting-view-tabs.lui-pill-tabs {
-  margin: 0 0 24px;
-  border-bottom: none;
-}
 /* 去掉 table-card 额外左右 padding（弹窗 body 已预留 24），避免表宽再缩一圈 */
 .pricing-view-dialog .table-card--view {
   padding: 0 !important;
@@ -1035,43 +1011,6 @@ export default {
 .pricing-view-dialog .table-card--view .el-button:not(.field-tip-btn) {
   display: none !important;
 }
-/* 报价明细：分区筛选需可交互，恢复下拉样式（箭头旋转与全局 el-select 一致） */
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__suffix {
-  display: block !important;
-  pointer-events: auto !important;
-  height: 100%;
-  right: 5px;
-  top: 0;
-  text-align: center;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__suffix-inner {
-  display: inline-block !important;
-  pointer-events: auto !important;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__prefix {
-  display: none !important;
-}
-/* 勿用 flex 破坏 caret 的 rotate；收起朝下 / 展开朝上，与 LUI 默认一致 */
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-select__caret.el-input__icon {
-  display: inline-block !important;
-  width: 25px;
-  height: 32px !important;
-  line-height: 32px !important;
-  text-align: center;
-  color: #868d9f !important;
-  font-size: 14px;
-  cursor: pointer;
-  transition: transform 0.3s, color 0.15s;
-  transform: rotateZ(180deg) !important;
-  pointer-events: auto !important;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-select__caret.is-reverse {
-  transform: rotateZ(0deg) !important;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter:hover .el-select__caret.el-icon-arrow-up,
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-input.is-focus .el-select__caret.el-icon-arrow-up {
-  color: #3c6ef0 !important;
-}
 .pricing-view-dialog .table-card--view .el-input__inner,
 .pricing-view-dialog .table-card--view .el-textarea__inner,
 .pricing-view-dialog .table-card--view .el-range-editor.el-input__inner {
@@ -1085,18 +1024,6 @@ export default {
   height: auto !important;
   min-height: 22px;
   line-height: 22px !important;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__inner {
-  border: 1px solid #dcdfe6 !important;
-  background: #fff !important;
-  box-shadow: none !important;
-  padding-left: 12px !important;
-  padding-right: 30px !important;
-  cursor: pointer !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  line-height: 30px !important;
-  border-radius: 4px;
 }
 .pricing-view-dialog .table-card--view .el-range-editor {
   width: auto !important;
@@ -1136,13 +1063,6 @@ export default {
 .pricing-view-dialog .table-card--view .pricing-section + .pricing-section {
   margin-top: 24px;
   padding-top: 0;
-}
-.pricing-view-dialog .table-card--view .quoting-section + .quoting-section {
-  margin-top: 0;
-  padding-top: 0;
-}
-.pricing-view-dialog .table-card--view .quoting-section {
-  margin-top: 0;
 }
 .pricing-view-dialog .table-card--view .section-title--module {
   margin-top: 24px;
@@ -1278,8 +1198,6 @@ export default {
   line-height: 22px;
 }
 .pricing-view-dialog .table-card--view .complex-quote-form.lui-form-grid.el-form,
-.pricing-view-dialog .table-card--view .quoting-base-form.lui-form-grid.el-form,
-.pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .ext-rule-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .partition-dims-form.lui-form-grid.el-form {
   justify-content: stretch !important;
@@ -1287,14 +1205,9 @@ export default {
 }
 /* 预览：报价模块三列；一站定价 quote-form 拓展除外 */
 .pricing-view-dialog .table-card--view .complex-quote-form.lui-form-grid.el-form,
-.pricing-view-dialog .table-card--view .quoting-base-form.lui-form-grid.el-form,
 .pricing-view-dialog .table-card--view .ext-rule-form.lui-form-grid.el-form:not(.quote-form) {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   column-gap: 48px !important;
-}
-.pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid.el-form {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  column-gap: 24px !important;
 }
 .pricing-view-dialog .table-card--view .ext-merge-fields.lui-form-grid.el-form {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -1377,43 +1290,9 @@ export default {
 .pricing-view-dialog .table-card--view .el-table,
 .pricing-view-dialog .table-card--view .el-table th.el-table__cell,
 .pricing-view-dialog .table-card--view .el-table td.el-table__cell,
-.pricing-view-dialog .table-card--view .el-table .cell,
-.pricing-view-dialog .table-card--view .addr-view-text {
+.pricing-view-dialog .table-card--view .el-table .cell {
   font-size: 14px !important;
   font-family: var(--lui-font-sans);
-}
-.pricing-view-dialog .table-card--view .partition-table-wrap {
-  margin-top: 24px;
-  margin-bottom: 0;
-}
-.pricing-view-dialog .table-card--view .detail-meta-form.lui-form-grid {
-  margin: 0;
-}
-.pricing-view-dialog .table-card--view .detail-meta-form--view-filter.lui-form-grid.el-form {
-  grid-template-columns: minmax(240px, 360px) !important;
-  margin-bottom: 0;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter-item {
-  margin-bottom: 0 !important;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter-item .el-form-item__content {
-  min-height: 32px !important;
-  line-height: 32px !important;
-  overflow: visible !important;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter-item .el-form-item__label {
-  height: 32px !important;
-  line-height: 32px !important;
-}
-.pricing-view-dialog .table-card--view .detail-table-wrap--view {
-  margin-top: 16px;
-}
-.pricing-view-dialog .table-card--view .detail-stair-table {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-.pricing-view-dialog .table-card--view .detail-stair-table + .section-title--module {
-  margin-top: 0;
 }
 .pricing-view-dialog .table-card--view .el-table th.el-table__cell,
 .pricing-view-dialog .table-card--view .el-table th.el-table__cell .cell {
@@ -1423,8 +1302,7 @@ export default {
 }
 .pricing-view-dialog .table-card--view .el-table td.el-table__cell,
 .pricing-view-dialog .table-card--view .el-table td.el-table__cell .cell,
-.pricing-view-dialog .table-card--view .el-table .view-plain-text,
-.pricing-view-dialog .table-card--view .el-table .addr-view-text {
+.pricing-view-dialog .table-card--view .el-table .view-plain-text {
   color: #525765 !important;
   font-size: 14px !important;
   font-weight: 400 !important;
@@ -1455,15 +1333,6 @@ export default {
   height: auto !important;
   min-height: 22px;
 }
-.pricing-view-dialog .table-card--view .detail-partition-filter.el-select .el-input,
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-input {
-  height: 32px !important;
-}
-.pricing-view-dialog .table-card--view .detail-partition-filter .el-input__inner {
-  height: 32px !important;
-  min-height: 32px !important;
-  line-height: 30px !important;
-}
 .pricing-view-dialog .table-card--view .table-h-scroll {
   pointer-events: auto;
   overflow: hidden;
@@ -1485,73 +1354,6 @@ export default {
   min-width: 48px;
   background: #f1f2f4;
   border-radius: 2px;
-}
-/* 以下仅报价分区/明细表，勿影响一站定价预览的 quote-form / dimension-alias / 计费场景表 */
-.pricing-view-dialog .table-card--view .partition-table-wrap.table-h-scroll,
-.pricing-view-dialog .table-card--view .detail-table-wrap.table-h-scroll {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  border-radius: 8px;
-  box-sizing: border-box;
-  scrollbar-width: thin;
-  scrollbar-color: #c0c4cc transparent;
-}
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table.quoting-data-table,
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table.quoting-editable-table,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table.quoting-data-table,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table.quoting-editable-table {
-  width: 100% !important;
-  min-width: 100% !important;
-  max-width: none !important;
-  border-radius: 8px;
-}
-.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header th.el-table__cell:first-child {
-  border-top-left-radius: 8px;
-}
-.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header th.el-table__cell:last-child {
-  border-top-right-radius: 8px;
-}
-.pricing-view-dialog .table-card--view .quoting-data-table .el-table__body tr:last-child td.el-table__cell:first-child {
-  border-bottom-left-radius: 8px;
-}
-.pricing-view-dialog .table-card--view .quoting-data-table .el-table__body tr:last-child td.el-table__cell:last-child {
-  border-bottom-right-radius: 8px;
-}
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__header-wrapper,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__header-wrapper {
-  overflow: hidden !important;
-}
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body-wrapper,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body-wrapper {
-  overflow-x: auto !important;
-  overflow-y: visible !important;
-}
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__header .el-table__cell .cell,
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body .el-table__cell .cell,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__header .el-table__cell .cell,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body .el-table__cell .cell,
-.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header .th-required,
-.pricing-view-dialog .table-card--view .quoting-data-table .el-table__header th.el-table__cell .cell {
-  padding-left: 12px !important;
-  padding-right: 12px !important;
-  white-space: nowrap !important;
-  word-break: keep-all !important;
-}
-.pricing-view-dialog .table-card--view .partition-table-wrap::-webkit-scrollbar,
-.pricing-view-dialog .table-card--view .detail-table-wrap::-webkit-scrollbar,
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body-wrapper::-webkit-scrollbar,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body-wrapper::-webkit-scrollbar {
-  height: 8px;
-}
-.pricing-view-dialog .table-card--view .partition-table-wrap::-webkit-scrollbar-thumb,
-.pricing-view-dialog .table-card--view .detail-table-wrap::-webkit-scrollbar-thumb,
-.pricing-view-dialog .table-card--view .partition-table-wrap .el-table__body-wrapper::-webkit-scrollbar-thumb,
-.pricing-view-dialog .table-card--view .detail-table-wrap .el-table__body-wrapper::-webkit-scrollbar-thumb {
-  min-width: 48px;
-  background: #c0c4cc;
-  border-radius: 4px;
 }
 .pricing-view-dialog .table-card--view .quote-form .el-form-item__label {
   width: 120px !important;

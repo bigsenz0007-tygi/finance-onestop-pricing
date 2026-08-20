@@ -31,7 +31,7 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="query.status" clearable placeholder="请选择">
-            <el-option label="草稿" value="草稿" />
+            <el-option label="暂存" value="暂存" />
             <el-option label="已启用" value="已启用" />
             <el-option label="已停用" value="已停用" />
           </el-select>
@@ -181,18 +181,7 @@
         </el-table-column>
         <el-table-column prop="creator" label="创建人" min-width="80">
           <template slot-scope="{ row }">
-            <el-tooltip
-              :disabled="!needEllipsis(row.creator)"
-              placement="top"
-              effect="dark"
-              :open-delay="200"
-              :content="String(row.creator || '')"
-            >
-              <span
-                class="cell-ellipsis"
-                :class="{ 'is-truncated': needEllipsis(row.creator) }"
-              >{{ displayText(row.creator) }}</span>
-            </el-tooltip>
+            <span>{{ row.creator || '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" min-width="180">

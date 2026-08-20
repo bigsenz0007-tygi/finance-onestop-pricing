@@ -252,7 +252,7 @@ export default {
   display: flex;
   flex-direction: column;
   border-radius: 8px !important;
-  overflow: hidden;
+  overflow: visible;
   border: none;
   box-shadow: 0 8px 24px rgba(35, 37, 43, 0.12) !important;
 }
@@ -266,11 +266,13 @@ export default {
 .address-combo-dialog .el-dialog__body {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow: visible;
   max-height: none;
 }
 .address-combo-dialog .el-dialog__footer {
   flex: 0 0 auto;
   margin-top: auto;
+  position: relative;
+  z-index: 1;
 }
 </style>

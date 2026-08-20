@@ -929,6 +929,16 @@ body,
   line-height: 24px;
 }
 
+/* 左侧「共 x 条」：12px */
+.el-pagination__total {
+  font-size: 12px !important;
+  line-height: 24px !important;
+  height: 24px;
+  color: var(--lui-text-regular);
+  margin-right: auto;
+  font-weight: 400;
+}
+
 .el-pagination button,
 .el-pagination span:not([class*=suffix]),
 .el-pager li {
@@ -2411,7 +2421,7 @@ body,
 .pager > span,
 .elements-pager__total {
   color: #babec7 !important;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
   line-height: 24px;
 }

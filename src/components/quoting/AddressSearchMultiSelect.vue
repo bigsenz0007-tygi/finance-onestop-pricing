@@ -1,6 +1,6 @@
 <template>
   <div
-    v-clickoutside="closeDropdown"
+    v-clickoutside="handleClickOutside"
     class="amp"
     :class="{ 'is-open': visible, 'is-error': error, 'has-query': !!queryTrim, 'is-focused': focused }"
   >
@@ -71,7 +71,14 @@
     </div>
     <p v-if="inputError" class="amp__input-error">{{ inputError }}</p>
 
-    <div v-show="visible" class="amp__dropdown" @mousedown.prevent>
+    <div
+      v-show="visible"
+      ref="dropdown"
+      class="amp__dropdown"
+      :class="{ 'amp__dropdown--portal': portalActive }"
+      :style="portalActive ? dropdownStyle : null"
+      @mousedown.prevent
+    >
       <!-- 搜索时不展示推荐区域，仅结果 -->
       <div v-if="!queryTrim" class="amp__quick">
         <div class="amp__quick-tabs">
@@ -430,23 +437,37 @@ function citiesUnderRegionLabel(regionLabel) {
   return out
 }
 
-/** 将输入词解析为地址索引项（优先城市） */
-function resolveInputToken(token) {
+/** 逗号多词自动勾选：仅精准 / 补后缀，避免输入过程误选 */
+function resolveInputTokenStrict(token) {
   const raw = String(token || '').trim()
   if (!raw) return null
   const lower = raw.toLowerCase()
-  const candidates = SEARCH_INDEX.filter(item => item.level === 'city' || item.level === 'province' || item.level === 'district')
-
-  // 1) 精准：完整路径或节点名
-  let hit = candidates.find(item => item.pathText.toLowerCase() === lower || item.label.toLowerCase() === lower)
+  const candidates = SEARCH_INDEX.filter(
+    item => item.level === 'city' || item.level === 'province' || item.level === 'district'
+  )
+  let hit = candidates.find(
+    item => item.pathText.toLowerCase() === lower || item.label.toLowerCase() === lower
+  )
   if (hit) return hit
-
-  // 2) 补「市/省/区」后缀
   const withSuffix = [raw + '市', raw + '省', raw + '区', raw + '县']
-  hit = candidates.find(item => withSuffix.some(s => item.label === s || item.pathText.endsWith(s)))
-  if (hit) return hit
+  hit = candidates.find(item =>
+    withSuffix.some(s => item.label === s || item.pathText === s || item.pathText.endsWith('/' + s))
+  )
+  return hit || null
+}
 
-  // 3) 城市优先包含匹配
+/** 将输入词解析为地址索引项（优先城市；回车提交可用模糊） */
+function resolveInputToken(token) {
+  const strict = resolveInputTokenStrict(token)
+  if (strict) return strict
+
+  const raw = String(token || '').trim()
+  if (!raw) return null
+  const candidates = SEARCH_INDEX.filter(
+    item => item.level === 'city' || item.level === 'province' || item.level === 'district'
+  )
+
+  // 城市优先包含匹配
   const cityHits = ALL_CITIES.filter(c =>
     c.pathText.includes(raw) || c.path.some(p => p.includes(raw) || p.replace(/(省|市|区|县)$/, '') === raw)
   )
@@ -469,9 +490,8 @@ function resolveInputToken(token) {
     }
   }
 
-  // 4) 省 / 区县包含
-  hit = candidates.find(item => item.label.includes(raw) || item.pathText.includes(raw))
-  return hit || null
+  // 省 / 区县包含
+  return candidates.find(item => item.label.includes(raw) || item.pathText.includes(raw)) || null
 }
 
 /** 精准 / 分段 / 模糊匹配 */
@@ -538,8 +558,44 @@ export default {
       },
       cascaderValue: [],
       quickRegions: [],
-      syncing: false
+      syncing: false,
+      /** 本次多词检索自动勾选的地址，便于随输入增减同步 */
+      autoMatchedFromQuery: [],
+      /** 下拉挂到 body，避免弹窗 overflow / footer 遮盖 */
+      portalActive: false,
+      dropdownStyle: {}
     }
+  },
+  watch: {
+    value: {
+      immediate: true,
+      handler(val) {
+        if (this.syncing) return
+        this.cascaderValue = resolveCascaderPaths(val, CASCADER_OPTIONS)
+        this.quickRegions = REGION_OPTIONS.filter(r => (val || []).includes(r))
+        this.panelKey += 1
+      }
+    },
+    visible(val) {
+      if (val) {
+        this.$nextTick(() => {
+          this.mountDropdownPortal()
+          this.updateDropdownPosition()
+          this.bindPortalListeners()
+        })
+      } else {
+        this.unbindPortalListeners()
+        this.unmountDropdownPortal()
+      }
+    }
+  },
+  beforeDestroy() {
+    if (this._multiTokenTimer) {
+      clearTimeout(this._multiTokenTimer)
+      this._multiTokenTimer = null
+    }
+    this.unbindPortalListeners()
+    this.unmountDropdownPortal()
   },
   computed: {
     selected() {
@@ -615,17 +671,6 @@ export default {
       return this.filteredOptions.length >= SEARCH_LIMIT
     }
   },
-  watch: {
-    value: {
-      immediate: true,
-      handler(val) {
-        if (this.syncing) return
-        this.cascaderValue = resolveCascaderPaths(val, CASCADER_OPTIONS)
-        this.quickRegions = REGION_OPTIONS.filter(r => (val || []).includes(r))
-        this.panelKey += 1
-      }
-    }
-  },
   methods: {
     isSelected(pathText) {
       return this.selected.includes(pathText)
@@ -638,6 +683,70 @@ export default {
         this.syncing = false
       })
     },
+    handleClickOutside(e) {
+      const t = e && e.target
+      if (this.$refs.dropdown && t && this.$refs.dropdown.contains(t)) return
+      this.closeDropdown()
+    },
+    mountDropdownPortal() {
+      const dd = this.$refs.dropdown
+      if (!dd || typeof document === 'undefined') return
+      if (dd.parentNode !== document.body) {
+        document.body.appendChild(dd)
+      }
+      this.portalActive = true
+    },
+    unmountDropdownPortal() {
+      const dd = this.$refs.dropdown
+      this.portalActive = false
+      this.dropdownStyle = {}
+      if (!dd || !this.$el) return
+      if (dd.parentNode === document.body) {
+        this.$el.appendChild(dd)
+      }
+    },
+    updateDropdownPosition() {
+      if (!this.visible || !this.$el) return
+      const trigger = this.$el.querySelector('.amp__trigger')
+      if (!trigger) return
+      const rect = trigger.getBoundingClientRect()
+      const gap = 4
+      const spaceBelow = window.innerHeight - rect.bottom - 8
+      const spaceAbove = rect.top - 8
+      let top = rect.bottom + gap
+      let maxHeight = Math.min(480, Math.max(180, spaceBelow))
+      if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+        maxHeight = Math.min(480, Math.max(180, spaceAbove - gap))
+        top = Math.max(8, rect.top - gap - maxHeight)
+      }
+      const left = Math.min(
+        Math.max(8, rect.left),
+        Math.max(8, window.innerWidth - rect.width - 8)
+      )
+      this.dropdownStyle = {
+        position: 'fixed',
+        left: `${left}px`,
+        top: `${top}px`,
+        width: `${Math.max(rect.width, 280)}px`,
+        zIndex: 5000,
+        maxHeight: `${maxHeight}px`
+      }
+    },
+    bindPortalListeners() {
+      this.unbindPortalListeners()
+      this._onReposition = () => {
+        if (!this.visible) return
+        this.updateDropdownPosition()
+      }
+      window.addEventListener('resize', this._onReposition)
+      window.addEventListener('scroll', this._onReposition, true)
+    },
+    unbindPortalListeners() {
+      if (!this._onReposition) return
+      window.removeEventListener('resize', this._onReposition)
+      window.removeEventListener('scroll', this._onReposition, true)
+      this._onReposition = null
+    },
     openDropdown() {
       this.visible = true
     },
@@ -646,6 +755,7 @@ export default {
       this.query = ''
       this.focused = false
       this.tipLocked = true
+      this.autoMatchedFromQuery = []
     },
     onFocus() {
       this.focused = true
@@ -677,25 +787,85 @@ export default {
         })
       }
     },
+    parseQueryTokens(q) {
+      return String(q || '')
+        .split(/[,，;；、]+/)
+        .map(s => s.trim())
+        .filter(Boolean)
+    },
     onQueryInput() {
       this.tipLocked = true
       this.inputError = ''
       if (this.quickTab !== 'domestic') this.quickTab = 'domestic'
       if (!this.visible) this.visible = true
+      // 逗号多词：自动勾选各词最佳匹配，结果列表仍可继续多选/取消
+      if (this._multiTokenTimer) clearTimeout(this._multiTokenTimer)
+      this._multiTokenTimer = setTimeout(() => {
+        this.applyMultiTokenMatches({ soft: true })
+        this.$nextTick(() => this.updateDropdownPosition())
+      }, 220)
+      this.$nextTick(() => this.updateDropdownPosition())
     },
     onEnter() {
+      if (this._multiTokenTimer) {
+        clearTimeout(this._multiTokenTimer)
+        this._multiTokenTimer = null
+      }
       this.commitQueryTokens()
+    },
+    /**
+     * 多词检索：按逗号拆词，将可解析地址勾选进结果（保留检索词便于继续多选）。
+     * soft：输入过程；仅精准匹配，且随词增减同步 autoMatchedFromQuery。
+     */
+    applyMultiTokenMatches({ soft } = { soft: false }) {
+      const tokens = this.parseQueryTokens(this.queryTrim)
+      if (tokens.length < 2) {
+        // 单词检索不自动勾选，避免输入「北」就选中；仍可用勾选框多选
+        if (soft && this.autoMatchedFromQuery.length) {
+          const drop = new Set(this.autoMatchedFromQuery)
+          const next = this.selected.filter(x => !drop.has(x))
+          this.autoMatchedFromQuery = []
+          if (next.length !== this.selected.length) {
+            this.cascaderValue = resolveCascaderPaths(next, CASCADER_OPTIONS)
+            this.quickRegions = REGION_OPTIONS.filter(r => next.includes(r))
+            this.panelKey += 1
+            this.emitValue(next)
+          }
+        }
+        return { matched: [], invalid: tokens.slice() }
+      }
+
+      const matched = []
+      const invalid = []
+      tokens.forEach(token => {
+        const hit = soft ? resolveInputTokenStrict(token) : resolveInputToken(token)
+        if (hit && hit.pathText) {
+          if (!matched.includes(hit.pathText)) matched.push(hit.pathText)
+        } else if (!soft) {
+          invalid.push(token)
+        }
+      })
+
+      const prevAuto = new Set(this.autoMatchedFromQuery || [])
+      let next = this.selected.filter(x => !prevAuto.has(x))
+      matched.forEach(t => {
+        if (!next.includes(t)) next.push(t)
+      })
+      this.autoMatchedFromQuery = matched.slice()
+      this.cascaderValue = resolveCascaderPaths(next, CASCADER_OPTIONS)
+      this.quickRegions = REGION_OPTIONS.filter(r => next.includes(r))
+      this.panelKey += 1
+      this.emitValue(next)
+      return { matched, invalid }
     },
     /** 回车：多地址自动勾选 + 校验不存在项 */
     commitQueryTokens() {
       const q = this.queryTrim
       if (!q) return
-      const tokens = q
-        .split(/[,，;；、]+/)
-        .map(s => s.trim())
-        .filter(Boolean)
+      const tokens = this.parseQueryTokens(q)
       if (!tokens.length) return
 
+      // 单词也走完整解析（含模糊）
       const matched = []
       const invalid = []
       tokens.forEach(token => {
@@ -708,10 +878,12 @@ export default {
       })
 
       if (matched.length) {
-        const next = this.selected.slice()
+        const prevAuto = new Set(this.autoMatchedFromQuery || [])
+        let next = this.selected.filter(x => !prevAuto.has(x))
         matched.forEach(t => {
           if (!next.includes(t)) next.push(t)
         })
+        this.autoMatchedFromQuery = []
         this.cascaderValue = resolveCascaderPaths(next, CASCADER_OPTIONS)
         this.quickRegions = REGION_OPTIONS.filter(r => next.includes(r))
         this.panelKey += 1
@@ -732,6 +904,7 @@ export default {
 
       this.inputError = ''
       this.query = ''
+      this.autoMatchedFromQuery = []
       this.$message.success(`已自动勾选 ${matched.length} 个地址`)
       this.$nextTick(() => {
         if (this.$refs.input) this.$refs.input.focus()
@@ -839,6 +1012,7 @@ export default {
     },
     restoreDefaultAfterSelect() {
       this.query = ''
+      this.autoMatchedFromQuery = []
       this.$nextTick(() => {
         if (this.$refs.input) this.$refs.input.focus()
       })
@@ -849,15 +1023,28 @@ export default {
         if (!next.includes(pathText)) next.push(pathText)
       } else {
         next = next.filter(x => x !== pathText)
+        this.autoMatchedFromQuery = (this.autoMatchedFromQuery || []).filter(x => x !== pathText)
       }
       this.cascaderValue = resolveCascaderPaths(next, CASCADER_OPTIONS)
       this.quickRegions = REGION_OPTIONS.filter(r => next.includes(r))
       this.emitValue(next)
+      // 搜索态（尤其逗号多词）保留关键词与结果列表，支持连续多选
+      if (this.queryTrim) {
+        this.visible = true
+        this.$nextTick(() => {
+          if (this.$refs.input) this.$refs.input.focus()
+        })
+        return
+      }
       this.restoreDefaultAfterSelect()
     },
     removeAt(index) {
+      const removed = this.selected[index]
       const next = this.selected.slice()
       next.splice(index, 1)
+      if (removed) {
+        this.autoMatchedFromQuery = (this.autoMatchedFromQuery || []).filter(x => x !== removed)
+      }
       this.cascaderValue = resolveCascaderPaths(next, CASCADER_OPTIONS)
       this.quickRegions = REGION_OPTIONS.filter(r => next.includes(r))
       this.emitValue(next)
@@ -1013,6 +1200,14 @@ export default {
   box-shadow: 0 6px 16px rgba(35, 37, 43, 0.12);
   max-height: min(480px, calc(100vh - 160px));
   overflow: auto;
+}
+/* 挂到 body：高于弹窗 footer，不被 dialog overflow 裁切 */
+.amp__dropdown--portal {
+  position: fixed;
+  left: auto;
+  right: auto;
+  top: auto;
+  z-index: 5000;
 }
 .amp__cascade-wrap {
   padding: 8px 0 12px;

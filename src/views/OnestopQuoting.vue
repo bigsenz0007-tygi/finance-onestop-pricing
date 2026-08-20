@@ -183,99 +183,101 @@
           </el-form-item>
         </el-form>
 
-        <h3 class="section-title section-title--module section-title-with-tip">
-          <span class="section-title__text">复杂报价</span>
-          <el-tooltip
-            placement="top"
-            effect="dark"
-            popper-class="quote-tip-popper"
-            content="复杂报价说明：默认不启用；启用后可配置单独核算商家、身份核算优先级、金额取整及地址逐级匹配等辅助规则。"
-          >
-            <span class="field-tip-trigger" tabindex="0" aria-label="说明">?</span>
-          </el-tooltip>
-        </h3>
-        <div class="ext-block ext-block--plain">
-          <el-form
-            ref="complexForm"
-            :model="base"
-            class="lui-form-grid complex-quote-form"
-            label-width="120px"
-            size="small"
-          >
-            <el-form-item :label="isViewMode ? '启用状态' : '是否启用'">
-              <div class="ext-block__switch">
-                <span class="ext-block__status">{{ complexQuoteOpen ? '已启用' : '未启用' }}</span>
-                <el-switch v-if="!isViewMode" v-model="complexQuoteOpen" />
-              </div>
-            </el-form-item>
-            <el-form-item v-if="complexQuoteOpen" label="金额取整">
-              <span v-if="isViewMode" class="view-plain-text">{{ base.amountRounding || '-' }}</span>
-              <el-select v-else v-model="base.amountRounding" clearable placeholder="请选择">
-                <el-option label="四舍五入取整" value="四舍五入取整" />
-                <el-option label="保留2位小数" value="保留2位小数" />
-              </el-select>
-            </el-form-item>
-            <el-form-item v-if="complexQuoteOpen && !isCash" label="地址逐级匹配">
-              <span v-if="isViewMode" class="view-plain-text">{{ base.addressLevelMatch || '-' }}</span>
-              <el-radio-group v-else v-model="base.addressLevelMatch">
-                <el-radio label="是">是</el-radio>
-                <el-radio label="否">否</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item v-if="complexQuoteOpen" label="单独核算商家">
-              <span v-if="isViewMode" class="view-plain-text">{{ base.separateMerchantAccount || '-' }}</span>
-              <el-radio-group v-else v-model="base.separateMerchantAccount">
-                <el-radio label="否">否</el-radio>
-                <el-radio label="是">是</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item v-if="complexQuoteOpen" label="身份核算优先级">
-              <span v-if="isViewMode" class="view-plain-text">{{ base.hasIdentityPriority || '-' }}</span>
-              <el-radio-group v-else v-model="base.hasIdentityPriority" @change="onIdentityPriorityToggle">
-                <el-radio label="否">否</el-radio>
-                <el-radio label="是">是</el-radio>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item
-              v-if="complexQuoteOpen && base.hasIdentityPriority === '是'"
-              label="身份优先级"
-              required
-              :class="{ 'is-error': fieldErrors.identityPriority }"
+        <template v-if="!isViewMode || complexQuoteOpen">
+          <h3 class="section-title section-title--module section-title-with-tip">
+            <span class="section-title__text">复杂报价</span>
+            <el-tooltip
+              placement="top"
+              effect="dark"
+              popper-class="quote-tip-popper"
+              content="复杂报价说明：默认不启用；启用后可配置单独核算商家、身份核算优先级、金额取整及地址逐级匹配等辅助规则。"
             >
-              <span v-if="isViewMode" class="view-plain-text">{{ base.identityPriority || '-' }}</span>
-              <template v-else>
-                <el-input
-                  :value="base.identityPriority"
-                  placeholder="请输入数字，如 1"
-                  :class="{ 'is-error': fieldErrors.identityPriority }"
-                  @input="onIntFieldInput(base, 'identityPriority', $event); clearFieldError('identityPriority')"
-                />
-                <lui-field-error :message="fieldErrors.identityPriority" />
-              </template>
-            </el-form-item>
-            <el-form-item
-              v-if="complexQuoteOpen && base.hasIdentityPriority === '是'"
-              label="替核模式规则"
-              required
-              :class="{ 'is-error': fieldErrors.substituteModeRule }"
+              <span class="field-tip-trigger" tabindex="0" aria-label="说明">?</span>
+            </el-tooltip>
+          </h3>
+          <div class="ext-block ext-block--plain">
+            <el-form
+              ref="complexForm"
+              :model="base"
+              class="lui-form-grid complex-quote-form"
+              label-width="120px"
+              size="small"
             >
-              <span v-if="isViewMode" class="view-plain-text">{{ base.substituteModeRule || '-' }}</span>
-              <template v-else>
-                <el-select
-                  v-model="base.substituteModeRule"
-                  clearable
-                  placeholder="请选择"
-                  :class="{ 'is-error': fieldErrors.substituteModeRule }"
-                  @change="clearFieldError('substituteModeRule')"
-                >
-                  <el-option v-for="r in substituteModeRules" :key="r" :label="r" :value="r" />
+              <el-form-item :label="isViewMode ? '启用状态' : '是否启用'">
+                <div class="ext-block__switch">
+                  <span class="ext-block__status">{{ complexQuoteOpen ? '已启用' : '未启用' }}</span>
+                  <el-switch v-if="!isViewMode" v-model="complexQuoteOpen" />
+                </div>
+              </el-form-item>
+              <el-form-item v-if="complexQuoteOpen" label="金额取整">
+                <span v-if="isViewMode" class="view-plain-text">{{ base.amountRounding || '-' }}</span>
+                <el-select v-else v-model="base.amountRounding" clearable placeholder="请选择">
+                  <el-option label="四舍五入取整" value="四舍五入取整" />
+                  <el-option label="保留2位小数" value="保留2位小数" />
                 </el-select>
-                <lui-field-error :message="fieldErrors.substituteModeRule" />
-              </template>
-            </el-form-item>
-            <!-- 价格本优先级 / 跨月计费：本期不做（PRD + 图2） -->
-          </el-form>
-        </div>
+              </el-form-item>
+              <el-form-item v-if="complexQuoteOpen && !isCash" label="地址逐级匹配">
+                <span v-if="isViewMode" class="view-plain-text">{{ base.addressLevelMatch || '-' }}</span>
+                <el-radio-group v-else v-model="base.addressLevelMatch">
+                  <el-radio label="是">是</el-radio>
+                  <el-radio label="否">否</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item v-if="complexQuoteOpen" label="单独核算商家">
+                <span v-if="isViewMode" class="view-plain-text">{{ base.separateMerchantAccount || '-' }}</span>
+                <el-radio-group v-else v-model="base.separateMerchantAccount">
+                  <el-radio label="否">否</el-radio>
+                  <el-radio label="是">是</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item v-if="complexQuoteOpen" label="身份核算优先级">
+                <span v-if="isViewMode" class="view-plain-text">{{ base.hasIdentityPriority || '-' }}</span>
+                <el-radio-group v-else v-model="base.hasIdentityPriority" @change="onIdentityPriorityToggle">
+                  <el-radio label="否">否</el-radio>
+                  <el-radio label="是">是</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item
+                v-if="complexQuoteOpen && base.hasIdentityPriority === '是'"
+                label="身份优先级"
+                required
+                :class="{ 'is-error': fieldErrors.identityPriority }"
+              >
+                <span v-if="isViewMode" class="view-plain-text">{{ base.identityPriority || '-' }}</span>
+                <template v-else>
+                  <el-input
+                    :value="base.identityPriority"
+                    placeholder="请输入数字，如 1"
+                    :class="{ 'is-error': fieldErrors.identityPriority }"
+                    @input="onIntFieldInput(base, 'identityPriority', $event); clearFieldError('identityPriority')"
+                  />
+                  <lui-field-error :message="fieldErrors.identityPriority" />
+                </template>
+              </el-form-item>
+              <el-form-item
+                v-if="complexQuoteOpen && base.hasIdentityPriority === '是'"
+                label="替核模式规则"
+                required
+                :class="{ 'is-error': fieldErrors.substituteModeRule }"
+              >
+                <span v-if="isViewMode" class="view-plain-text">{{ base.substituteModeRule || '-' }}</span>
+                <template v-else>
+                  <el-select
+                    v-model="base.substituteModeRule"
+                    clearable
+                    placeholder="请选择"
+                    :class="{ 'is-error': fieldErrors.substituteModeRule }"
+                    @change="clearFieldError('substituteModeRule')"
+                  >
+                    <el-option v-for="r in substituteModeRules" :key="r" :label="r" :value="r" />
+                  </el-select>
+                  <lui-field-error :message="fieldErrors.substituteModeRule" />
+                </template>
+              </el-form-item>
+              <!-- 价格本优先级 / 跨月计费：本期不做（PRD + 图2） -->
+            </el-form>
+          </div>
+        </template>
       </div>
 
       <!-- Step 2 价格分区 -->
@@ -284,7 +286,7 @@
           class="section-title"
           :class="{ 'section-title-with-tip': isViewMode }"
         >
-          <span class="section-title__text">价格分区配置</span>
+          <span class="section-title__text">{{ isViewMode ? '价格分区&报价明细' : '价格分区配置' }}</span>
           <el-tooltip
             v-if="isViewMode"
             placement="top"
@@ -664,9 +666,13 @@
       </div>
 
       <!-- Step 3 报价明细 -->
-      <div v-show="showSection('detail', 2)" class="quoting-section">
-        <h3 class="section-title">{{ isViewMode ? '报价明细' : '报价明细配置' }}</h3>
-        <!-- 编辑：参数表单；预览：分区筛选在价格分区区，明细随筛选联动 -->
+      <div
+        v-show="showSection('detail', 2)"
+        class="quoting-section"
+        :class="{ 'quoting-section--detail-follow': isViewMode }"
+      >
+        <h3 v-if="!isViewMode" class="section-title">报价明细配置</h3>
+        <!-- 编辑：参数表单；预览：分区筛选在价格分区区，明细随筛选联动；预览标题已并入「价格分区&报价明细」 -->
         <div v-if="!isViewMode" class="detail-meta-bar">
           <el-form
             :model="currentDetail"
@@ -2717,6 +2723,13 @@ export default {
   margin-top: 24px;
   padding-top: 0;
   border-top: none;
+}
+/* 预览：明细跟在分区后，同属「价格分区&报价明细」；无小标题时去掉表上额外 24，避免双倍空隙 */
+.table-card--view .quoting-section--detail-follow {
+  margin-top: 24px;
+}
+.table-card--view .quoting-section--detail-follow .detail-table-wrap {
+  margin-top: 0;
 }
 .table-card--view .quoting-section {
   margin-top: 0;

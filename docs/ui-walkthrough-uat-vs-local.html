@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>四菜单 UI 走查 - 设计稿 vs UAT（可编辑打标）</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #fff;
+      --border: #e4e5e9;
+      --text: #23252b;
+      --muted: #868d9f;
+      --visual: #722ed1;
+      --func: #f5222d;
+      --ix: #fa8c16;
+      --link: #3c6ef0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      color: var(--text);
+      background: var(--bg);
+      font: 14px/1.6 "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    }
+    h1 { margin: 0 0 12px; font-size: 22px; font-weight: 600; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .link-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .link-title { color: var(--muted); font-size: 12px; font-weight: 600; }
+    .link-chip {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 10px;
+      border: 1px solid #d9e4ff;
+      border-radius: 6px;
+      background: #f5f8ff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .note {
+      margin: 0 0 20px;
+      padding: 12px 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #525765;
+      font-size: 12px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .summary-card strong { display: block; font-size: 20px; line-height: 1.2; }
+    .summary-card span { color: var(--muted); font-size: 12px; }
+    section {
+      margin-bottom: 20px;
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    section > h2 {
+      margin: 0;
+      padding: 12px 16px;
+      background: #fafbfc;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.15fr;
+    }
+    .cell {
+      padding: 12px;
+      border-right: 1px solid var(--border);
+    }
+    .cell:last-child { border-right: 0; }
+    .col-label {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .04em;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #fff;
+    }
+    img + img { margin-top: 10px; }
+    .path {
+      margin: 0 0 8px;
+      padding: 6px 8px;
+      background: #f8f9fb;
+      border: 1px solid #edf0f5;
+      border-radius: 4px;
+      color: #525765;
+      font-size: 12px;
+    }
+    .issues h4 {
+      margin: 10px 0 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .issues[contenteditable="true"] {
+      outline: none;
+    }
+    .issues[contenteditable="true"]:focus {
+      background: #fff;
+      box-shadow: inset 0 0 0 2px rgba(60, 110, 240, .22);
+    }
+    .issues h4:first-child { margin-top: 0; }
+    .cat-visual { color: var(--visual); }
+    .cat-func { color: var(--func); }
+    .cat-ix { color: var(--ix); }
+    .issues ul { margin: 0 0 10px; padding-left: 16px; font-size: 12px; }
+    .issues li { margin-bottom: 5px; }
+    code { padding: 0 3px; border-radius: 2px; background: #f1f2f4; font-size: 11px; }
+    @media (max-width: 1180px) {
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .row { grid-template-columns: 1fr; }
+      .cell { border-right: 0; border-bottom: 1px solid var(--border); }
+      .cell:last-child { border-bottom: 0; }
+    }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin: 0 0 12px; padding: 12px 14px; background: #fff;
+      border: 1px solid var(--border); border-radius: 8px; position: sticky; top: 0; z-index: 20;
+    }
+    .toolbar .btn {
+      height: 30px; padding: 0 12px; border: 1px solid var(--border); border-radius: 6px;
+      background: #fff; color: var(--text); font-size: 12px; cursor: pointer;
+    }
+    .toolbar .btn:hover { border-color: var(--link); color: var(--link); }
+    .toolbar .btn-primary { background: var(--link); border-color: var(--link); color: #fff; }
+    .toolbar .btn-primary:hover { background: #2f5cd6; color: #fff; }
+    .toolbar .status { margin-left: auto; color: var(--muted); font-size: 12px; }
+    .toolbar .progress-done { color: #12b35d; font-weight: 600; }
+    .cell-tools {
+      display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px;
+    }
+    .cell-tools .mini {
+      height: 26px; padding: 0 8px; border: 1px dashed #c9d4ef; border-radius: 4px;
+      background: #f7f9ff; color: #3c6ef0; font-size: 11px; cursor: pointer;
+    }
+    .cell-tools .mini:hover { background: #edf2ff; }
+    .img-wrap {
+      position: relative; margin-bottom: 10px;
+      border: 1px dashed transparent; border-radius: 6px;
+    }
+    .img-wrap.is-drop { border-color: var(--link); background: #f5f8ff; }
+    .img-wrap img { margin: 0; max-height: 520px; object-fit: contain; width: 100%; background: #fafbfc; }
+    .img-wrap .img-actions {
+      display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;
+    }
+    .path[contenteditable="true"], .section-title-edit[contenteditable="true"] {
+      outline: none; min-height: 1.4em;
+    }
+    .path[contenteditable="true"]:focus {
+      box-shadow: inset 0 0 0 2px rgba(60,110,240,.22);
+    }
+    section > h2[contenteditable="true"] {
+      outline: none;
+    }
+    section > h2[contenteditable="true"]:focus {
+      background: #fff;
+      box-shadow: inset 0 0 0 2px rgba(60,110,240,.18);
+    }
+    .issue-item {
+      display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: start;
+      margin-bottom: 8px; padding: 8px 8px 8px 6px; border: 1px solid transparent;
+      border-radius: 6px; background: #fff;
+    }
+    .issue-item:hover { border-color: #edf0f5; background: #fafbfc; }
+    .issue-item.is-done { background: #f6ffed; border-color: #d9f7be; }
+    .issue-item.is-done .issue-text { color: #8c8c8c; text-decoration: line-through; }
+    .issue-item input[type="checkbox"] {
+      margin-top: 3px; width: 14px; height: 14px; accent-color: #12b35d; cursor: pointer;
+    }
+    .issue-text[contenteditable="true"] {
+      outline: none; min-height: 1.4em; font-size: 12px; line-height: 1.55;
+    }
+    .issue-text[contenteditable="true"]:focus {
+      box-shadow: inset 0 0 0 1px rgba(60,110,240,.35); border-radius: 3px;
+    }
+    .issue-meta { font-size: 10px; color: var(--muted); white-space: nowrap; padding-top: 2px; }
+    .issues-tools { display: flex; gap: 6px; margin: 0 0 8px; flex-wrap: wrap; }
+    .add-issue {
+      height: 26px; padding: 0 8px; border: 1px dashed #d3adf7; border-radius: 4px;
+      background: #f9f0ff; color: #722ed1; font-size: 11px; cursor: pointer;
+    }
+    .toast {
+      position: fixed; right: 20px; bottom: 20px; z-index: 99;
+      padding: 10px 14px; border-radius: 8px; background: #23252b; color: #fff;
+      font-size: 12px; opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+  <h1>四菜单 UI 走查 - 设计稿 vs UAT</h1>
+
+  <div class="toolbar" id="walkToolbar">
+    <button type="button" class="btn btn-primary" id="btnExportJson">导出进度 JSON</button>
+    <button type="button" class="btn" id="btnImportJson">导入进度</button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden />
+    <button type="button" class="btn" id="btnDownloadHtml">下载当前页 HTML</button>
+    <button type="button" class="btn" id="btnClearDone">清除完成打标</button>
+    <button type="button" class="btn" id="btnResetAll">重置本地编辑</button>
+    <span class="status">完成打标：<span class="progress-done" id="doneCount">0</span> / <span id="totalCount">0</span> · 编辑自动保存在本机浏览器</span>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="link-bar">
+    <span class="link-title">设计稿</span>
+    <a class="link-chip" href="https://bigsenz0007-tygi.github.io/finance-onestop-pricing/" target="_blank" rel="noreferrer">设计稿</a>
+    <span class="link-title">UAT走查链接</span>
+    <a class="link-chip" href="http://bms-portal-uat.jd.com/cpq/onestop-pricing" target="_blank" rel="noreferrer">一站定价</a>
+    <a class="link-chip" href="http://bms-portal-uat.jd.com/cpq/onestop-quoting" target="_blank" rel="noreferrer">一站报价</a>
+    <a class="link-chip" href="http://bms-portal-uat.jd.com/billing-document-element" target="_blank" rel="noreferrer">计费要素</a>
+    <a class="link-chip" href="http://pretoad.jdl.com/#/product/price-biz-list" target="_blank" rel="noreferrer">业务类型</a>
+  </div>
+  <p class="note">
+    本版只做走查标注，不修改业务代码和样式。三列支持：图片上传/粘贴替换、下载原图；路径与问题文案可编辑；第三列问题可勾选「已完成」打标。编辑与打标自动保存在本机 <code>localStorage</code>，可用「导出进度 JSON」跨设备同步。步骤条后续统一改为 <code>40px</code>，本轮不再标注步骤条高度。
+  </p>
+
+  <div class="summary">
+    <div class="summary-card"><strong>4</strong><span>菜单页面</span></div>
+    <div class="summary-card"><strong>17</strong><span>真实/可核验交互场景</span></div>
+    <div class="summary-card"><strong>18</strong><span>设计稿截图</span></div>
+    <div class="summary-card"><strong>17</strong><span>UAT 截图</span></div>
+  </div>
+
+  <section>
+    <h2>1. 一站定价 - 列表</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">定价中心 → 一站定价</p>
+        <img src="walkthrough-assets/design/design-onestop-pricing-list.png" alt="design-onestop-pricing-list.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/cpq/onestop-pricing</p>
+        <img src="walkthrough-assets/uat-real/uat-pricing-list.png" alt="uat-pricing-list.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-1. 一站定价 - 列表">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>UAT 左侧菜单可收起，不把大框架左侧菜单本身作为问题；但 UAT 内容区上、左、右间距均为 24px，叠加 Portal 顶部导航后，当前截图里页面整体视觉比例偏大、首屏可见内容偏少。</li><li>UAT 主内容可视宽度约 1016px，设计稿约 1336px，列表横向承载能力下降，表格列更容易拥挤。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>筛选字段不一致：设计稿筛选项为「方案名称 / 业务场景 / 状态 / 创建人 / 创建时间」；UAT 增加「方案编码」，这是字段规则差异，需要确认是否回补到设计稿。</li><li>表格列不一致：设计稿列为「方案名称 / 定价方式 / 业务场景 / 状态 / 创建人 / 创建时间 / 操作」；UAT 增加「方案编码 / 生效日期 / 失效日期」。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>设计稿操作列包含「查看 / 编辑 / 启用 / 停用」的不同状态组合；UAT 当前可见操作为「查看 / 编辑」和「查看 / 停用」，操作状态规则需对齐。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>2. 一站定价 - 新建 Step1 基础信息</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">定价中心 → 一站定价 → 新建场景定价</p>
+        <img src="walkthrough-assets/design/design-onestop-pricing-step1.png" alt="design-onestop-pricing-step1.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/cpq/onestop-pricing → 新建场景定价</p>
+        <img src="walkthrough-assets/uat-real/uat-pricing-create-step1.png" alt="uat-pricing-create-step1.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-2. 一站定价 - 新建 Step1 基础信息">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>UAT 内容区上、左、右间距均为 24px，整体容器和表格在 1280px 截图里显得偏大，首屏留给配置表的纵向空间偏少。</li><li>UAT 主内容宽度约 1016px，设计稿约 1336px，导致计费场景配置表横向更拥挤，列宽压缩明显。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>计费场景配置列顺序不一致：设计稿为「交易类型 / 来源系统 / 单据类型 / 计费项目 / 计费节点 / 计费条件」；UAT 为「来源系统 / 单据类型 / 交易类型 / 计费项目 / 计费节点 / 计费条件」。</li></ul>
+        
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>3. 一站定价 - 日期范围展开</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">新建 Step1 → 点击开始日期</p>
+        <img src="walkthrough-assets/design/design-onestop-pricing-date.png" alt="design-onestop-pricing-date.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">新建 Step1 → 点击开始日期</p>
+        <img src="walkthrough-assets/uat-real/uat-pricing-date.png" alt="uat-pricing-date.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-3. 一站定价 - 日期范围展开">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>日期面板位置不一致：设计稿面板贴近输入框下方；UAT 面板横向偏左并覆盖更多表单区域。</li><li>日期选择态样式不同：设计稿沿用项目蓝色 #3c6ef0；UAT 更接近 Element 默认日期面板样式，选中态和 hover 层级需统一。</li></ul>
+        
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>UAT 展开后遮挡左侧字段更多，继续选择日期时可读性弱于设计稿。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>4. 一站定价 - 计费条件编辑弹窗</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">新建 Step1 → 去配置</p>
+        <img src="walkthrough-assets/design/design-onestop-pricing-condition-modal.png" alt="design-onestop-pricing-condition-modal.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">新建 Step1 → 去配置</p>
+        <img src="walkthrough-assets/uat-real/uat-pricing-condition-modal.png" alt="uat-pricing-condition-modal.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-4. 一站定价 - 计费条件编辑弹窗">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>弹窗内容密度不一致：设计稿弹窗字段较简化；UAT 弹窗展示更多条件枚举和配置区，表格高度、字段间距、footer 留白需要按真实字段量重新约束。</li><li>UAT 弹窗里表单和表格视觉更接近默认组件态，和设计稿的扁平分组样式不完全一致。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>设计稿未完整覆盖 UAT 条件弹窗中的条件枚举、行数据状态和配置项，属于功能数据覆盖不足。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>需补充保存失败、空条件、删除行二次确认等交互态。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>5. 一站定价 - 编辑后点击下一步的阻断态</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">一站定价列表 → 编辑 → 下一步</p>
+        <img src="walkthrough-assets/design/design-onestop-pricing-edit-step1.png" alt="design-onestop-pricing-edit-step1.png" />
+        <img src="walkthrough-assets/design/design-onestop-pricing-edit-step2.png" alt="design-onestop-pricing-edit-step2.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/cpq/onestop-pricing → 编辑 → 下一步</p>
+        <img src="walkthrough-assets/uat-real/uat-pricing-edit-step1-before-next.png" alt="uat-pricing-edit-step1-before-next.png" />
+        <img src="walkthrough-assets/uat-real/uat-pricing-edit-after-next-blocked.png" alt="uat-pricing-edit-after-next-blocked.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-5. 一站定价 - 编辑后点击下一步的阻断态">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿点击下一步后的必填错误为红色边框 +「请填写」，仍停留 Step1；UAT 点击下一步后同样停留 Step1，但在计费场景配置行内增加红框和底部橙色业务提示。</li><li>UAT 阻断提示为橙色条，设计稿主要是字段级红色校验，错误信息层级不一致。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>UAT 真实阻断原因为「交易类型 B2B 外单[3]尚未启用单据计费要素配置，请先完成基础配置」；设计稿没有体现该业务配置前置条件。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>点击「下一步」未进入定价规则步骤，流程被阻断；UAT 有明确业务提示，设计稿只有必填校验，两侧阻断反馈规则需统一。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>6. 一站报价 - 列表</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">报价中心 → 一站报价</p>
+        <img src="walkthrough-assets/design/design-onestop-quoting-list.png" alt="design-onestop-quoting-list.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/cpq/onestop-quoting</p>
+        <img src="walkthrough-assets/uat-real/uat-quoting-list.png" alt="uat-quoting-list.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-6. 一站报价 - 列表">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>UAT 内容区上、左、右间距均为 24px，叠加 Portal 顶部导航和左侧菜单后，页面整体比例偏大，首屏表格区域更窄。</li><li>设计稿查询字段为三行网格，表格区域紧随查询卡片；UAT 查询项视觉密度更高，部分字段显得更挤。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>筛选字段不一致：设计稿包含「报价方案 / 方案编码 / 商家编码 / 业务场景 / 产品类型 / 计费策略 / 状态 / 创建人 / 创建时间」；UAT 截图中为「报价方案名称 / 方案编码 / 商家编码 / 业务场景 / 状态 / 创建人 / 创建时间」，缺「产品类型 / 计费策略」。</li><li>表格列不一致：设计稿含「产品类型 / 计费策略 / 状态」等设计字段；UAT 表格含「折扣产品 / 计费策略 / 生效日期 / 失效日期」。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>UAT 操作区包含「查看 / 编辑 / 启用 / 删除」；设计稿同类操作在不同记录中出现，需要统一状态到操作按钮的映射。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>7. 一站报价 - 查看预览</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">一站报价列表 → 查看</p>
+        <img src="walkthrough-assets/design/design-onestop-quoting-preview.png" alt="design-onestop-quoting-preview.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/cpq/onestop-quoting → 查看</p>
+        <img src="walkthrough-assets/uat-real/uat-quoting-preview.png" alt="uat-quoting-preview.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-7. 一站报价 - 查看预览">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿预览标题区域更突出，并将「价格分区 & 报价明细」作为页面主内容；UAT 仍保持 Portal 页面密度，分组标题和表格之间间距更紧。</li><li>设计稿表格卡片圆角 8px、表头 48px、14px；UAT 截图中表格更紧凑，需按设计稿表头高度和分组间距复核。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>预览字段组织不一致：设计稿强调分区和明细联动；UAT 侧需确认是否覆盖全部报价分区、计费策略、明细阶梯字段。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>需要补充横向滚动、分区切换、返回列表的交互态对照。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>8. 一站报价 - 编辑 Step1 基础信息</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">一站报价列表 → 编辑</p>
+        <img src="walkthrough-assets/design/design-onestop-quoting-edit-step1.png" alt="design-onestop-quoting-edit-step1.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/cpq/onestop-quoting → 编辑</p>
+        <img src="walkthrough-assets/uat-real/uat-quoting-edit-step1-blocked.png" alt="uat-quoting-edit-step1-blocked.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-8. 一站报价 - 编辑 Step1 基础信息">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿 Step1 编辑卡片实测 padding 为 16px 24px、圆角 8px；UAT 截图中主内容卡片在 Portal 宽度下更窄，字段横向间距被压缩。</li><li>UAT 禁用输入框灰底更重，和设计稿 Step1 的禁用态层级不一致。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>字段覆盖不一致：设计稿 Step1 包含「结算方式 / 计费策略 / 统计考核方式 / 考核起始月 / 复杂报价」；UAT Step1 截图仅展示到「报价方式 / 折扣产品 / 业务场景」，后续字段未出现。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>本次真实点击 UAT「下一步」后页面仍停留 Step1，未进入 Step2，且未出现明确字段级错误提示。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>9. 一站报价 - 编辑 Step2 价格分区</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">设计稿编辑流程 → 下一步到价格分区</p>
+        <img src="walkthrough-assets/design/design-onestop-quoting-edit-step2.png" alt="design-onestop-quoting-edit-step2.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">已有真实 UAT 截图：报价 Step2</p>
+        <img src="walkthrough-assets/uat-real/uat-quoting-edit-step2-real.png" alt="uat-quoting-edit-step2-real.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-9. 一站报价 - 编辑 Step2 价格分区">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿 Step2 卡片 padding 为 16px 24px、表头字号 14px、表头高度 48px；UAT Step2 截图中表格区域高度更低，空态图标区域占比大。</li><li>设计稿表格首列表头圆角为 8px 0 0 0；UAT 截图表头更扁平，边界和空态间距需要统一。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>设计稿已有多行价格分区示例；UAT Step2 为暂无数据空态，至少需标注空态文案、导入按钮、添加按钮是否按设计稿规则补齐。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>UAT Step2 截图显示可进入，但本次重新点击同一流程未能从 Step1 前进，流程稳定性需要复核。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>10. 一站报价 - 编辑 Step3 报价明细</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">设计稿编辑流程 → Step3 报价明细</p>
+        <img src="walkthrough-assets/design/design-onestop-quoting-edit-step3.png" alt="design-onestop-quoting-edit-step3.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">已有真实 UAT 截图：报价 Step3</p>
+        <img src="walkthrough-assets/uat-real/uat-quoting-edit-step3-real.png" alt="uat-quoting-edit-step3-real.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-10. 一站报价 - 编辑 Step3 报价明细">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿 Step3 表头字号 14px、表头高度 48px、表格圆角 8px；UAT Step3 截图中表单行与表格间距更紧，表格下方分页贴近内容。</li><li>设计稿已有阶梯明细多行示例；UAT Step3 明细区域为空或未完整带出，空态/新增行样式需要补齐。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>字段覆盖不一致：设计稿含「统计最小值 / 统计最大值 / 单票阶梯 / 折扣模式 / 报价明细」；UAT 截图中同类字段可见但数据和选择项未完整体现。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>需要补充 UAT 在新增明细、删除明细、分页切换时的截图，目前仅有 Step3 初始态。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>11. 一站报价 - 编辑 Step4 报价测算</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">设计稿编辑流程 → Step4 报价测算</p>
+        <img src="walkthrough-assets/design/design-onestop-quoting-edit-step4.png" alt="design-onestop-quoting-edit-step4.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">本次 UAT 点击未进入 Step4，以 Step1 阻断截图作为证据</p>
+        <img src="walkthrough-assets/uat-real/uat-quoting-edit-step1-blocked.png" alt="uat-quoting-edit-step1-blocked.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-11. 一站报价 - 编辑 Step4 报价测算">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>UAT 没有获得可验证的 Step4 页面截图，无法确认测算页布局、测算表格和按钮区样式是否符合设计稿。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>设计稿 Step4 包含「测算类型 / 报价分区 / 重量 / 体积 / 统计业务量 / 开始测算 / 完成并发布」；UAT 本次流程未进入 Step4，属于流程覆盖缺口。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>UAT Step4 缺少本次可复验截图，需补充可稳定进入 Step4 的记录或测试数据后再做最终样式确认。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>12. 计费要素 - 列表</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">定价中心 → 计费单据管理</p>
+        <img src="walkthrough-assets/design/design-billing-document-list.png" alt="design-billing-document-list.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/billing-document-element</p>
+        <img src="walkthrough-assets/uat-real/uat-billing-list.png" alt="uat-billing-list.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-12. 计费要素 - 列表">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>UAT 截图中整体更像旧 Portal 表单，字段区间距和表格密度偏紧。</li><li>设计稿表格圆角 8px；UAT 表格区域边界更弱，卡片感不足。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>筛选字段不一致：设计稿有「计费单据状态 / 业务条线 / 按商家接入」等；UAT 截图需要确认同名字段是否完整出现及顺序是否一致。</li><li>操作按钮不一致：设计稿包含「查看 / 编辑 / 启用停用 / 日志」；UAT 操作列需按同一优先级和文案收敛。</li></ul>
+        
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>13. 计费要素 - 新建弹窗</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">计费要素列表 → 新建</p>
+        <img src="walkthrough-assets/design/design-billing-document-create.png" alt="design-billing-document-create.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">/billing-document-element → 新建</p>
+        <img src="walkthrough-assets/uat-real/uat-billing-create.png" alt="uat-billing-create.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-13. 计费要素 - 新建弹窗">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿弹窗标题、分组标题和表格配置区层级更清晰；UAT 弹窗字段更密，分组间距偏小。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>设计稿有「批量录入」和「计费要素配置」行编辑；UAT 截图需确认批量录入入口、行内删除、新增行是否齐全。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>需要补充确定时的必填校验截图，当前只覆盖新建初始态。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>14. 计费要素 - 新建下拉展开</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">新建弹窗 → 点击下拉</p>
+        <img src="walkthrough-assets/design/design-billing-document-create-select.png" alt="design-billing-document-create-select.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">新建弹窗 → 点击下拉</p>
+        <img src="walkthrough-assets/uat-real/uat-billing-create-select.png" alt="uat-billing-create-select.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-14. 计费要素 - 新建下拉展开">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>下拉浮层位置和宽度需对齐输入框。设计稿下拉项间距更接近 32px 控件节奏；UAT 下拉浮层更像默认组件样式。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>需确认 UAT 下拉选项内容与设计稿枚举一致，只标注选项字段和枚举规则。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>需补充搜索、清空、无结果态。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>15. 业务类型 - 列表</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">定价中心 → 业务类型管理</p>
+        <img src="walkthrough-assets/design/design-business-type-list.png" alt="design-business-type-list.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">pretoad.jdl.com/#/product/price-biz-list</p>
+        <img src="walkthrough-assets/uat-real/uat-business-type-list.png" alt="uat-business-type-list.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-15. 业务类型 - 列表">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>UAT 截图中查询区更紧凑，按钮和输入框视觉重量不一致。</li><li>设计稿表头字号 14px、高度 48px；UAT 表头和行高需按截图复核，当前视觉上更接近旧表格密度。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>筛选字段不一致：设计稿为「业务场景 / 定价方式 / 收付方向 / 状态」；UAT 需确认同字段命名、顺序和是否存在额外筛选。</li><li>操作按钮文案不一致：设计稿出现「停用 / 修改 / 日志」；UAT 弹窗截图显示「编辑」体系，列表操作需统一为修改还是编辑。</li></ul>
+        
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>16. 业务类型 - 新建弹窗</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">业务类型列表 → 新建</p>
+        <img src="walkthrough-assets/design/design-business-type-create.png" alt="design-business-type-create.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">业务类型列表 → 新建</p>
+        <img src="walkthrough-assets/uat-real/uat-business-type-create.png" alt="uat-business-type-create.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-16. 业务类型 - 新建弹窗">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿弹窗宽度、字段两列布局和 footer 按钮位置更规整；UAT 弹窗字段更靠上，左右间距和底部留白不一致。</li><li>UAT 字段 label 视觉偏轻，需要按设计稿的 label 宽度和右对齐规则复核。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>字段命名需统一：设计稿「业务场景编码 / 业务场景名称 / 计费对象 / 定价方式 / 备注」；UAT 需要确认是否全部一致。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>新建弹窗需要补充保存失败时必填校验态，目前只覆盖初始/下拉态。</li></ul>
+      </div>
+    </div>
+  </section>
+
+<section>
+    <h2>17. 业务类型 - 新建下拉展开</h2>
+    <div class="row">
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">业务类型新建 → 点击定价方式下拉</p>
+        <img src="walkthrough-assets/design/design-business-type-create-select.png" alt="design-business-type-create-select.png" />
+      </div>
+      <div class="cell">
+        <div class="col-label"></div>
+        <p class="path">业务类型新建 → 点击定价方式下拉</p>
+        <img src="walkthrough-assets/uat-real/uat-business-type-create-select.png" alt="uat-business-type-create-select.png" />
+      </div>
+      <div class="cell issues" contenteditable="true" spellcheck="false" data-edit-key="issue-17. 业务类型 - 新建下拉展开">
+        <div class="col-label"></div>
+        <h4 class="cat-visual">视觉样式</h4>
+        <ul><li>设计稿下拉项视觉节奏更接近 32px 控件；UAT 下拉浮层高度、阴影和选项 hover/active 态需与设计稿统一。</li></ul>
+        <h4 class="cat-func">功能数据</h4>
+        <ul><li>下拉选项规则需对齐：设计稿显示「产品定价 / 场景定价」；UAT 如枚举或默认值不同，需要按业务类型配置规则确认。</li></ul>
+        <h4 class="cat-ix">交互效果</h4>
+        <ul><li>需补充键盘选择、点击外部关闭、清空后的状态。</li></ul>
+      </div>
+    </div>
+  </section>
+  <script>
+    (() => {
+      const STORE_KEY = 'cpq-ui-walkthrough-v2';
+      const toastEl = document.getElementById('toast');
+      const doneCountEl = document.getElementById('doneCount');
+      const totalCountEl = document.getElementById('totalCount');
+
+      function toast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastEl._t);
+        toastEl._t = setTimeout(() => toastEl.classList.remove('show'), 1800);
+      }
+
+      function loadStore() {
+        try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
+        catch { return {}; }
+      }
+      function saveStore(data) {
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      }
+      function getStore() {
+        return loadStore();
+      }
+      function patchStore(mutator) {
+        const data = loadStore();
+        mutator(data);
+        saveStore(data);
+      }
+
+      function uid(prefix = 'id') {
+        return prefix + '-' + Math.random().toString(36).slice(2, 10);
+      }
+
+      function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function downloadDataUrl(dataUrl, filename) {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = filename || 'image.png';
+        a.click();
+      }
+
+      async function downloadImage(img) {
+        try {
+          const res = await fetch(img.src);
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = (img.getAttribute('alt') || 'screenshot') + (blob.type.includes('jpeg') ? '.jpg' : '.png');
+          a.click();
+          URL.revokeObjectURL(url);
+        } catch {
+          // fallback for data URLs / CORS
+          downloadDataUrl(img.src, img.getAttribute('alt') || 'screenshot.png');
+        }
+      }
+
+      function updateProgress() {
+        const boxes = document.querySelectorAll('.issue-item input[type="checkbox"]');
+        const total = boxes.length;
+        const done = [...boxes].filter(b => b.checked).length;
+        totalCountEl.textContent = total;
+        doneCountEl.textContent = done;
+        const card = document.querySelector('.summary-card:last-child');
+        if (card) {
+          card.innerHTML = `<strong>${done}/${total}</strong><span>问题已完成打标</span>`;
+        }
+      }
+
+      function ensureIssueList(container, catClass, catLabel) {
+        let h4 = [...container.querySelectorAll('h4')].find(h => h.classList.contains(catClass));
+        if (!h4) {
+          h4 = document.createElement('h4');
+          h4.className = catClass;
+          h4.textContent = catLabel;
+          container.appendChild(h4);
+        }
+        let list = h4.nextElementSibling;
+        if (!list || !list.classList.contains('issue-list')) {
+          list = document.createElement('div');
+          list.className = 'issue-list';
+          h4.insertAdjacentElement('afterend', list);
+        }
+        return list;
+      }
+
+      function createIssueItem(text, done, issueId, sectionKey, cat) {
+        const item = document.createElement('div');
+        item.className = 'issue-item' + (done ? ' is-done' : '');
+        item.dataset.issueId = issueId;
+        item.dataset.cat = cat;
+        item.innerHTML = `
+          <input type="checkbox" ${done ? 'checked' : ''} title="标记为已完成" />
+          <div class="issue-text" contenteditable="true" spellcheck="false"></div>
+          <div class="issue-meta">${done ? '已完成' : '待改'}</div>
+        `;
+        item.querySelector('.issue-text').textContent = text;
+        const checkbox = item.querySelector('input');
+        const meta = item.querySelector('.issue-meta');
+        const textEl = item.querySelector('.issue-text');
+
+        checkbox.addEventListener('change', () => {
+          item.classList.toggle('is-done', checkbox.checked);
+          meta.textContent = checkbox.checked ? '已完成' : '待改';
+          patchStore(data => {
+            data.issues = data.issues || {};
+            data.issues[issueId] = {
+              sectionKey, cat, text: textEl.textContent.trim(), done: checkbox.checked
+            };
+          });
+          updateProgress();
+          toast(checkbox.checked ? '已打标完成' : '已取消打标');
+        });
+
+        textEl.addEventListener('input', () => {
+          patchStore(data => {
+            data.issues = data.issues || {};
+            data.issues[issueId] = {
+              sectionKey, cat, text: textEl.textContent.trim(), done: checkbox.checked
+            };
+          });
+        });
+
+        return item;
+      }
+
+      function enhanceIssueCells() {
+        const store = getStore();
+        document.querySelectorAll('.cell.issues').forEach((cell, sectionIndex) => {
+          const sectionKey = cell.dataset.editKey || ('section-' + sectionIndex);
+          cell.removeAttribute('contenteditable');
+
+          // tools
+          if (!cell.querySelector('.issues-tools')) {
+            const tools = document.createElement('div');
+            tools.className = 'issues-tools';
+            tools.innerHTML = `
+              <button type="button" class="add-issue" data-cat="visual">+ 视觉问题</button>
+              <button type="button" class="add-issue" data-cat="func">+ 功能问题</button>
+              <button type="button" class="add-issue" data-cat="ix">+ 交互问题</button>
+            `;
+            const label = cell.querySelector('.col-label');
+            if (label) label.insertAdjacentElement('afterend', tools);
+            else cell.prepend(tools);
+          }
+
+          const catMap = {
+            'cat-visual': { key: 'visual', label: '视觉样式' },
+            'cat-func': { key: 'func', label: '功能数据' },
+            'cat-ix': { key: 'ix', label: '交互效果' }
+          };
+
+          // Convert existing ul/li once
+          cell.querySelectorAll('h4').forEach(h4 => {
+            const catInfo = Object.entries(catMap).find(([cls]) => h4.classList.contains(cls));
+            if (!catInfo) return;
+            const [, info] = catInfo;
+            let list = h4.nextElementSibling;
+            if (list && list.tagName === 'UL') {
+              const items = [...list.querySelectorAll('li')].map(li => li.textContent.trim()).filter(Boolean);
+              const wrap = document.createElement('div');
+              wrap.className = 'issue-list';
+              items.forEach((text, i) => {
+                const issueId = sectionKey + '::' + info.key + '::' + i;
+                const saved = (store.issues || {})[issueId];
+                wrap.appendChild(createIssueItem(
+                  saved?.text || text,
+                  !!saved?.done,
+                  issueId,
+                  sectionKey,
+                  info.key
+                ));
+              });
+              list.replaceWith(wrap);
+            }
+          });
+
+          // restore extra issues not in original DOM
+          Object.entries(store.issues || {}).forEach(([issueId, val]) => {
+            if (val.sectionKey !== sectionKey) return;
+            if (cell.querySelector(`[data-issue-id="${CSS.escape(issueId)}"]`)) return;
+            const cls = val.cat === 'func' ? 'cat-func' : val.cat === 'ix' ? 'cat-ix' : 'cat-visual';
+            const label = val.cat === 'func' ? '功能数据' : val.cat === 'ix' ? '交互效果' : '视觉样式';
+            const list = ensureIssueList(cell, cls, label);
+            list.appendChild(createIssueItem(val.text || '', !!val.done, issueId, sectionKey, val.cat || 'visual'));
+          });
+
+          cell.querySelectorAll('.add-issue').forEach(btn => {
+            btn.onclick = () => {
+              const cat = btn.dataset.cat;
+              const cls = cat === 'func' ? 'cat-func' : cat === 'ix' ? 'cat-ix' : 'cat-visual';
+              const label = cat === 'func' ? '功能数据' : cat === 'ix' ? '交互效果' : '视觉样式';
+              const list = ensureIssueList(cell, cls, label);
+              const issueId = sectionKey + '::' + cat + '::' + uid('new');
+              const item = createIssueItem('请填写问题描述…', false, issueId, sectionKey, cat);
+              list.appendChild(item);
+              patchStore(data => {
+                data.issues = data.issues || {};
+                data.issues[issueId] = { sectionKey, cat, text: '请填写问题描述…', done: false };
+              });
+              updateProgress();
+              item.querySelector('.issue-text').focus();
+            };
+          });
+        });
+      }
+
+      function enhanceImageCells() {
+        const store = getStore();
+        document.querySelectorAll('.row .cell').forEach((cell, cellIndex) => {
+          if (cell.classList.contains('issues')) return;
+          const imgs = [...cell.querySelectorAll('img')];
+          if (!imgs.length) return;
+
+          imgs.forEach((img, imgIndex) => {
+            const imgKey = `cell-${cellIndex}-img-${imgIndex}`;
+            img.dataset.imgKey = imgKey;
+            if (store.images && store.images[imgKey]) {
+              img.src = store.images[imgKey];
+            }
+
+            const wrap = document.createElement('div');
+            wrap.className = 'img-wrap';
+            wrap.dataset.imgKey = imgKey;
+            img.replaceWith(wrap);
+            wrap.appendChild(img);
+
+            const actions = document.createElement('div');
+            actions.className = 'img-actions cell-tools';
+            actions.innerHTML = `
+              <button type="button" class="mini" data-act="upload">上传替换</button>
+              <button type="button" class="mini" data-act="paste">粘贴替换</button>
+              <button type="button" class="mini" data-act="download">下载图片</button>
+              <button type="button" class="mini" data-act="reset">恢复原图</button>
+              <input type="file" accept="image/*" hidden data-file />
+            `;
+            wrap.appendChild(actions);
+
+            const fileInput = actions.querySelector('[data-file]');
+            const originalSrc = img.getAttribute('src');
+
+            async function applyImage(dataUrl) {
+              img.src = dataUrl;
+              patchStore(data => {
+                data.images = data.images || {};
+                data.images[imgKey] = dataUrl;
+              });
+              toast('图片已更新');
+            }
+
+            actions.querySelector('[data-act="upload"]').onclick = () => fileInput.click();
+            fileInput.onchange = async () => {
+              const file = fileInput.files && fileInput.files[0];
+              if (!file) return;
+              applyImage(await fileToDataUrl(file));
+              fileInput.value = '';
+            };
+            actions.querySelector('[data-act="paste"]').onclick = async () => {
+              try {
+                const items = await navigator.clipboard.read();
+                for (const item of items) {
+                  const type = item.types.find(t => t.startsWith('image/'));
+                  if (!type) continue;
+                  const blob = await item.getType(type);
+                  applyImage(await fileToDataUrl(blob));
+                  return;
+                }
+                toast('剪贴板中没有图片，请先复制截图');
+              } catch (e) {
+                toast('无法读取剪贴板，请用上传或 Ctrl/Cmd+V 粘贴到图片区');
+              }
+            };
+            actions.querySelector('[data-act="download"]').onclick = () => downloadImage(img);
+            actions.querySelector('[data-act="reset"]').onclick = () => {
+              img.src = originalSrc;
+              patchStore(data => {
+                if (data.images) delete data.images[imgKey];
+              });
+              toast('已恢复原图');
+            };
+
+            wrap.addEventListener('dragover', e => { e.preventDefault(); wrap.classList.add('is-drop'); });
+            wrap.addEventListener('dragleave', () => wrap.classList.remove('is-drop'));
+            wrap.addEventListener('drop', async e => {
+              e.preventDefault();
+              wrap.classList.remove('is-drop');
+              const file = e.dataTransfer.files && e.dataTransfer.files[0];
+              if (file && file.type.startsWith('image/')) applyImage(await fileToDataUrl(file));
+            });
+            wrap.addEventListener('paste', async e => {
+              const items = e.clipboardData && e.clipboardData.items;
+              if (!items) return;
+              for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                  e.preventDefault();
+                  applyImage(await fileToDataUrl(item.getAsFile()));
+                  break;
+                }
+              }
+            });
+          });
+
+          // editable path
+          cell.querySelectorAll('.path').forEach((pathEl, pathIndex) => {
+            pathEl.contentEditable = 'true';
+            pathEl.spellcheck = false;
+            const pathKey = `cell-${cellIndex}-path-${pathIndex}`;
+            if (store.paths && store.paths[pathKey]) pathEl.textContent = store.paths[pathKey];
+            pathEl.addEventListener('input', () => {
+              patchStore(data => {
+                data.paths = data.paths || {};
+                data.paths[pathKey] = pathEl.textContent.trim();
+              });
+            });
+          });
+        });
+
+        // editable section titles
+        document.querySelectorAll('section > h2').forEach((h2, i) => {
+          h2.contentEditable = 'true';
+          h2.spellcheck = false;
+          const key = 'title-' + i;
+          if (store.titles && store.titles[key]) h2.textContent = store.titles[key];
+          h2.addEventListener('input', () => {
+            patchStore(data => {
+              data.titles = data.titles || {};
+              data.titles[key] = h2.textContent.trim();
+            });
+          });
+        });
+      }
+
+      function exportJson() {
+        const data = getStore();
+        data.exportedAt = new Date().toISOString();
+        data.page = location.href;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cpq-ui-walkthrough-progress.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('已导出进度 JSON');
+      }
+
+      function importJson(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            saveStore(data);
+            location.reload();
+          } catch {
+            toast('JSON 格式无效');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function downloadHtml() {
+        const clone = document.documentElement.cloneNode(true);
+        // strip sticky interactive noise? keep as-is for offline
+        const html = '<!DOCTYPE html>
+' + clone.outerHTML;
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ui-walkthrough-uat-vs-local.html';
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('已下载当前 HTML');
+      }
+
+      document.getElementById('btnExportJson').onclick = exportJson;
+      document.getElementById('btnImportJson').onclick = () => document.getElementById('importFile').click();
+      document.getElementById('importFile').onchange = e => {
+        const f = e.target.files && e.target.files[0];
+        if (f) importJson(f);
+        e.target.value = '';
+      };
+      document.getElementById('btnDownloadHtml').onclick = downloadHtml;
+      document.getElementById('btnClearDone').onclick = () => {
+        if (!confirm('确认清除全部「已完成」打标？')) return;
+        patchStore(data => {
+          Object.values(data.issues || {}).forEach(v => { v.done = false; });
+        });
+        location.reload();
+      };
+      document.getElementById('btnResetAll').onclick = () => {
+        if (!confirm('确认清除本机全部编辑与打标？原截图会恢复。')) return;
+        localStorage.removeItem(STORE_KEY);
+        location.reload();
+      };
+
+      enhanceImageCells();
+      enhanceIssueCells();
+      updateProgress();
+    })();
+  </script>
+</body>
+</html>

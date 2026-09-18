@@ -322,10 +322,10 @@
   </div>
 
   <div class="summary">
-    <div class="summary-card"><strong>4</strong><span>走查菜单</span></div>
-    <div class="summary-card"><strong>17</strong><span>走查场景</span></div>
-    <div class="summary-card"><strong>36</strong><span>对照截图</span></div>
-    <div class="summary-card"><strong>0</strong><span>问题已完成打标</span></div>
+    <div class="summary-card" data-card="menus"><strong>4</strong><span>走查菜单</span></div>
+    <div class="summary-card" data-card="scenes"><strong>17</strong><span>走查场景</span></div>
+    <div class="summary-card" data-card="shots"><strong>36</strong><span>对照截图</span></div>
+    <div class="summary-card" data-card="issues"><strong>0</strong><span>问题已完成打标</span></div>
   </div>
 
   <section>
@@ -807,28 +807,62 @@
       }
 
       function visibleSections() {
-        return [...document.querySelectorAll('section')].filter(sec => !sec.classList.contains('is-removed'));
+        return [...document.querySelectorAll('body > section')].filter(sec => !sec.classList.contains('is-removed'));
+      }
+
+      function sectionTitleBase(h2) {
+        const live = (h2.textContent || '').replace(/^\s*\d+\.\s*/, '').trim();
+        if (h2.dataset.titleBase && document.activeElement === h2) return live;
+        if (!h2.dataset.titleBase) h2.dataset.titleBase = live;
+        return h2.dataset.titleBase || live;
+      }
+
+      function sectionMenuName(sec) {
+        const text = (sec.querySelector('h2')?.dataset.titleBase || sec.querySelector('h2')?.textContent || sec.dataset.sectionKey || '');
+        if (text.includes('报价')) return '一站报价';
+        if (text.includes('计费要素')) return '计费要素';
+        if (text.includes('业务类型')) return '业务类型';
+        if (text.includes('定价')) return '一站定价';
+        return '其他';
+      }
+
+      function visibleIssues(sec) {
+        const root = sec || document;
+        return [...root.querySelectorAll('.issue-item')].filter(item => !item.closest('section.is-removed'));
+      }
+
+      function renumberSections() {
+        visibleSections().forEach((sec, i) => {
+          const h2 = sec.querySelector('h2');
+          if (!h2 || document.activeElement === h2) return;
+          const base = sectionTitleBase(h2);
+          h2.dataset.titleBase = base;
+          const next = (i + 1) + '. ' + base;
+          if (h2.textContent !== next) h2.textContent = next;
+        });
+      }
+
+      function setCard(name, value, label) {
+        const card = document.querySelector('.summary-card[data-card="' + name + '"]');
+        if (card) card.innerHTML = `<strong>${value}</strong><span>${label}</span>`;
       }
 
       function updateSummary() {
         const sections = visibleSections();
+        const menus = new Set(sections.map(sectionMenuName));
         const shots = sections.reduce((n, sec) => n + sec.querySelectorAll('img').length, 0);
-        const cards = document.querySelectorAll('.summary-card');
-        if (cards[1]) cards[1].innerHTML = `<strong>${sections.length}</strong><span>走查场景</span>`;
-        if (cards[2]) cards[2].innerHTML = `<strong>${shots}</strong><span>对照截图</span>`;
+        const issues = visibleIssues();
+        const done = issues.filter(item => item.querySelector('input[type="checkbox"]')?.checked).length;
+        setCard('menus', menus.size, '走查菜单');
+        setCard('scenes', sections.length, '走查场景');
+        setCard('shots', shots, '对照截图');
+        setCard('issues', done + '/' + issues.length, '问题已完成打标');
+        if (totalCountEl) totalCountEl.textContent = issues.length;
+        if (doneCountEl) doneCountEl.textContent = done;
       }
 
       function updateProgress() {
-        const boxes = [...document.querySelectorAll('.issue-item input[type="checkbox"]')]
-          .filter(box => !box.closest('section.is-removed'));
-        const total = boxes.length;
-        const done = boxes.filter(b => b.checked).length;
-        if (totalCountEl) totalCountEl.textContent = total;
-        if (doneCountEl) doneCountEl.textContent = done;
-        const card = document.querySelector('.summary-card:last-child');
-        if (card) {
-          card.innerHTML = `<strong>${done}/${total}</strong><span>问题已完成打标</span>`;
-        }
+        renumberSections();
         updateSummary();
       }
 
@@ -1115,6 +1149,7 @@
                 });
               }
               toast('图片已删除');
+              updateProgress();
             }
           });
 
@@ -1132,6 +1167,7 @@
               saveExtraImages();
               selectWrap(wrap);
               toast('图片已新增');
+              updateProgress();
             } catch {
               toast('图片粘贴失败');
             }
@@ -1158,11 +1194,14 @@
           h2.spellcheck = false;
           const key = 'title-' + i;
           if (store.titles && store.titles[key]) h2.textContent = store.titles[key];
+          h2.dataset.titleBase = (h2.textContent || '').replace(/^\s*\d+\.\s*/, '').trim();
           h2.addEventListener('input', () => {
+            h2.dataset.titleBase = (h2.textContent || '').replace(/^\s*\d+\.\s*/, '').trim();
             patchStore(data => {
               data.titles = data.titles || {};
               data.titles[key] = h2.textContent.trim();
             });
+            updateSummary();
           });
         });
       }

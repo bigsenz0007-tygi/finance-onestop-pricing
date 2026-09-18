@@ -178,11 +178,11 @@
       font-size: 12px;
     }
     .issues { counter-reset: issue-number; }
-    .issues h4 {
-      margin: 10px 0 6px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+    .issues h4 { margin: 10px 0 6px; font-size: 12px; font-weight: 600; }
+    .issues h4:first-child { margin-top: 0; }
+    .issues h4.is-empty,
+    .issues .issue-list.is-empty,
+    .issues ul.is-empty { display: none; }
     .issues[contenteditable="true"] {
       outline: none;
     }
@@ -190,7 +190,6 @@
       background: #fff;
       box-shadow: inset 0 0 0 2px rgba(60, 110, 240, .22);
     }
-    .issues h4:first-child { margin-top: 0; }
     .cat-visual { color: var(--visual); }
     .cat-func { color: var(--func); }
     .cat-ix { color: var(--ix); }
@@ -861,7 +860,22 @@
         if (doneCountEl) doneCountEl.textContent = done;
       }
 
+      function syncEmptyCategories() {
+        document.querySelectorAll('.cell.issues h4').forEach(h4 => {
+          const list = h4.nextElementSibling;
+          const hasItems = !!(list && (
+            (list.classList.contains('issue-list') && list.querySelector('.issue-item')) ||
+            (list.tagName === 'UL' && list.querySelector('li'))
+          ));
+          h4.classList.toggle('is-empty', !hasItems);
+          if (list && (list.classList.contains('issue-list') || list.tagName === 'UL')) {
+            list.classList.toggle('is-empty', !hasItems);
+          }
+        });
+      }
+
       function updateProgress() {
+        syncEmptyCategories();
         renumberSections();
         updateSummary();
       }

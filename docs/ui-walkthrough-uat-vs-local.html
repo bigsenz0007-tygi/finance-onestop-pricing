@@ -811,7 +811,6 @@
 
       function createIssueItem(text, done, issueId, sectionKey, cat) {
         const item = document.createElement('div');
-        const isAdded = issueId.includes('::new-');
         item.className = 'issue-item' + (done ? ' is-done' : '');
         item.dataset.issueId = issueId;
         item.dataset.cat = cat;
@@ -820,7 +819,7 @@
           <div class="issue-text" contenteditable="${editing ? 'true' : 'false'}" spellcheck="false"></div>
           <div class="issue-side">
             <span class="issue-meta">${done ? '已完成' : ''}</span>
-            ${isAdded ? '<button type="button" class="delete-issue">删除</button>' : ''}
+            <button type="button" class="delete-issue">删除</button>
           </div>
         `;
         item.querySelector('.issue-text').textContent = text;
@@ -851,19 +850,19 @@
           });
         });
 
-        const deleteBtn = item.querySelector('.delete-issue');
-        if (deleteBtn) {
-          deleteBtn.addEventListener('click', () => {
-            if (!editing) return;
-            if (!confirm('删除这条新增问题？')) return;
-            patchStore(data => {
-              if (data.issues) delete data.issues[issueId];
-            });
-            item.remove();
-            updateProgress();
-            toast('问题已删除');
+        item.querySelector('.delete-issue').addEventListener('click', () => {
+          if (!editing) return;
+          if (!confirm('删除这条问题？')) return;
+          patchStore(data => {
+            data.issues = data.issues || {};
+            delete data.issues[issueId];
+            data.deleted = data.deleted || {};
+            data.deleted[issueId] = true;
           });
-        }
+          item.remove();
+          updateProgress();
+          toast('问题已删除');
+        });
 
         return item;
       }
@@ -909,6 +908,7 @@
               wrap.className = 'issue-list';
               items.forEach((item, i) => {
                 const issueId = sectionKey + '::' + info.key + '::' + i;
+                if ((store.deleted || {})[issueId]) return;
                 const saved = (store.issues || {})[issueId];
                 wrap.appendChild(createIssueItem(
                   saved?.text || item.text,
@@ -925,6 +925,7 @@
           // restore extra issues not in original DOM
           Object.entries(store.issues || {}).forEach(([issueId, val]) => {
             if (val.sectionKey !== sectionKey) return;
+            if ((store.deleted || {})[issueId]) return;
             if (cell.querySelector(`[data-issue-id="${CSS.escape(issueId)}"]`)) return;
             const cls = val.cat === 'func' ? 'cat-func' : val.cat === 'ix' ? 'cat-ix' : 'cat-visual';
             const label = val.cat === 'func' ? '功能数据' : val.cat === 'ix' ? '交互效果' : '视觉样式';
@@ -1142,16 +1143,20 @@
       function saveReport() {
         document.querySelectorAll('.img-wrap.is-selected').forEach(el => el.classList.remove('is-selected'));
         patchStore(data => {
+          const deleted = { ...(data.deleted || {}) };
           data.issues = {};
           document.querySelectorAll('.issue-item').forEach(item => {
+            const issueId = item.dataset.issueId;
+            delete deleted[issueId];
             const checkbox = item.querySelector('input[type="checkbox"]');
-            data.issues[item.dataset.issueId] = {
+            data.issues[issueId] = {
               sectionKey: item.closest('.cell.issues')?.dataset.editKey,
               cat: item.dataset.cat,
               text: item.querySelector('.issue-text').textContent.trim(),
               done: !!(checkbox && checkbox.checked)
             };
           });
+          data.deleted = deleted;
         });
         setEditing(false);
         toast('已保存，当前仅支持打标勾选');

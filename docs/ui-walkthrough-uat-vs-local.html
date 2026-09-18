@@ -40,7 +40,7 @@
     body:not(.is-editing) .issue-text { cursor: default; }
     body:not(.is-editing) .img-wrap { cursor: default; }
     body:not(.is-editing) .path,
-    body:not(.is-editing) section > h2 { cursor: default; }
+    body:not(.is-editing) section h2 { cursor: default; }
     .link-bar {
       display: flex;
       flex-wrap: wrap;
@@ -108,13 +108,39 @@
       border: 1px solid var(--border);
       border-radius: 8px;
     }
-    section > h2 {
-      margin: 0;
-      padding: 12px 16px;
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       background: #fafbfc;
       border-bottom: 1px solid var(--border);
+    }
+    section h2 {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+      padding: 12px 16px;
+      background: transparent;
+      border: 0;
       font-size: 15px;
     }
+    .delete-section {
+      display: none;
+      flex-shrink: 0;
+      margin-right: 12px;
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid #ffccc7;
+      border-radius: 6px;
+      background: #fff2f0;
+      color: #f5222d;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    body.is-editing .delete-section { display: inline-flex; align-items: center; }
+    .delete-section:hover { background: #ffccc7; }
+    section.is-removed { display: none; }
     .row {
       display: grid;
       grid-template-columns: 1fr 1fr 1.15fr;
@@ -206,10 +232,10 @@
     .path[contenteditable="true"]:focus {
       box-shadow: inset 0 0 0 2px rgba(60,110,240,.22);
     }
-    section > h2[contenteditable="true"] {
+    section h2[contenteditable="true"] {
       outline: none;
     }
-    section > h2[contenteditable="true"]:focus {
+    section h2[contenteditable="true"]:focus {
       background: #fff;
       box-shadow: inset 0 0 0 2px rgba(60,110,240,.18);
     }
@@ -780,16 +806,30 @@
         }
       }
 
+      function visibleSections() {
+        return [...document.querySelectorAll('section')].filter(sec => !sec.classList.contains('is-removed'));
+      }
+
+      function updateSummary() {
+        const sections = visibleSections();
+        const shots = sections.reduce((n, sec) => n + sec.querySelectorAll('img').length, 0);
+        const cards = document.querySelectorAll('.summary-card');
+        if (cards[1]) cards[1].innerHTML = `<strong>${sections.length}</strong><span>走查场景</span>`;
+        if (cards[2]) cards[2].innerHTML = `<strong>${shots}</strong><span>对照截图</span>`;
+      }
+
       function updateProgress() {
-        const boxes = document.querySelectorAll('.issue-item input[type="checkbox"]');
+        const boxes = [...document.querySelectorAll('.issue-item input[type="checkbox"]')]
+          .filter(box => !box.closest('section.is-removed'));
         const total = boxes.length;
-        const done = [...boxes].filter(b => b.checked).length;
+        const done = boxes.filter(b => b.checked).length;
         if (totalCountEl) totalCountEl.textContent = total;
         if (doneCountEl) doneCountEl.textContent = done;
         const card = document.querySelector('.summary-card:last-child');
         if (card) {
           card.innerHTML = `<strong>${done}/${total}</strong><span>问题已完成打标</span>`;
         }
+        updateSummary();
       }
 
       function ensureIssueList(container, catClass, catLabel) {
@@ -1113,7 +1153,7 @@
         });
 
         // editable section titles
-        document.querySelectorAll('section > h2').forEach((h2, i) => {
+        document.querySelectorAll('section h2').forEach((h2, i) => {
           h2.contentEditable = 'false';
           h2.spellcheck = false;
           const key = 'title-' + i;
@@ -1127,6 +1167,42 @@
         });
       }
 
+      function enhanceSections() {
+        const store = getStore();
+        document.querySelectorAll('body > section').forEach((sec, i) => {
+          const issueCell = sec.querySelector('.cell.issues');
+          const key = issueCell?.dataset.editKey || ('section-' + i);
+          sec.dataset.sectionKey = key;
+
+          if ((store.deletedSections || {})[key]) {
+            sec.remove();
+            return;
+          }
+
+          if (!sec.querySelector('.delete-section')) {
+            const h2 = sec.querySelector(':scope > h2');
+            if (h2) {
+              const head = document.createElement('div');
+              head.className = 'section-head';
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'delete-section';
+              btn.textContent = '删除模块';
+              h2.replaceWith(head);
+              head.append(h2, btn);
+              btn.addEventListener('click', () => {
+                if (!editing) return;
+                const title = (h2.textContent || '该模块').trim();
+                if (!confirm('删除整个模块「' + title + '」？保存后生效。')) return;
+                sec.classList.add('is-removed');
+                updateProgress();
+                toast('模块已移除，点保存后生效');
+              });
+            }
+          }
+        });
+      }
+
       function setEditing(on) {
         editing = on;
         document.body.classList.toggle('is-editing', on);
@@ -1135,7 +1211,7 @@
         document.querySelectorAll('.issue-text').forEach(el => {
           el.contentEditable = on ? 'true' : 'false';
         });
-        document.querySelectorAll('.path, section > h2').forEach(el => {
+        document.querySelectorAll('.path, section h2').forEach(el => {
           el.contentEditable = on ? 'true' : 'false';
         });
       }
@@ -1144,8 +1220,18 @@
         document.querySelectorAll('.img-wrap.is-selected').forEach(el => el.classList.remove('is-selected'));
         patchStore(data => {
           const deleted = { ...(data.deleted || {}) };
+          const deletedSections = { ...(data.deletedSections || {}) };
           data.issues = {};
+          document.querySelectorAll('section.is-removed').forEach(sec => {
+            if (sec.dataset.sectionKey) deletedSections[sec.dataset.sectionKey] = true;
+            sec.querySelectorAll('.issue-item').forEach(item => {
+              const issueId = item.dataset.issueId;
+              if (!issueId) return;
+              deleted[issueId] = true;
+            });
+          });
           document.querySelectorAll('.issue-item').forEach(item => {
+            if (item.closest('section.is-removed')) return;
             const issueId = item.dataset.issueId;
             delete deleted[issueId];
             const checkbox = item.querySelector('input[type="checkbox"]');
@@ -1157,8 +1243,11 @@
             };
           });
           data.deleted = deleted;
+          data.deletedSections = deletedSections;
         });
+        document.querySelectorAll('section.is-removed').forEach(sec => sec.remove());
         setEditing(false);
+        updateProgress();
         toast('已保存，当前仅支持打标勾选');
       }
 
@@ -1174,6 +1263,7 @@
 
       enhanceImageCells();
       enhanceIssueCells();
+      enhanceSections();
       setEditing(false);
       updateProgress();
     })();
